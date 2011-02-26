@@ -14,7 +14,7 @@
  * Implementation of hook_perm().
  */
 function panelizer_perm() {
-  return array('administer panelizerr');
+  return array('administer panelizer');
 }
 
 /**
