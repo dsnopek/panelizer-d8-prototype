@@ -1,6 +1,4 @@
 <?php
-// $Id: $
-
 /**
  * @file
  *
@@ -14,16 +12,18 @@ $plugin = array(
   'handler type' => 'context',
   // may NOT be added up front.
   'visible' => FALSE,
-
   // Administrative fields.
   'title' => t('Panelizer'),
-  'admin summary' =>'panelizer_panelizer_task_admin_summary',
+  'admin summary' => 'panelizer_panelizer_task_admin_summary',
   'operations' => array(),
-
   // Callback to render the data.
   'render' => 'panelizer_panelizer_task_render',
 );
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function panelizer_panelizer_task_admin_summary($handler, $task, $subtask, $page, $show_title = TRUE) {
   $output = '';
 
@@ -46,12 +46,18 @@ function panelizer_panelizer_task_admin_summary($handler, $task, $subtask, $page
   $access = t('This variant will be selected if the node being viewed is panelized. This variant must be enabled and selected for panelizer to work!');
 
   $rows[] = array(
-    array('class' => t('page-summary-label'), 'data' => t('Selection rule')),
-    array('class' => t('page-summary-data'), 'data' => $access),
+    array(
+      'class' => t('page-summary-label'),
+      'data' => t('Selection rule'),
+    ),
+    array(
+      'class' => t('page-summary-data'),
+      'data' => $access,
+    ),
     array('class' => t('page-summary-operation'), ''),
   );
 
-  $output .= theme('table', array(), $rows, array('class' => 'page-manager-handler-summary'));
+  $output .= theme('table', array('header' => array(), 'rows' => $rows, 'attributes' => array('class' => 'page-manager-handler-summary')));
   $output .= '</div>';
 
   return $output;

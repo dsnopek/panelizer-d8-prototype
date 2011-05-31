@@ -1,6 +1,4 @@
 <?php
-// $Id: $
-
 /**
  * @file
  * Contains common forms and routines that different object types use.
@@ -12,7 +10,7 @@
 /**
  * Form to configure basic panelizer settings.
  */
-function panelizer_settings_form(&$form_state) {
+function panelizer_settings_form($form, &$form_state) {
   $panelizer = $form_state['panelizer'];
 
   $form['no_blocks'] = array(
@@ -86,8 +84,7 @@ function panelizer_settings_form_submit(&$form, &$form_state) {
 /**
  * Form to edit contexts that go with a panelizer panel.
  */
-function panelizer_default_context_form(&$form_state) {
-  $form = array();
+function panelizer_default_context_form($form, &$form_state) {
   ctools_include('context-admin');
   ctools_context_admin_includes();
 
@@ -123,11 +120,20 @@ function panelizer_default_context_form(&$form_state) {
   elseif (!module_exists('token')) {
     $description = t('More keywords will be available if you install the Token module, see http://drupal.org/project/token.');
   }
+  else {
+    $description = '';
+  }
 
+  // TODO Please change this theme call to use an associative array for the $variables parameter.
   $form['left']['summary'] = array(
     '#prefix' => '<div class="page-manager-contexts">',
     '#suffix' => '</div>',
-    '#value' => theme('ctools_context_list', $panelizer, t('Summary of contexts'), $description),
+    '#value' => theme('ctools_context_list', array(
+      'object' => $panelizer,
+      'header' => array(),
+      '' => t('Summary of contexts'),
+      'description' => $description,
+    )),
   );
 
   $form['submit'] = array(
@@ -143,4 +149,3 @@ function panelizer_default_context_form(&$form_state) {
 
   return $form;
 }
-

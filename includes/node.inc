@@ -1,6 +1,4 @@
 <?php
-// $Id: $
-
 /**
  * @file
  * Contains routines specific to handling nodes that are panelized.
@@ -22,7 +20,12 @@ function panelizer_load_node_panelizer($node, $default_anyway = FALSE) {
     return FALSE;
   }
 
-  $panelizer = db_fetch_object(db_query("SELECT * FROM {panelizer_node} WHERE nid = %d", $node->nid));
+  $panelizer = db_select('panelizer_node', 'pn')
+    ->fields('pn')
+    ->condition('nid', $node->nid)
+    ->execute()
+    ->fetchObject();
+
   if ($panelizer && !empty($panelizer->did)) {
     ctools_include('export');
     $panelizer = ctools_export_unpack_object('panelizer_node', $panelizer);
@@ -116,9 +119,8 @@ function panelizer_edit_node_settings_page($node) {
     'no_redirect' => TRUE,
   );
 
-  ctools_include('form');
   ctools_include('common', 'panelizer');
-  $output = ctools_build_form($form_id, $form_state);
+  $output = drupal_build_form($form_id, $form_state);
   if (!empty($form_state['executed'])) {
     drupal_set_message(t('The settings have been updated.'));
     panelizer_save_node_panelizer($panelizer);
@@ -128,6 +130,10 @@ function panelizer_edit_node_settings_page($node) {
   return $output;
 }
 
+/**
+ * @todo Please document this function.
+ * @see http://drupal.org/node/1354
+ */
 function panelizer_panelize_node_form(&$form_state) {
   $form = array();
 
@@ -161,9 +167,8 @@ function panelizer_edit_node_context_page($node) {
     'no_redirect' => TRUE,
   );
 
-  ctools_include('form');
   ctools_include('common', 'panelizer');
-  $output = ctools_build_form('panelizer_default_context_form', $form_state);
+  $output = drupal_build_form('panelizer_default_context_form', $form_state);
   if (!empty($form_state['executed'])) {
     if (!empty($form_state['clicked_button']['#write'])) {
       drupal_set_message(t('The settings have been updated.'));
@@ -218,40 +223,7 @@ function panelizer_edit_node_layout_page($node) {
  */
 function panelizer_edit_node_content_page($node) {
   $panelizer = panelizer_load_node_panelizer($node);
-  if (empty($panelizer)) {
-    return MENU_NOT_FOUND;
-  }
-
-  $cache = panels_edit_cache_get('panelizer:node:' . $node->nid);
-
-  ctools_include('plugins', 'panels');
-  ctools_include('display-edit', 'panels');
-  ctools_include('context');
-  $renderer = panels_get_renderer_handler('editor', $cache->display);
-  $renderer->cache = $cache;
-
-  $output = $renderer->edit();
-  if (is_object($output)) {
-    // The display was already saved, but if we were given a did, that
-    // needs to be saved too.
-    if ($panelizer->did != $output->did) {
-      ctools_include('export');
-      $panelizer->did = $output->did;
-      // Ensure we don't try to write again:
-      if (isset($panelizer->display)) {
-        unset($panelizer->display);
-      }
-
-      panelizer_save_node_panelizer($panelizer);
-    }
-    panels_edit_cache_clear($cache);
-    drupal_goto($_GET['q']);
-  }
-
-  // Print this with theme('page') so that blocks are disabled while editing a display.
-  // This is important because negative margins in common block layouts (i.e, Garland)
-  // messes up the drag & drop.
-  print theme('page', $output, FALSE);
+  return panelizer_edit_content($panelizer);
 }
 
 /**
@@ -271,80 +243,80 @@ function panelizer_get_default_display_node() {
   $display->title = '';
   $display->content = array();
   $display->panels = array();
-    $pane = new stdClass;
-    $pane->pid = 'new-1';
-    $pane->panel = 'center';
-    $pane->type = 'node_content';
-    $pane->subtype = 'node_content';
-    $pane->shown = TRUE;
-    $pane->access = array();
-    $pane->configuration = array(
-      'links' => 1,
-      'page' => 1,
-      'no_extras' => 0,
-      'override_title' => 0,
-      'override_title_text' => '',
-      'identifier' => '',
-      'link' => 0,
-      'leave_node_title' => 0,
-      'context' => 'panelizer',
-      'build_mode' => 'full',
-    );
-    $pane->cache = array();
-    $pane->style = array(
-      'settings' => NULL,
-    );
-    $pane->css = array();
-    $pane->extras = array();
-    $pane->position = 0;
-    $display->content['new-1'] = $pane;
-    $display->panels['center'][0] = 'new-1';
-    $pane = new stdClass;
-    $pane->pid = 'new-2';
-    $pane->panel = 'center';
-    $pane->type = 'node_comments';
-    $pane->subtype = 'node_comments';
-    $pane->shown = TRUE;
-    $pane->access = array();
-    $pane->configuration = array(
-      'mode' => '4',
-      'order' => '2',
-      'comments_per_page' => '50',
-      'context' => 'panelizer',
-      'override_title' => 0,
-      'override_title_text' => '',
-    );
-    $pane->cache = array();
-    $pane->style = array(
-      'settings' => NULL,
-    );
-    $pane->css = array();
-    $pane->extras = array();
-    $pane->position = 1;
-    $display->content['new-2'] = $pane;
-    $display->panels['center'][1] = 'new-2';
-    $pane = new stdClass;
-    $pane->pid = 'new-3';
-    $pane->panel = 'center';
-    $pane->type = 'node_comment_form';
-    $pane->subtype = 'node_comment_form';
-    $pane->shown = TRUE;
-    $pane->access = array();
-    $pane->configuration = array(
-      'anon_links' => 1,
-      'context' => 'panelizer',
-      'override_title' => 0,
-      'override_title_text' => '',
-    );
-    $pane->cache = array();
-    $pane->style = array(
-      'settings' => NULL,
-    );
-    $pane->css = array();
-    $pane->extras = array();
-    $pane->position = 2;
-    $display->content['new-3'] = $pane;
-    $display->panels['center'][2] = 'new-3';
+  $pane = new stdClass;
+  $pane->pid = 'new-1';
+  $pane->panel = 'center';
+  $pane->type = 'node_content';
+  $pane->subtype = 'node_content';
+  $pane->shown = TRUE;
+  $pane->access = array();
+  $pane->configuration = array(
+    'links' => 1,
+    'page' => 1,
+    'no_extras' => 0,
+    'override_title' => 0,
+    'override_title_text' => '',
+    'identifier' => '',
+    'link' => 0,
+    'leave_node_title' => 0,
+    'context' => 'panelizer',
+    'build_mode' => 'full',
+  );
+  $pane->cache = array();
+  $pane->style = array(
+    'settings' => NULL,
+  );
+  $pane->css = array();
+  $pane->extras = array();
+  $pane->position = 0;
+  $display->content['new-1'] = $pane;
+  $display->panels['center'][0] = 'new-1';
+  $pane = new stdClass;
+  $pane->pid = 'new-2';
+  $pane->panel = 'center';
+  $pane->type = 'node_comments';
+  $pane->subtype = 'node_comments';
+  $pane->shown = TRUE;
+  $pane->access = array();
+  $pane->configuration = array(
+    'mode' => '4',
+    'order' => '2',
+    'comments_per_page' => '50',
+    'context' => 'panelizer',
+    'override_title' => 0,
+    'override_title_text' => '',
+  );
+  $pane->cache = array();
+  $pane->style = array(
+    'settings' => NULL,
+  );
+  $pane->css = array();
+  $pane->extras = array();
+  $pane->position = 1;
+  $display->content['new-2'] = $pane;
+  $display->panels['center'][1] = 'new-2';
+  $pane = new stdClass;
+  $pane->pid = 'new-3';
+  $pane->panel = 'center';
+  $pane->type = 'node_comment_form';
+  $pane->subtype = 'node_comment_form';
+  $pane->shown = TRUE;
+  $pane->access = array();
+  $pane->configuration = array(
+    'anon_links' => 1,
+    'context' => 'panelizer',
+    'override_title' => 0,
+    'override_title_text' => '',
+  );
+  $pane->cache = array();
+  $pane->style = array(
+    'settings' => NULL,
+  );
+  $pane->css = array();
+  $pane->extras = array();
+  $pane->position = 2;
+  $display->content['new-3'] = $pane;
+  $display->panels['center'][2] = 'new-3';
   $display->hide_title = PANELS_TITLE_FIXED;
   $display->title_pane = 'new-1';
 
@@ -369,7 +341,7 @@ function panelizer_get_base_context_node($object = NULL) {
         'name' => 'node',
         'identifier' => t('This node'),
         'keyword' => 'node',
-        'context_settings' => array()
+        'context_settings' => array(),
       ),
     );
   }

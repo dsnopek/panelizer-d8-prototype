@@ -5,4 +5,12 @@ package = "Panels"
 dependencies[] = panels
 dependencies[] = ctools
 dependencies[] = page_manager
-core = 6.x
+core = 7.x
+
+files[] = panelizer.install
+files[] = panelizer.module
+files[] = includes/admin.inc
+files[] = includes/common.inc
+files[] = includes/node.inc
+files[] = includes/panelizer.pages_default.inc
+files[] = task_handlers/panelizer_node.inc
