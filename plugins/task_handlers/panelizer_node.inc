@@ -84,14 +84,12 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   ctools_include('node', 'panelizer');
   $panelizer = panelizer_load_node_panelizer($node);
   if (empty($panelizer)) {
-    dsm('c');
     return;
   }
 
   // Load the display
   $display = panelizer_load_display($panelizer);
   if (empty($display)) {
-    dsm('d');
     return;
   }
 
