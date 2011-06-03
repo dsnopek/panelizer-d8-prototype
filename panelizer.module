@@ -266,6 +266,14 @@ function panelizer_has_no_choice_callback($type, $key) {
   return !empty($settings[$type][$key]['status']) && !empty($settings[$type][$key]['default']) && empty($settings[$type][$key]['choice']);
 }
 
+/**
+ * Implements hook_node_delete
+ */
+function panelizer_node_delete($node) {
+  $panelizer = panelizer_load_node_panelizer($node);
+  panelizer_delete_node_panelizer($panelizer);
+}
+
 // ---------------------------------------------------------------------------
 // Panelizer object access routines
 

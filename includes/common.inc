@@ -12,6 +12,7 @@
  */
 function panelizer_settings_form($form, &$form_state) {
   $panelizer = $form_state['panelizer'];
+  $node = $form_state['node'];
 
   $form['no_blocks'] = array(
     '#type' => 'checkbox',
@@ -67,6 +68,14 @@ function panelizer_settings_form($form, &$form_state) {
     '#value' => t('Save'),
   );
 
+  if (panelizer_has_default('node', $node->type) && is_numeric($panelizer->did)) {
+    $form['reset'] = array(
+      '#type' => 'submit',
+      '#value' => t('Reset to default'),
+      '#submit' => array('panelizer_settings_form_reset'),
+    );
+  }
+
   return $form;
 }
 
@@ -79,8 +88,18 @@ function panelizer_settings_form_submit(&$form, &$form_state) {
   $panelizer->css = $form_state['values']['css'];
   $panelizer->css_id = $form_state['values']['css_id'];
   $panelizer->pipeline = $form_state['values']['pipeline'];
+  drupal_set_message(t('The settings have been updated.'));
+  panelizer_save_node_panelizer($panelizer);
 }
 
+/**
+ * Reset panel submit callback
+ */
+function panelizer_settings_form_reset(&$form, &$form_state) {
+  $panelizer = &$form_state['panelizer'];
+  panelizer_delete_node_panelizer($panelizer);
+  drupal_set_message(t('The node panel has been reset to the default'));
+}
 /**
  * Form to edit contexts that go with a panelizer panel.
  */
