@@ -717,11 +717,12 @@ function panelizer_edit_content($panelizer) {
 
   if (!empty($panelizer->nid)) {
     $cache = panels_edit_cache_get('panelizer:node:' . $panelizer->nid);
-  } else if (is_numeric($panelizer->did)) {
-      $panelizer->display = panels_load_display($panelizer->did);
-    }
+  }
+  else if (is_numeric($panelizer->did)) {
+    $panelizer->display = panels_load_display($panelizer->did);
     $cache = panels_edit_cache_get_default($panelizer->display, $panelizer->panelizer_type);
-  } else {
+  }
+  else {
     return;
   }
 
