@@ -266,52 +266,6 @@ function panelizer_has_no_choice_callback($type, $key) {
   return !empty($settings[$type][$key]['status']) && !empty($settings[$type][$key]['default']) && empty($settings[$type][$key]['choice']);
 }
 
-/**
- * Implements hook_node_view.  This code was taken from the panels_node module and adapted to work with panelizer
- */
-function panelizer_node_view($node, $view_mode, $lang) {
-
-  static $rendering = array();
-
-  // Prevent loops if someone foolishly puts the node inside itself:
-  if (!empty($rendering[$node->nid])) {
-    return $node;
-  }
-
-  $rendering[$node->nid] = TRUE;
-  ctools_include('plugins', 'panels');
-  if ($view_mode == 'teaser') {
-    // Because our teasier is never the same as our content, *always* provide
-    // the read more flag.
-    $node->readmore = TRUE;
-  }
-  else {
-    ctools_include('node', 'panelizer');
-    ctools_include('plugins', 'panels');
-    ctools_include('context');
-
-    $panelizer = panelizer_load_node_panelizer($node);
-
-    if (!empty($panelizer)) {
-      if ($panelizer->no_blocks) {
-        ctools_set_no_blocks(FALSE);
-      }
-      $display = panelizer_load_display($panelizer);
-      $display->css_id = $panelizer->css_id;
-      $display->context = panelizer_get_contexts($panelizer, $node);
-      $renderer = panels_get_renderer($panelizer->pipeline, $display);
-      $node->content['body'] = array(
-        '#markup' => panels_render_display($display, $renderer),
-        '#weight' => 0,
-      );
-    }
-  }
-
-  unset($rendering[$node->nid]);
-  return $node;
-
-}
-
 // ---------------------------------------------------------------------------
 // Panelizer object access routines
 
