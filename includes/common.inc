@@ -88,8 +88,8 @@ function panelizer_settings_form_submit(&$form, &$form_state) {
   $panelizer->css = $form_state['values']['css'];
   $panelizer->css_id = $form_state['values']['css_id'];
   $panelizer->pipeline = $form_state['values']['pipeline'];
-  drupal_set_message(t('The settings have been updated.'));
-  panelizer_save_node_panelizer($panelizer);
+
+  // NOTE: We do not save in the submit so that the form can be re-used.
 }
 
 /**
