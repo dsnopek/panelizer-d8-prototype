@@ -98,7 +98,7 @@ function panelizer_settings_form_submit(&$form, &$form_state) {
 function panelizer_settings_form_reset(&$form, &$form_state) {
   $panelizer = &$form_state['panelizer'];
   panelizer_delete_node_panelizer($panelizer);
-  drupal_set_message(t('The node panel has been reset to the default'));
+  drupal_set_message(t('The node panel has been reset to the default.'));
 }
 /**
  * Form to edit contexts that go with a panelizer panel.
