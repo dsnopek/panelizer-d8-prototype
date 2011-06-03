@@ -35,7 +35,7 @@ function panelizer_panelizer_task_admin_summary($handler, $task, $subtask, $page
     // Get operations for just this handler.
     $operations = $operations['handlers']['children'][$handler->name]['children']['actions']['children'];
     $args = array('handlers', $handler->name, 'actions');
-    $rendered_operations = page_manager_render_operations($page, $operations, array(), array('class' => 'actions'), 'actions', $args);
+    $rendered_operations = page_manager_render_operations($page, $operations, array(), array('class' => array('actions')), 'actions', $args);
 
     $output .= '<div class="handler-title clear-block">';
     $output .= '<div class="actions handler-actions">' . $rendered_operations['actions'] . '</div>';
@@ -47,17 +47,17 @@ function panelizer_panelizer_task_admin_summary($handler, $task, $subtask, $page
 
   $rows[] = array(
     array(
-      'class' => t('page-summary-label'),
+      'class' => array('page-summary-label'),
       'data' => t('Selection rule'),
     ),
     array(
-      'class' => t('page-summary-data'),
+      'class' => array('page-summary-data'),
       'data' => $access,
     ),
-    array('class' => t('page-summary-operation'), ''),
+    array('class' => array('page-summary-operation'), ''),
   );
 
-  $output .= theme('table', array('header' => array(), 'rows' => $rows, 'attributes' => array('class' => 'page-manager-handler-summary')));
+  $output .= theme('table', array('header' => array(), 'rows' => $rows, 'attributes' => array('class' => array('page-manager-handler-summary'))));
   $output .= '</div>';
 
   return $output;
@@ -75,7 +75,7 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   }
 
   $context = reset($base_contexts);
-  if ($context->type != 'node' || empty($context->data)) {
+  if (empty($context->data)) {
     return;
   }
 
@@ -84,12 +84,14 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   ctools_include('node', 'panelizer');
   $panelizer = panelizer_load_node_panelizer($node);
   if (empty($panelizer)) {
+    dsm('c');
     return;
   }
 
   // Load the display
   $display = panelizer_load_display($panelizer);
   if (empty($display)) {
+    dsm('d');
     return;
   }
 
