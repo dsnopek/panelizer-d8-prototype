@@ -100,7 +100,6 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   $display->context = panelizer_get_contexts($panelizer, $node);
   $display->args = $args;
   $display->css_id = $panelizer->css_id;
-  $task_name = page_manager_make_task_name($handler->task, $handler->subtask);
 
   // This means the IPE will use our cache which means it will get appropriate
   // allowed content should it be selected.
