@@ -772,6 +772,6 @@ function panelizer_edit_content($panelizer) {
 function panelizer_views_api() {
   return array(
     'api' => 2.0,
-    'path' => drupal_get_path('module', 'panelizer') .'/plugins/views',
+    'path' => drupal_get_path('module', 'panelizer') . '/plugins/views',
   );
 }
