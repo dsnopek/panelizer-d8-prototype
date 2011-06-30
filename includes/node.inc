@@ -105,6 +105,66 @@ function panelizer_delete_node_panelizer($panelizer) {
 }
 
 /**
+ * Render the panels display for a given panelizer node.
+ *
+ * @param stdClass $node
+ *   A fully-loaded node object controlled by panelizer.
+ * @param array $args
+ *   Optional array of arguments to pass to the panels display.
+ *
+ * @return array
+ *   If the node isn't panelized, this returns NULL. Otherwise, it returns an
+ *   associative array with the following keys:
+ *   - 'content': String containing the rendered panels display output.
+ *   - 'no_blocks': Boolean defining if the panels display wants to hide core
+ *      blocks or not when being rendered.
+ */
+function panelizer_render_node($node, $args = array()) {
+  ctools_include('node', 'panelizer');
+  $panelizer = panelizer_load_node_panelizer($node);
+  if (empty($panelizer)) {
+    return;
+  }
+
+  // Load the display
+  $display = panelizer_load_display($panelizer);
+  if (empty($display)) {
+    return;
+  }
+
+  $display->context = panelizer_get_contexts($panelizer, $node);
+  $display->args = $args;
+  $display->css_id = $panelizer->css_id;
+
+  // This means the IPE will use our cache which means it will get appropriate
+  // allowed content should it be selected.
+  $display->cache_key = 'panelizer:node:' . $node->nid;
+
+  // Check to see if there is any CSS.
+  if (!empty($panelizer->css)) {
+    ctools_include('css');
+    $filename = ctools_css_retrieve($display->cache_key);
+    if (!$filename) {
+      $filename = ctools_css_store($display->cache_key, $panelizer->css);
+    }
+    ctools_css_add_css($filename);
+  }
+
+  // We think this is handled as a page, so set the current page display.
+  panels_get_current_page_display($display);
+
+  ctools_include('plugins', 'panels');
+  $renderer = panels_get_renderer($panelizer->pipeline, $display);
+
+  $info = array(
+    'content' => panels_render_display($display, $renderer),
+    'no_blocks' => !empty($panelizer->no_blocks),
+  );
+
+  return $info;
+}
+
+/**
  * Page to edit basic settings on a panelized node.
  */
 function panelizer_edit_node_settings_page($node) {

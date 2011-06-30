@@ -13,3 +13,4 @@ files[] = includes/common.inc
 files[] = includes/node.inc
 files[] = includes/panelizer.pages_default.inc
 files[] = task_handlers/panelizer_node.inc
+files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc

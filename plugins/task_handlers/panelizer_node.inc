@@ -79,52 +79,10 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
     return;
   }
 
-  // Load the panelizer.
+  // Extract the node from the context so we can load the panelizer.
   $node = &$context->data;
+
+  // Load the panelizer and render the display.
   ctools_include('node', 'panelizer');
-  $panelizer = panelizer_load_node_panelizer($node);
-  if (empty($panelizer)) {
-    return;
-  }
-
-  // Load the display
-  $display = panelizer_load_display($panelizer);
-  if (empty($display)) {
-    return;
-  }
-
-  // This converts the $node we extracted from $base_contexts into a new
-  // context for the panelized node, plus whatever other contexts were
-  // configured for it. If for some reason there were other contexts in
-  // the $base_contexts, they are not available.
-  $display->context = panelizer_get_contexts($panelizer, $node);
-  $display->args = $args;
-  $display->css_id = $panelizer->css_id;
-
-  // This means the IPE will use our cache which means it will get appropriate
-  // allowed content should it be selected.
-  $display->cache_key = 'panelizer:node:' . $node->nid;
-
-  // Check to see if there is any CSS.
-  if (!empty($panelizer->css)) {
-    ctools_include('css');
-    $filename = ctools_css_retrieve($display->cache_key);
-    if (!$filename) {
-      $filename = ctools_css_store($display->cache_key, $panelizer->css);
-    }
-    ctools_css_add_css($filename);
-  }
-
-  // We think this is handled as a page, so set the current page display.
-  panels_get_current_page_display($display);
-
-  ctools_include('plugins', 'panels');
-  $renderer = panels_get_renderer($panelizer->pipeline, $display);
-
-  $info = array(
-    'content' => panels_render_display($display, $renderer),
-    'no_blocks' => !empty($panelizer->no_blocks),
-  );
-
-  return $info;
+  return panelizer_render_node($node, $args);
 }

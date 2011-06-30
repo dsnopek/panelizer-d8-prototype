@@ -765,3 +765,13 @@ function panelizer_edit_content($panelizer) {
   $page = element_info('page');
   return $page;
 }
+
+/**
+ * Implementation of hook_views_api().
+ */
+function panelizer_views_api() {
+  return array(
+    'api' => 2.0,
+    'path' => drupal_get_path('module', 'panelizer') .'/plugins/views',
+  );
+}
