@@ -266,6 +266,9 @@ function panelizer_has_no_choice_callback($type, $key) {
   return !empty($settings[$type][$key]['status']) && !empty($settings[$type][$key]['default']) && empty($settings[$type][$key]['choice']);
 }
 
+// ---------------------------------------------------------------------------
+// Node hooks
+
 /**
  * Implements hook_node_delete().
  */
@@ -274,6 +277,24 @@ function panelizer_node_delete($node) {
   $panelizer = panelizer_load_node_panelizer($node);
   panelizer_delete_node_panelizer($panelizer);
 }
+
+/**
+ * Implements hook_node_insert().
+ */
+function panelizer_node_insert($node) {
+  if (!empty($node->clone_from_original_nid)) {
+    // For reasons I don't entirely understand, we need to clear the
+    // node_load() cache for this node_load() to return anything in here.
+    $original_node = node_load($node->clone_from_original_nid, NULL, TRUE);
+    ctools_include('node', 'panelizer');
+    $original_panelizer = panelizer_load_node_panelizer($original_node);
+    if (!empty($original_panelizer)) {
+      $cloned_panelizer = panelizer_clone_node_panelizer($original_panelizer, $node->nid);
+      panelizer_save_node_panelizer($cloned_panelizer);
+    }
+  }
+}
+
 
 // ---------------------------------------------------------------------------
 // Panelizer object access routines

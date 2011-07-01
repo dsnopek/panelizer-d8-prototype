@@ -42,10 +42,26 @@ function panelizer_load_node_panelizer($node, $default_anyway = FALSE) {
     return FALSE;
   }
 
+  return panelizer_clone_node_panelizer($panelizer, $node->nid);
+}
+
+/**
+ * Helper function to clone a node's panelizer object and the panels display.
+ *
+ * @param stdClass $panelizer
+ *   The fully-loaded panelizer object for a given node.
+ * @param integer $nid
+ *   The nid to use for the cloned panelizer.
+ * @return stdClass
+ *   A cloned and fully-loaded panelizer object.
+ */
+function panelizer_clone_node_panelizer($panelizer, $nid) {
+  $panelizer_clone = clone $panelizer;
+
   // To ensure this saves properly later, we need to scrub out the data that
   // is specific to the default.
-  unset($panelizer->name);
-  unset($panelizer->title);
+  unset($panelizer_clone->name);
+  unset($panelizer_clone->title);
   $original_display = panelizer_load_display($panelizer);
 
   // In order to ensure we don't actually use and modify the default display,
@@ -55,12 +71,12 @@ function panelizer_load_node_panelizer($node, $default_anyway = FALSE) {
   eval($code);
   ob_end_clean();
 
-  $panelizer->display = $display;
-  $panelizer->did = NULL;
-  $panelizer->nid = $node->nid;
-  $panelizer->new = TRUE;
+  $panelizer_clone->display = $display;
+  $panelizer_clone->did = NULL;
+  $panelizer_clone->nid = $nid;
+  $panelizer_clone->new = TRUE;
 
-  return $panelizer;
+  return $panelizer_clone;
 }
 
 /**
