@@ -235,7 +235,7 @@ function panelizer_edit_node_settings_page($node) {
  * @todo Please document this function.
  * @see http://drupal.org/node/1354
  */
-function panelizer_panelize_node_form(&$form_state) {
+function panelizer_panelize_node_form($form, &$form_state) {
   $form = array();
 
   $form['markup'] = array(
