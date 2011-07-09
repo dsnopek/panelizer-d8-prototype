@@ -12,7 +12,6 @@
  */
 function panelizer_settings_form($form, &$form_state) {
   $panelizer = $form_state['panelizer'];
-  $node = $form_state['node'];
 
   $form['no_blocks'] = array(
     '#type' => 'checkbox',
@@ -68,14 +67,6 @@ function panelizer_settings_form($form, &$form_state) {
     '#value' => t('Save'),
   );
 
-  if (panelizer_has_default('node', $node->type) && is_numeric($panelizer->did)) {
-    $form['reset'] = array(
-      '#type' => 'submit',
-      '#value' => t('Reset to default'),
-      '#submit' => array('panelizer_settings_form_reset'),
-    );
-  }
-
   return $form;
 }
 
@@ -92,14 +83,6 @@ function panelizer_settings_form_submit(&$form, &$form_state) {
   // NOTE: We do not save in the submit so that the form can be re-used.
 }
 
-/**
- * Reset panel submit callback
- */
-function panelizer_settings_form_reset(&$form, &$form_state) {
-  $panelizer = &$form_state['panelizer'];
-  panelizer_delete_node_panelizer($panelizer);
-  drupal_set_message(t('The node panel has been reset to the default.'));
-}
 /**
  * Form to edit contexts that go with a panelizer panel.
  */

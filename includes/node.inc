@@ -205,7 +205,6 @@ function panelizer_edit_node_settings_page($node) {
 
   $form_state = array(
     'panelizer' => &$panelizer,
-    'node' => $node,
     'no_redirect' => TRUE,
   );
 
