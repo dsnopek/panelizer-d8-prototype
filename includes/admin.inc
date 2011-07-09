@@ -191,7 +191,7 @@ function theme_panelizer_node_settings_page_form($variables) {
   $output = theme('table', array('header' => $header, 'rows' => $rows));
 
   // Render everything else
-  //$output .= drupal_render_children($element);
+  $output .= drupal_render_children($element);
   return $output;
 }
 
