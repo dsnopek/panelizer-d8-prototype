@@ -71,7 +71,6 @@ function panelizer_settings_form($form, &$form_state) {
     $form['reset'] = array(
       '#type' => 'submit',
       '#value' => t('Reset to default'),
-      '#submit' => array('panelizer_settings_form_reset'),
       '#reset' => TRUE,
    );
   }
