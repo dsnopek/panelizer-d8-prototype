@@ -67,6 +67,15 @@ function panelizer_settings_form($form, &$form_state) {
     '#value' => t('Save'),
   );
 
+  if (!empty($form_state['reset button'])) {
+    $form['reset'] = array(
+      '#type' => 'submit',
+      '#value' => t('Reset to default'),
+      '#submit' => array('panelizer_settings_form_reset'),
+      '#reset' => TRUE,
+   );
+  }
+
   return $form;
 }
 
