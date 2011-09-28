@@ -76,7 +76,7 @@ function panelizer_settings_page_form($form, &$form_state) {
       '#suffix' => '</div>',
     );
 
-    // Panelize is on all content types get this option 
+    // Panelize is on all content types get this option
     $links = array(
       'settings' => array(
         'title' => t('allowed content'),
@@ -241,20 +241,41 @@ function panelizer_default_settings_page($type, $key, $name) {
   $form_state = array(
     'panelizer' => &$panelizer,
     'no_redirect' => TRUE,
+    'reset button' => TRUE,
   );
 
   ctools_include('common', 'panelizer');
   $output = drupal_build_form('panelizer_settings_form', $form_state);
   if (!empty($form_state['executed'])) {
-    drupal_set_message(t('The settings have been updated.'));
-    ctools_include('export');
-    ctools_export_crud_save('panelizer_defaults', $panelizer);
+    if (empty($form_state['clicked_button']['#reset'])) {
+      ctools_include('export');
+      ctools_export_crud_save('panelizer_defaults', $panelizer);
+      drupal_set_message(t('The settings have been updated.'));
+    }
+    else {
+      panelizer_delete_panelizer_defaults($panelizer);
+      drupal_set_message(t('The panelizer settings have been reset to the default.'));
+    }
+
     drupal_goto($_GET['q']);
   }
 
   return $output;
 }
 
+/**
+ * Delete a panelizer node panel from the database.
+ */
+function panelizer_delete_panelizer_defaults($panelizer) {
+  if (!empty($panelizer->pnid)) {
+    if (!empty($panelizer->did)) {
+      panels_delete_display($panelizer->did);
+    }
+    db_delete('panelizer_defaults')
+      ->condition('pnid', $panelizer->pnid)
+      ->execute();
+  }
+}
 
 /**
  * Page to configure what content is available for a given node type.
