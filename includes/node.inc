@@ -324,7 +324,50 @@ function panelizer_edit_node_layout_page($node) {
  */
 function panelizer_edit_node_content_page($node) {
   $panelizer = panelizer_load_node_panelizer($node);
-  return panelizer_edit_content($panelizer);
+  if (!is_object($panelizer)) {
+    return MENU_NOT_FOUND;
+  }
+
+  if (!empty($panelizer->nid)) {
+    $cache = panels_edit_cache_get('panelizer:node:' . $panelizer->nid);
+  }
+  else if (is_numeric($panelizer->did)) {
+    $panelizer->display = panels_load_display($panelizer->did);
+    $cache = panels_edit_cache_get_default($panelizer->display, $panelizer->panelizer_type);
+  }
+  else {
+    return;
+  }
+
+  ctools_include('plugins', 'panels');
+  ctools_include('display-edit', 'panels');
+  ctools_include('context');
+  $renderer = panels_get_renderer_handler('editor', $cache->display);
+  $renderer->cache = $cache;
+
+  $output = $renderer->edit();
+  if (is_object($output)) {
+    // The display was already saved, but if we were given a did, that
+    // needs to be saved too.
+
+    if ($panelizer->did != $output->did) {
+      ctools_include('export');
+      $panelizer->did = $output->did;
+      // Ensure we don't try to write again:
+      if (isset($panelizer->display)) {
+        unset($panelizer->display);
+      }
+
+      panelizer_save_node_panelizer($panelizer);
+    }
+    panels_edit_cache_clear($cache);
+    drupal_goto($_GET['q']);
+  }
+
+  ctools_set_no_blocks(FALSE);
+  drupal_set_page_content($output);
+  $page = element_info('page');
+  return $page;
 }
 
 /**

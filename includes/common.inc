@@ -104,7 +104,7 @@ function panelizer_default_context_form($form, &$form_state) {
   if (!empty($panelizer->cached)) {
     $form['markup'] = array(
       '#prefix' => '<div class="messages warning">',
-      '#value' => t('This form contains unsaved changes that will not be stored until the Save button is clicked.'),
+      '#markup' => t('This form contains unsaved changes that will not be stored until the Save button is clicked.'),
       '#suffix' => '</div>',
     );
   }
@@ -138,10 +138,9 @@ function panelizer_default_context_form($form, &$form_state) {
   $form['left']['summary'] = array(
     '#prefix' => '<div class="page-manager-contexts">',
     '#suffix' => '</div>',
-    '#value' => theme('ctools_context_list', array(
+    '#markup' => theme('ctools_context_list', array(
       'object' => $panelizer,
-      'header' => array(),
-      '' => t('Summary of contexts'),
+      'header' => t('Summary of contexts'),
       'description' => $description,
     )),
   );

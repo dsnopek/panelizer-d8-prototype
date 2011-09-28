@@ -352,5 +352,36 @@ function panelizer_default_layout_page($type, $key, $name) {
  */
 function panelizer_default_content_page($type, $key, $name) {
   $panelizer = panelizer_load_default($type, $key, $name);
-  return panelizer_edit_content($panelizer);
+  if (empty($panelizer)) {
+    return MENU_NOT_FOUND;
+  }
+
+  $cache = panels_edit_cache_get('panelizer:default:' . $type . ':' . $key . ':' . $name);
+
+  ctools_include('plugins', 'panels');
+  ctools_include('display-edit', 'panels');
+  ctools_include('context');
+  $renderer = panels_get_renderer_handler('editor', $cache->display);
+  $renderer->cache = $cache;
+
+  $output = $renderer->edit();
+  if (is_object($output)) {
+    // The display was already saved, but if we were given a did, that
+    // needs to be saved too.
+
+    if ($panelizer->did != $output->did) {
+      ctools_include('export');
+      $panelizer->did = $output->did;
+      // Ensure we don't try to write again:
+      if (isset($panelizer->display)) {
+        unset($panelizer->display);
+      }
+
+      ctools_export_crud_save('panelizer_defaults', $panelizer);
+    }
+    panels_edit_cache_clear($cache);
+    drupal_goto($_GET['q']);
+  }
+
+  return $output;
 }
