@@ -182,9 +182,10 @@ function panelizer_install() {
  * Implements hook_uninstall().
  */
 function panelizer_uninstall() {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("DELETE FROM {variable} WHERE name like 'panelizer%%'") */
-  // db_delete('variable')
-  //   ->condition("name LIKE 'panelizer%%'", '')
-  //   ->execute();
+  db_delete('variable')
+    ->condition('name', 'panelizer_defaults')
+    ->execute();
+  db_delete('variable')
+    ->condition('name', 'panelizer_node:%')
+    ->execute();
 }
