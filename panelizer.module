@@ -443,13 +443,13 @@ function panelizer_load_display(&$object) {
 function panelizer_export_save_callback(&$object) {
   if (!empty($object->display)) {
     // First write the display
-    panels_save_display($panelizer->display);
+    panels_save_display($object->display);
 
     // Make sure we have the did.
     // @todo -- this should never spontaneously change on us, but we aren't
     // checking that, either. We possibly should enforce a safety condition
     // here.
-    $object->did = $panelizer->display->did;
+    $object->did = $object->display->did;
   }
 
   // Then write the default
