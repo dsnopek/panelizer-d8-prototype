@@ -18,6 +18,9 @@ $plugin = array(
   'operations' => array(),
   // Callback to render the data.
   'render' => 'panelizer_panelizer_task_render',
+  // Callback to return addressable data
+  'addressable callback' => 'panelizer_panelizer_task_get_addressable',
+
   'test' => 'panelizer_panelizer_task_test',
 );
 
@@ -117,4 +120,61 @@ function panelizer_panelizer_task_test($handler, $base_contexts) {
   }
 
   return TRUE;
+}
+
+/**
+ * Display a preview upon submit if arguments were needed.
+ */
+function panels_panel_context_edit_preview_submit(&$form, &$form_state) {
+  $display = panels_panel_context_get_display($form_state['handler']);
+  $display->context = ctools_context_replace_placeholders($form_state['contexts'], $form_state['values']['preview']);
+
+  $form_state['content'] = panels_render_display($display);
+  $form_state['redirect'] = FALSE;
+  $form_state['rerender'] = TRUE;
+}
+
+function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler, $address, $contexts, $type) {
+  ctools_include('plugins', 'panels');
+  if (empty($contexts)) {
+    return;
+  }
+
+  $context = reset($contexts);
+  if (empty($context->data)) {
+    return;
+  }
+
+  // Extract the node from the context so we can load the panelizer.
+  $node = &$context->data;
+
+  ctools_include('node', 'panelizer');
+  $panelizer = panelizer_load_node_panelizer($node);
+  if (empty($panelizer)) {
+    return;
+  }
+
+  // Load the display
+  $display = panelizer_load_display($panelizer);
+  if (empty($display)) {
+    return;
+  }
+
+  $display->context = panelizer_get_contexts($panelizer, $node);
+  $display->args = $arguments;
+  $display->css_id = $panelizer->css_id;
+
+  // This means the IPE will use our cache which means it will get appropriate
+  // allowed content should it be selected.
+  $display->cache_key = 'panelizer:node:' . $node->nid;
+
+  $renderer = panels_get_renderer($panelizer->pipeline, $display);
+  if ($type == 'content') {
+    $renderer->prepare();
+
+    $pid = array_shift($address);
+    if (!empty($renderer->prepared['panes'][$pid])) {
+      return $renderer->render_pane($renderer->prepared['panes'][$pid]);
+    }
+  }
 }
