@@ -134,7 +134,7 @@ function panels_panel_context_edit_preview_submit(&$form, &$form_state) {
   $form_state['rerender'] = TRUE;
 }
 
-function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler, $address, $contexts, $type) {
+function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler, $address, $contexts, $arguments, $type) {
   ctools_include('plugins', 'panels');
   if (empty($contexts)) {
     return;
