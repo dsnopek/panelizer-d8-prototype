@@ -122,18 +122,6 @@ function panelizer_panelizer_task_test($handler, $base_contexts) {
   return TRUE;
 }
 
-/**
- * Display a preview upon submit if arguments were needed.
- */
-function panels_panel_context_edit_preview_submit(&$form, &$form_state) {
-  $display = panels_panel_context_get_display($form_state['handler']);
-  $display->context = ctools_context_replace_placeholders($form_state['contexts'], $form_state['values']['preview']);
-
-  $form_state['content'] = panels_render_display($display);
-  $form_state['redirect'] = FALSE;
-  $form_state['rerender'] = TRUE;
-}
-
 function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler, $address, $contexts, $arguments, $type) {
   ctools_include('plugins', 'panels');
   if (empty($contexts)) {
