@@ -87,7 +87,9 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
 
   // Load the panelizer and render the display.
   ctools_include('node', 'panelizer');
-  return panelizer_render_node($node, $args);
+
+  $address = implode('::', array('page_manager', $handler->task, $handler->subtask, $handler->name, implode('..', $args)));
+  return panelizer_render_node($node, $args, $address);
 }
 
 /**

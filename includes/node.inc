@@ -135,7 +135,7 @@ function panelizer_delete_node_panelizer($panelizer) {
  *   - 'no_blocks': Boolean defining if the panels display wants to hide core
  *      blocks or not when being rendered.
  */
-function panelizer_render_node($node, $args = array()) {
+function panelizer_render_node($node, $args = array(), $address = '') {
   ctools_include('node', 'panelizer');
   $panelizer = panelizer_load_node_panelizer($node);
   if (empty($panelizer)) {
@@ -171,6 +171,7 @@ function panelizer_render_node($node, $args = array()) {
 
   ctools_include('plugins', 'panels');
   $renderer = panels_get_renderer($panelizer->pipeline, $display);
+  $renderer->address = $address;
 
   $info = array(
     'content' => panels_render_display($display, $renderer),
