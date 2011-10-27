@@ -163,7 +163,7 @@ function panelizer_render_node($node, $args = array()) {
     if (!$filename) {
       $filename = ctools_css_store($display->cache_key, $panelizer->css);
     }
-    ctools_css_add_css($filename);
+    drupal_add_css($filename);
   }
 
   // We think this is handled as a page, so set the current page display.
