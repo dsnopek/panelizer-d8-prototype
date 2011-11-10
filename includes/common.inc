@@ -119,7 +119,7 @@ function panelizer_default_context_form($form, &$form_state) {
     '#suffix' => '</div></div>',
   );
 
-  $module = 'panelizer-' . $form_state['panelizer type'];
+  $module = 'panelizer_context::' . $form_state['panelizer type'];
   ctools_context_add_context_form($module, $form, $form_state, $form['right']['contexts_table'], $panelizer, $form_state['cache key']);
   ctools_context_add_relationship_form($module, $form, $form_state, $form['right']['relationships_table'], $panelizer, $form_state['cache key']);
 

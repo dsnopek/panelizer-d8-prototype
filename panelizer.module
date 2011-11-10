@@ -517,12 +517,19 @@ function panelizer_context_cache_get($type, $key) {
 
   switch ($type) {
     case 'default':
-      return panelizer_load_default_by_name($key);
+      $panelizer = panelizer_load_default_by_name($key);
+      $panelizer = panelizer_load_node_panelizer($key);
+      $panelizer->base_contexts = panelizer_get_base_context($panelizer->panelizer_type);
+      return $panelizer;
     case 'node':
       ctools_include('node', 'panelizer');
-      return panelizer_load_node_panelizer($key);
+      $panelizer = panelizer_load_node_panelizer($key);
+      $node = node_load($key);
+      $panelizer->base_contexts = panelizer_get_base_context($panelizer->panelizer_type, $node);
+      return $panelizer;
     case 'user':
   }
+
 }
 
 /**
@@ -697,7 +704,7 @@ function panelizer_get_contexts($panelizer, $object = NULL) {
  * where our task_handler plugins are.
  */
 function panelizer_ctools_plugin_directory($owner, $plugin_type) {
-  if ($owner == 'page_manager') {
+  if (in_array($owner, array('ctools', 'page_manager'))) {
     return 'plugins/' . $plugin_type;
   }
 }
