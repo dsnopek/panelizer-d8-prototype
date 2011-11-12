@@ -518,7 +518,6 @@ function panelizer_context_cache_get($type, $key) {
   switch ($type) {
     case 'default':
       $panelizer = panelizer_load_default_by_name($key);
-      $panelizer = panelizer_load_node_panelizer($key);
       $panelizer->base_contexts = panelizer_get_base_context($panelizer->panelizer_type);
       return $panelizer;
     case 'node':
