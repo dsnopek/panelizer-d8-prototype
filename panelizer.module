@@ -174,7 +174,7 @@ function panelizer_menu() {
   $items['node/%node/panelizer/settings'] = array(
     'title' => 'Settings',
     'page callback' => 'panelizer_edit_node_settings_page',
-    'type' => MENU_NORMAL_ITEM,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => 11,
   ) + $base;
 
