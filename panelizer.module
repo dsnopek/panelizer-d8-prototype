@@ -755,3 +755,27 @@ function panelizer_views_api() {
     'path' => drupal_get_path('module', 'panelizer') . '/plugins/views',
   );
 }
+
+/**
+ * Implements hook_features_export_alter().
+ */
+function panelizer_features_export_alter(&$export, $module_name) {
+  if (!empty($export['features']['panelizer_defaults'])) {
+    foreach ($export['features']['panelizer_defaults'] as $machine_name) {
+      list ($entity, $bundle) = explode(':', $machine_name);
+
+      $variables = array(
+        'panelizer_defaults_' . $entity . '_' . $bundle,
+        'panelizer_' . $entity . ':' . $bundle . '_allowed_layouts',
+        'panelizer_' . $entity . ':' . $bundle . '_allowed_types',
+        'panelizer_' . $entity . ':' . $bundle . '_default'
+      );
+
+      foreach ($variables as $variable) {
+        $export['features']['variable'][$variable] = $variable;
+      }
+    }
+  }
+
+  return array();
+}
