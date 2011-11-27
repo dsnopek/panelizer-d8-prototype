@@ -183,9 +183,26 @@ function panelizer_install() {
  */
 function panelizer_uninstall() {
   db_delete('variable')
-    ->condition('name', 'panelizer_defaults')
+    ->condition('name', 'panelizer_defaults_%')
     ->execute();
   db_delete('variable')
     ->condition('name', 'panelizer_node:%')
     ->execute();
+}
+
+/**
+ * Implements hook_update_N().
+ */
+function panelizer_update_7100() {
+  $panelizer_defaults = variable_get('panelizer_defaults', array());
+
+  if (!empty($panelizer_defaults)) {
+    foreach ($panelizer_defaults as $entity => $bundles) {
+      foreach ($bundles as $bundle => $values) {
+        variable_set('panelizer_defaults_' . $entity . '_' . $bundle, $values);
+      }
+    }
+  }
+
+  variable_del('panelizer_defaults');
 }

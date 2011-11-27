@@ -262,8 +262,8 @@ function panelizer_has_no_choice_callback($type, $key) {
   }
 
   // If this type has defaults and is not allowed a choice, return true.
-  $settings = variable_get('panelizer_defaults', array());
-  return !empty($settings[$type][$key]['status']) && !empty($settings[$type][$key]['default']) && empty($settings[$type][$key]['choice']);
+  $settings = variable_get('panelizer_defaults_' . $type .'_'. $key, array());
+  return !empty($settings['status']) && !empty($settings['default']) && empty($settings['choice']);
 }
 
 // ---------------------------------------------------------------------------
@@ -329,24 +329,24 @@ function panelizer_get_type_key_name($load_name) {
  * Determine if a given thing is panelized.
  */
 function panelizer_is_panelized($type, $key) {
-  $settings = variable_get('panelizer_defaults', array());
-  return !empty($settings[$type][$key]['status']);
+  $settings = variable_get('panelizer_defaults_' . $type .'_'. $key, array());
+  return !empty($settings['status']);
 }
 
 /**
  * Determine if a given thing has a default panel.
  */
 function panelizer_has_default($type, $key) {
-  $settings = variable_get('panelizer_defaults', array());
-  return !empty($settings[$type][$key]['status']) && !empty($settings[$type][$key]['default']);
+  $settings = variable_get('panelizer_defaults_' . $type .'_'. $key, array());
+  return !empty($settings['status']) && !empty($settings['default']);
 }
 
 /**
  * Determine if a given thing can choose from a list of defaults.
  */
 function panelizer_has_choice($type, $key) {
-  $settings = variable_get('panelizer_defaults', array());
-  return !empty($settings[$type][$key]['status']) && !empty($settings[$type][$key]['default']) && !empty($settings[$type][$key]['choice']);
+  $settings = variable_get('panelizer_defaults_' . $type .'_'. $key, array());
+  return !empty($settings['status']) && !empty($settings['default']) && !empty($settings['choice']);
 }
 
 /**

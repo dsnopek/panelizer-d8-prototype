@@ -35,11 +35,11 @@ function panelizer_settings_page_form($form, &$form_state) {
   $context = 'node';
   drupal_alter('panelizer_default_types', $types, $context);
 
-  $settings = variable_get('panelizer_defaults', array());
-
   foreach ($types as $type => $title) {
     $base_id = str_replace(array('][', '_', ' '), '-', '#edit-types-node-' . $type);
     $base_url = 'admin/config/content/panelizer/node/' . $type;
+
+    $settings = variable_get('panelizer_defaults_node_' . $type, array());
 
     $form['types']['node'][$type]['title'] = array(
       '#markup' => $title,
@@ -47,12 +47,12 @@ function panelizer_settings_page_form($form, &$form_state) {
 
     $form['types']['node'][$type]['status'] = array(
       '#type' => 'checkbox',
-      '#default_value' => !empty($settings['node'][$type]['status']),
+      '#default_value' => !empty($settings['status']),
     );
 
     $form['types']['node'][$type]['default'] = array(
       '#type' => 'checkbox',
-      '#default_value' => !empty($settings['node'][$type]['default']),
+      '#default_value' => !empty($settings['default']),
       '#states' => array(
         'visible' => array(
           $base_id . '-status' => array('checked' => TRUE),
@@ -62,7 +62,7 @@ function panelizer_settings_page_form($form, &$form_state) {
 
     $form['types']['node'][$type]['choice'] = array(
       '#type' => 'checkbox',
-      '#default_value' => !empty($settings['node'][$type]['choice']),
+      '#default_value' => !empty($settings['choice']),
       '#status' => array(
         'visible' => array(
           $base_id . '-status' => array('checked' => TRUE),
@@ -199,15 +199,13 @@ function theme_panelizer_node_settings_page_form($variables) {
  * Submit callback for the main panelizer settings form.
  */
 function panelizer_settings_page_form_submit($form, &$form_state) {
-  $values = $form_state['values']['types'];
+  $types = $form_state['values']['types'];
 
-  // Since we used #type => 'item' to fake the #process, there's a bad
-  // value here. Kill it.
-  foreach ($values as $type => $info) {
-    unset($values[$type]['links']);
+  foreach ($types as $entity => $bundles) {
+    foreach ($bundles as $bundle => $values) {
+      variable_set('panelizer_defaults_' . $entity . '_' . $bundle, $values);
+    }
   }
-
-  variable_set('panelizer_defaults', $values);
 }
 
 /**
