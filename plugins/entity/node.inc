@@ -11,5 +11,6 @@ $plugin = array(
     'menu' => TRUE,
     'permission' => TRUE,
     'panelizer_defaults' => TRUE,
+    'default_page_manager_handlers' => TRUE,
   ),
 );

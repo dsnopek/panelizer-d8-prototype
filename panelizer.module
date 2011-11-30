@@ -211,6 +211,19 @@ function panelizer_panelizer_defaults() {
   return $items;
 }
 
+/**
+ * Implements hook_default_page_manager_handlers().
+ */
+function panelizer_default_page_manager_handlers() {
+  $items = array();
+  // Delegate.
+  foreach (panelizer_get_plugins_with_hook('default_page_manager_handlers') as $handler) {
+    $handler->hook_default_page_manager_handlers($items);
+  }
+
+  return $items;
+}
+
 // -----------------------------------------------------------------------
 // CTools entity plugin support code
 

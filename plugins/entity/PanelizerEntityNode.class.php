@@ -43,12 +43,12 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
 
     $task = page_manager_get_task('node_view');
     if (!empty($task->disabled)) {
-        drupal_set_message('The node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
+      drupal_set_message('The node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
     }
 
     $handler = page_manager_load_task_handler($task, '', 'node_view_panelizer');
     if (!empty($handler->disabled)) {
-        drupal_set_message('The panelizer variant on the node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
+      drupal_set_message('The panelizer variant on the node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
     }
   }
 
@@ -146,5 +146,26 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     return $display;
   }
 
-}
 
+  /**
+   * Implements a delegated hook_page_manager_handlers().
+   *
+   * This makes sure that all panelized entities have the proper entry
+   * in page manager for rendering.
+   */
+  public function hook_default_page_manager_handlers(&$handlers) {
+    $handler = new stdClass;
+    $handler->disabled = FALSE; /* Edit this to true to make a default handler disabled initially */
+    $handler->api_version = 1;
+    $handler->name = 'node_view_panelizer';
+    $handler->task = 'node_view';
+    $handler->subtask = '';
+    $handler->handler = 'panelizer_node';
+    $handler->weight = -100;
+    $handler->conf = array();
+    $handlers['node_view_panelizer'] = $handler;
+
+    return $handlers;
+  }
+
+}
