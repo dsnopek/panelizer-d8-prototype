@@ -360,11 +360,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $entity->panelizer = ctools_export_unpack_object('panelizer_entity', $panelizers[$entity_id]);
         // Panelizers that do not have dids are just a selection of defaults
         // that has never actually been modified.
-        if (empty($panelizers[$entity_id]->did)) {
-          $defaults[] = $panelizers[$entity_id]->name;
+        if (empty($entity->panelizer->did)) {
+          $defaults[] = $entity->panelizer->name;
         }
         else {
-          $dids[$panelizers[$entity_id]->did] = $panelizers[$entity_id]->did;
+          $dids[$entity->panelizer->did] = $entity->panelizer->did;
         }
       }
     }
@@ -392,7 +392,14 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
       else if (empty($entity->panelizer->display)) {
         if (!empty($entity->panelizer->did)) {
-          $entity->panelizer->display = $displays[$entity->panelizer->did];
+          if (empty($displays[$entity->panelizer->did])) {
+            // Somehow the display for this entity has gotten lost?
+            $entity->panelizer->did = NULL;
+            $entity->panelizer->display = $this->get_default_display();
+          }
+          else {
+            $entity->panelizer->display = $displays[$entity->panelizer->did];
+          }
         }
         else {
           if (!empty($panelizer_defaults[$entity->panelizer->name])) {
