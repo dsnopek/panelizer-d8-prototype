@@ -487,11 +487,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       '#collapsed' => TRUE,
       '#group' => 'additional_settings',
       '#attributes' => array(
-        'class' => array('panelizer-options'),
+        'class' => array('panelizer-entity-options'),
       ),
-//      '#attached' => array(
-//        'js' => array(drupal_get_path('module', 'node') . '/node.js'),
-//      ),
+      '#attached' => array(
+        'js' => array(ctools_attach_js('panelizer-vertical-tabs', 'panelizer')),
+      ),
       '#weight' => -10,
       '#tree' => TRUE,
     );
