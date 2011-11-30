@@ -97,7 +97,7 @@ function panelizer_settings_form($form, &$form_state) {
  * Submit callback
  */
 function panelizer_settings_form_submit(&$form, &$form_state) {
-  $panelizer = &$form_state['panelizer'];
+  $panelizer = $form_state['panelizer'];
   $panelizer->no_blocks = $form_state['values']['no_blocks'];
   $panelizer->css = $form_state['values']['css'];
   $panelizer->css_id = $form_state['values']['css_id'];
@@ -155,6 +155,11 @@ function panelizer_add_revision_info_form(&$form, &$form_state) {
       if ($control_revisions) {
         $form['revision_information']['log']['#dependency'] = array('edit-revision' => array(1));
       }
+    }
+
+    // Don't override the existing submit, eh?
+    if (!empty($form_state['input']['form_id']) && empty($form['#submit']) && function_exists($form_state['input']['form_id'] . '_submit')) {
+      $form['#submit'][] = $form_state['input']['form_id'] . '_submit';
     }
 
     $form['#submit'][] = 'panelizer_add_revision_info_form_submit';

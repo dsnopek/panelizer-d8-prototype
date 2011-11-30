@@ -734,23 +734,29 @@ function panelizer_panels_cache_clear($argument, $cache) {
  */
 function panelizer_panels_cache_save($argument, $cache) {
   list($type, $key) = explode(':', $argument, 2);
-  // @todo -- must fix this so IPE works.
-  return;
+  $type = $entity_type;
+  if ($entity_type == 'default') {
+    list($entity_type, $bundle, $name) = @explode(':', $key, 3);
+    $get_default = TRUE;
+  }
 
-  switch ($type) {
-    case 'default':
-      $panelizer = panelizer_load_default($key);
-      $panelizer->display = $cache->display;
-      ctools_include('export');
-      ctools_export_crud_save('panelizer_defaults', $panelizer);
-      break;
-    case 'node':
-      ctools_include('node', 'panelizer');
-      $panelizer = panelizer_load_node_panelizer($key);
-      $panelizer->display = $cache->display;
-      panelizer_save_node_panelizer($panelizer);
-      break;
-    case 'user':
+  $handler = panelizer_entity_plugin_get_handler($entity_type);
+  if (!$handler) {
+    return;
+  }
+
+  if ($get_default) {
+    $panelizer = $handler->get_default_panelizer_object($bundle, $name);
+    $panelizer->display = $cache->display;
+    ctools_include('export');
+    ctools_export_crud_save('panelizer_defaults', $panelizer);
+  }
+  else {
+    $entities = entity_load($entity_type, array($key));
+    if ($entities[$key] && $entities[$key]->panelizer) {
+      $entities[$key]->panelizer = $cache->display;
+      $handler->entity_save($entities[$key]);
+    }
   }
 }
 
