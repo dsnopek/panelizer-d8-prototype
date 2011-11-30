@@ -118,7 +118,7 @@ interface PanelizerEntityInterface {
   public function entity_allows_revisions($entity);
 
   /**
-   * Get the visible identifier if the identity.
+   * Get the visible identifier of the identity.
    *
    * This is overridable because it can be a bit awkward using the
    * default label.
@@ -127,6 +127,17 @@ interface PanelizerEntityInterface {
    *   A translated, safe string.
    */
   public function entity_identifier($entity);
+
+  /**
+   * Get the name of bundles on the entity.
+   *
+   * Entity API doesn't give us a way to determine this, so the class must
+   * do this.
+   *
+   * @return
+   *   A translated, safe string.
+   */
+  public function entity_bundle_label();
 
 }
 
@@ -944,13 +955,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    * This is primarily to allow bundle selection per entity type.
    */
   public function settings_form(&$form, &$form_state) {
-
     // Add entity settings
     // @todo change theme function name
     $form['entities'][$this->entity_type] = array(
       '#theme' => 'panelizer_settings_page_table',
       '#header' => array(
-        t('Node type'),
+        array('data' => $this->entity_bundle_label(), 'width' => '15%'),
         t('Panelize'),
         t('Provide default panel'),
         t('Allow panel choice'),
@@ -1031,7 +1041,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       );
 
       // Panelize is enabled and a default panel will be provided
-      if (!empty($settings['default']) && empty($settings['choice'])) {
+      if (!empty($settings['status']) && !empty($settings['default']) && empty($settings['choice'])) {
         $links_array = array(
           'settings' => array(
             'title' => t('settings'),
@@ -1065,13 +1075,14 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#title' => $links,
         '#states' => array(
           'visible' => array(
+            $base_id . '-status' => array('checked' => TRUE),
             $base_id . '-default' => array('checked' => TRUE),
             $base_id . '-choice' => array('checked' => FALSE),
           ),
         ),
       );
 
-      if (!empty($settings['choice'])) {
+      if (!empty($settings['status']) && !empty($settings['choice'])) {
         $links_array = array(
           'list' => array(
             'title' => t('list'),
@@ -1093,6 +1104,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#title' => $links,
         '#states' => array(
           'visible' => array(
+            $base_id . '-status' => array('checked' => TRUE),
             $base_id . '-choice' => array('checked' => TRUE),
           ),
         ),
@@ -1230,12 +1242,27 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     $entity_info = entity_get_info($this->entity_type);
     return t('This @entity', array('@entity' => $entity_info['label']));
   }
+
   // Admin screens use a title callback for admin pages. This is used
   // to fill in that title.
   public function get_bundle_title($bundle) {
     $entity_info = entity_get_info($this->entity_type);
 
     return isset($entity_info['bundles'][$bundle]['label']) ? $entity_info['bundles'][$bundle]['label'] : '';
+  }
+
+  /**
+   * Get the name of bundles on the entity.
+   *
+   * Entity API doesn't give us a way to determine this, so the class must
+   * do this.
+   *
+   * @return
+   *   A translated, safe string.
+   */
+  public function entity_bundle_label() {
+    $entity_info = entity_get_info($this->entity_type);
+    return t('@entity bundle', array('@entity' => $entity_info['label']));
   }
 
 }

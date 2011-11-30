@@ -31,6 +31,10 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     return t('This node');
   }
 
+  public function entity_bundle_label() {
+    return t('Node type');
+  }
+
   /**
    * Implement the save function for the entity.
    */
@@ -49,14 +53,24 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
   public function settings_form(&$form, &$form_state) {
     parent::settings_form($form, $form_state);
 
-    $task = page_manager_get_task('node_view');
-    if (!empty($task->disabled)) {
-      drupal_set_message('The node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
+    $warn = FALSE;
+    foreach ($this->plugin['bundles'] as $info) {
+      if (!empty($info['status'])) {
+        $warn = TRUE;
+        break;
+      }
     }
 
-    $handler = page_manager_load_task_handler($task, '', 'node_view_panelizer');
-    if (!empty($handler->disabled)) {
-      drupal_set_message('The panelizer variant on the node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
+    if ($warn) {
+      $task = page_manager_get_task('node_view');
+      if (!empty($task->disabled)) {
+        drupal_set_message('The node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
+      }
+
+      $handler = page_manager_load_task_handler($task, '', 'node_view_panelizer');
+      if (!empty($handler->disabled)) {
+        drupal_set_message('The panelizer variant on the node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
+      }
     }
   }
 

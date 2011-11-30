@@ -5,20 +5,20 @@
  */
 
 /**
- * Panelizer Entity taxonomy term plugin class.
+ * Panelizer Entity user plugin class.
  *
- * Handles term specific functionality for Panelizer.
+ * Handles user specific functionality for Panelizer.
  */
-class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
+class PanelizerEntityUser extends PanelizerEntityDefault {
 
   public function entity_access($op, $entity) {
     // This must be implemented by the extending class.
     if ($op == 'update' || $op == 'delete') {
-      return taxonomy_term_edit_access($entity);
+      return user_edit_access($entity);
     }
 
     if ($op == 'view') {
-      return TRUE;
+      return user_view_access($entity);
     }
 
     return FALSE;
@@ -28,7 +28,8 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
    * Implement the save function for the entity.
    */
   public function entity_save($entity) {
-    taxonomy_term_save($entity);
+    // IMPORTANT NOTE: this can *only* update panelizer items!
+    user_save($entity, array('panelizer' => $entity->panelizer));
   }
 
   /**
@@ -36,39 +37,30 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
    */
   public function entity_allows_revisions($entity) {
     return array(FALSE, FALSE);
-
   }
 
   public function settings_form(&$form, &$form_state) {
     parent::settings_form($form, $form_state);
 
-    $warn = FALSE;
-    foreach ($this->plugin['bundles'] as $info) {
-      if (!empty($info['status'])) {
-        $warn = TRUE;
-        break;
-      }
-    }
-
-    if ($warn) {
-      $task = page_manager_get_task('term_view');
+    if (!empty($this->plugin['bundles']['user'])) {
+      $task = page_manager_get_task('user_view');
       if (!empty($task->disabled)) {
-        drupal_set_message('The taxonomy term template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize taxonomy terms.', 'warning');
+        drupal_set_message('The user template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize users.', 'warning');
       }
 
-      $handler = page_manager_load_task_handler($task, '', 'term_view_panelizer');
+      $handler = page_manager_load_task_handler($task, '', 'user_view_panelizer');
       if (!empty($handler->disabled)) {
-        drupal_set_message('The panelizer variant on the taxonomy term template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize taxonomy terms.', 'warning');
+        drupal_set_message('The panelizer variant on the user template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize users.', 'warning');
       }
     }
   }
 
   public function entity_identifier($entity) {
-    return t('This taxonomy term');
+    return t('This user');
   }
 
   public function entity_bundle_label() {
-    return t('Taxonomy vocabulary');
+    return t('User');
   }
 
   function get_default_display() {
@@ -87,13 +79,13 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
     $handler = new stdClass;
     $handler->disabled = FALSE; /* Edit this to true to make a default handler disabled initially */
     $handler->api_version = 1;
-    $handler->name = 'term_view_panelizer';
-    $handler->task = 'term_view';
+    $handler->name = 'user_view_panelizer';
+    $handler->task = 'user_view';
     $handler->subtask = '';
     $handler->handler = 'panelizer_node';
     $handler->weight = -100;
     $handler->conf = array();
-    $handlers['term_view_panelizer'] = $handler;
+    $handlers['user_view_panelizer'] = $handler;
 
     return $handlers;
   }

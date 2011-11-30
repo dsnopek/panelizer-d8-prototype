@@ -75,18 +75,11 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
     return FALSE;
   }
 
-  if (empty($context->data)) {
+  if (empty($context->data->panelizer->entity_type)) {
     return FALSE;
   }
 
-  if (strpos($context->plugin, ':') === FALSE) {
-    return FALSE;
-  }
-
-  list($plugin_type, $entity_type) = explode(':', $context->plugin);
-  if ($plugin_type != 'entity') {
-    return FALSE;
-  }
+  $entity_type = $context->data->panelizer->entity_type;
 
   if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
     return $handler->render_entity($context->data, $args);
