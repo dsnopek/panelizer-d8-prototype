@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * This is the task handler plugin to handle node_view.
+ * This is the task handler plugin to handle an entity view.
  */
 
 // Plugin definition
@@ -43,7 +43,7 @@ function panelizer_panelizer_task_admin_summary($handler, $task, $subtask, $page
     $output .= '</div>';
   }
 
-  $access = t('This variant will be selected if the node being viewed is panelized. This variant must be enabled and selected for panelizer to work!');
+  $access = t('This variant will be selected if the entity being viewed is panelized. This variant must be enabled and selected for panelizer to work!');
 
   $rows[] = array(
     array(
@@ -64,33 +64,40 @@ function panelizer_panelizer_task_admin_summary($handler, $task, $subtask, $page
 }
 
 /**
- * Render a node that has been panelized.
+ * Render a entity that has been panelized.
  */
 function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test = TRUE) {
-  // The node this is for should always be the first context available. If
-  // this is not a node, bail. This should allow us to be used on things
-  // that aren't node_view if, for some weird reason, people want to.
-  if (empty($base_contexts)) {
-    return;
-  }
-
+  // Get the context this is viewing; figure out what entity it is and load
+  // the right plugin.
+  ctools_include('context');
   $context = reset($base_contexts);
-  if (empty($context->data)) {
-    return;
+  if (!$context) {
+    return FALSE;
   }
 
-  // Extract the node from the context so we can load the panelizer.
-  $node = &$context->data;
+  if (empty($context->data)) {
+    return FALSE;
+  }
 
-  // Load the panelizer and render the display.
-  ctools_include('node', 'panelizer');
-  return panelizer_render_node($node, $args);
+  if (strpos($context->plugin, ':') === FALSE) {
+    return FALSE;
+  }
+
+  list($plugin_type, $entity_type) = explode(':', $context->plugin);
+  if ($plugin_type != 'entity') {
+    return FALSE;
+  }
+
+  if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
+    $context->data->panelizer->base_contexts = $base_contexts;
+    return $handler->render_entity($context->data, $args);
+  }
 }
 
 /**
  * Determine if the panelizer task handler should fire.
  *
- * This returns true if the configured node is panelized and has
+ * This returns true if the configured entity is panelized and has
  * a display.
  */
 function panelizer_panelizer_task_test($handler, $base_contexts) {
@@ -103,18 +110,6 @@ function panelizer_panelizer_task_test($handler, $base_contexts) {
     return;
   }
 
-  $node = &$context->data;
-  ctools_include('node', 'panelizer');
-  $panelizer = panelizer_load_node_panelizer($node);
-  if (empty($panelizer)) {
-    return FALSE;
-  }
-
-  // Load the display
-  $display = panelizer_load_display($panelizer);
-  if (empty($display)) {
-    return FALSE;
-  }
-
-  return TRUE;
+  $entity = &$context->data;
+  return !empty($entity->panelizer->display);
 }

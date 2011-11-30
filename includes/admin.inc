@@ -5,6 +5,117 @@
  */
 
 /**
+ * Delegated hook_menu for admin
+ *
+ * Since most of hook_menu is delegated to plugins anyway, the admin menu
+ * is delegated here to reduce code weight.
+ */
+function panelizer_admin_hook_menu(&$items) {
+  // @todo -- delegate these to admin.inc
+  // Configure settings pages.
+  $settings_base = array(
+    'access arguments' => array('administer panelizer'),
+    'file' => 'includes/admin.inc',
+  );
+
+  $items['admin/config/content/panelizer'] = array(
+    'title' => 'Panelizer',
+    'description' => 'Configure panelizer availability and defaults',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('panelizer_settings_page_form'),
+    'type' => MENU_NORMAL_ITEM,
+  ) + $settings_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%'] = array(
+    'title callback' => 'panelizer_default_title_callback',
+    'title arguments' => array(4, 5),
+    'page callback' => 'panelizer_allowed_content_page',
+    'page arguments' => array(4, 5),
+    'type' => MENU_CALLBACK,
+  ) + $settings_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/allowed'] = array(
+    'title' => 'Available content',
+    'page callback' => 'panelizer_allowed_content_page',
+    'page arguments' => array(4, 5),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -10,
+  ) + $settings_base;
+
+  $tabs_base = array(
+    'access callback' => 'panelizer_has_no_choice_callback',
+    'access arguments' => array(4, 5),
+    'page arguments' => array(4, 5, 'default'),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/admin.inc',
+  );
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/settings'] = array(
+    'title' => 'Settings',
+    'page callback' => 'panelizer_default_settings_page',
+    'weight' => -5,
+  ) + $tabs_base;
+
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/context'] = array(
+    'title' => 'Contexts',
+    'page callback' => 'panelizer_default_context_page',
+    'weight' => -4,
+  ) + $tabs_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/layout'] = array(
+    'title' => 'Layout',
+    'page callback' => 'panelizer_default_layout_page',
+    'weight' => -3,
+  ) + $tabs_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/content'] = array(
+    'title' => 'Content',
+    'page callback' => 'panelizer_default_content_page',
+    'weight' => -2,
+  ) + $tabs_base;
+
+  $subtabs_base = array(
+    'access callback' => 'panelizer_has_choice_callback',
+    'access arguments' => array(4, 5, 7),
+    'page arguments' => array(4, 5, 7),
+    'type' => MENU_LOCAL_TASK,
+    'file' => 'includes/admin.inc',
+  );
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/list/%'] = array(
+    'title' => 'Settings',
+    'page callback' => 'panelizer_default_settings_page',
+    'title callback' => 'panelizer_default_name_title_callback',
+    'type' => MENU_CALLBACK,
+  ) + $subtabs_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/list/%/settings'] = array(
+    'title' => 'Settings',
+    'page callback' => 'panelizer_default_settings_page',
+    'weight' => -5,
+  ) + $subtabs_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/list/%/context'] = array(
+    'title' => 'Contexts',
+    'page callback' => 'panelizer_default_context_page',
+    'weight' => -4,
+  ) + $subtabs_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/list/%/layout'] = array(
+    'title' => 'Layout',
+    'page callback' => 'panelizer_default_layout_page',
+    'weight' => -3,
+  ) + $subtabs_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/list/%/content'] = array(
+    'title' => 'Content',
+    'page callback' => 'panelizer_default_content_page',
+    'weight' => -2,
+  ) + $subtabs_base;
+}
+
+/**
  * Primary settings page.
  *
  * This settings page allows the administrator to select which node types
@@ -12,146 +123,16 @@
  * edit those defaults.
  */
 function panelizer_settings_page_form($form, &$form_state) {
-  ctools_include('dependent');
-  $form = array();
-  $task = page_manager_get_task('node_view');
-  if (!empty($task->disabled)) {
-      drupal_set_message('The node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
-  }
+  $form['entities'] = array('#tree' => TRUE);
 
-  $handler = page_manager_load_task_handler($task, '', 'node_view_panelizer');
-  if (!empty($handler->disabled)) {
-      drupal_set_message('The panelizer variant on the node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes.', 'warning');
-  }
-
-  $form['types'] = array('#tree' => TRUE);
-
-  // Add 'node' settings
-  $form['types']['node'] = array(
-    '#theme' => 'panelizer_node_settings_page_form',
-  );
-
-  $types = node_type_get_names();
-  $context = 'node';
-  drupal_alter('panelizer_default_types', $types, $context);
-
-  foreach ($types as $type => $title) {
-    $base_id = str_replace(array('][', '_', ' '), '-', '#edit-types-node-' . $type);
-    $base_url = 'admin/config/content/panelizer/node/' . $type;
-
-    $settings = variable_get('panelizer_defaults_node_' . $type, array());
-
-    $form['types']['node'][$type]['title'] = array(
-      '#markup' => $title,
-    );
-
-    $form['types']['node'][$type]['status'] = array(
-      '#type' => 'checkbox',
-      '#default_value' => !empty($settings['status']),
-    );
-
-    $form['types']['node'][$type]['default'] = array(
-      '#type' => 'checkbox',
-      '#default_value' => !empty($settings['default']),
-      '#states' => array(
-        'visible' => array(
-          $base_id . '-status' => array('checked' => TRUE),
-        ),
-      ),
-    );
-
-    $form['types']['node'][$type]['choice'] = array(
-      '#type' => 'checkbox',
-      '#default_value' => !empty($settings['choice']),
-      '#status' => array(
-        'visible' => array(
-          $base_id . '-status' => array('checked' => TRUE),
-        ),
-      ),
-      '#access' => FALSE, // Allowing a choice is currently disabled
-    );
-
-    $form['types']['node'][$type]['links'] = array(
-      '#prefix' => '<div class="container-inline">',
-      '#suffix' => '</div>',
-    );
-
-    // Panelize is on all content types get this option
-    $links = array(
-      'settings' => array(
-        'title' => t('allowed content'),
-        'href' => $base_url . '/allowed',
-      ),
-    );
-
-    $form['types']['node'][$type]['links']['basic'] = array(
-      '#type' => 'item',
-      '#title' => theme('links', array(
-        'links' => $links,
-        'attributes' => array('class' => 'links inline'),
-      )),
-      '#states' => array(
-        'visible' => array(
-          $base_id . '-status' => array('checked' => TRUE),
-        ),
-      ),
-    );
-
-    // Panelize is enabled and a default panel will be provided
-    $links = array(
-      'settings' => array(
-        'title' => t('settings'),
-        'href' => $base_url . '/settings',
-      ),
-      'context' => array(
-        'title' => t('context'),
-        'href' => $base_url . '/context',
-      ),
-      'layout' => array(
-        'title' => t('layout'),
-        'href' => $base_url . '/layout',
-      ),
-      'content' => array(
-        'title' => t('content'),
-        'href' => $base_url . '/content',
-      ),
-    );
-
-    $form['types']['node'][$type]['links']['default'] = array(
-      '#type' => 'item',
-      '#title' => theme('links', array(
-        'links' => $links,
-        'attributes' => array('class' => 'links inline'),
-      )),
-      '#states' => array(
-        'visible' => array(
-          $base_id . '-default' => array('checked' => TRUE),
-        ),
-      ),
-    );
-
-    /*
-    $links = array(
-      'list' => array(
-        'title' => t('list'),
-        'href' => $base_url . '/list',
-      ),
-    );
-
-    $form['types']['node'][$type]['links']['default2'] = array(
-      '#type' => 'item',
-      '#title' => theme('links', array(
-        'links' => $links,
-        'attributes' => array('class' => 'links inline'),
-      )),
-      '#states' => array(
-        'visible' => array(
-          $base_id . '-status' => array('checked' => TRUE),
-          $base_id . '-choice' => array('checked' => TRUE),
-        ),
-      ),
-    );
-    */
+  $plugins = panelizer_get_entity_plugins();
+  foreach ($plugins as $entity_type => $plugin) {
+    $entity_info = entity_get_info($entity_type);
+    if ($entity_info) {
+      if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
+        $handler->settings_form($form, $form_state);
+      }
+    }
   }
 
   $form['submit'] = array(
@@ -167,25 +148,21 @@ function panelizer_settings_page_form($form, &$form_state) {
  *
  * We want our checkboxes to show up in a table.
  */
-function theme_panelizer_node_settings_page_form($variables) {
-  $element = $variables['form'];
+function theme_panelizer_settings_page_table($variables) {
+  $element = $variables['element'];
 
-  // Render the 'node' table
-  $header = array(
-    t('Node type'),
-    t('Panelize'),
-    t('Provide default panel'),
-    t('Operations'),
-  );
+  // Render the table
+  $header = $element['#header'];
+  $columns = $element['#columns'];
 
   $rows = array();
-  foreach (element_children($element) as $type) {
-    $rows[] = array(
-      drupal_render($element[$type]['title']),
-      drupal_render($element[$type]['status']),
-      drupal_render($element[$type]['default']),
-      drupal_render($element[$type]['links']),
-    );
+  foreach (element_children($element) as $bundle) {
+    $row = array();
+    foreach ($columns as $column) {
+      $row[] = drupal_render($element[$bundle][$column]);
+    }
+
+    $rows[] = $row;
   }
 
   $output = theme('table', array('header' => $header, 'rows' => $rows));
@@ -195,43 +172,51 @@ function theme_panelizer_node_settings_page_form($variables) {
   return $output;
 }
 
-/**
- * Submit callback for the main panelizer settings form.
- */
-function panelizer_settings_page_form_submit($form, &$form_state) {
-  $types = $form_state['values']['types'];
-
-  foreach ($types as $entity => $bundles) {
-    foreach ($bundles as $bundle => $values) {
-      variable_set('panelizer_defaults_' . $entity . '_' . $bundle, $values);
+function panelizer_settings_page_form_validate($form, &$form_state) {
+  $plugins = panelizer_get_entity_plugins();
+  foreach ($plugins as $entity_type => $plugin) {
+    $entity_info = entity_get_info($entity_type);
+    if ($entity_info) {
+      if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
+        $handler->settings_form_validate($form, $form_state);
+      }
     }
   }
+}
+
+function panelizer_settings_page_form_submit($form, &$form_state) {
+  $plugins = panelizer_get_entity_plugins();
+  foreach ($plugins as $entity_type => $plugin) {
+    $entity_info = entity_get_info($entity_type);
+    if ($entity_info) {
+      if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
+        $handler->settings_form_submit($form, $form_state);
+      }
+    }
+  }
+
+  // Ensure that defaults get cached to recognize new settings immediately.
+  drupal_flush_all_caches();
 }
 
 /**
  * Page to configure what content is available for a given node type.
  */
-function panelizer_allowed_content_page($type, $key) {
-  if (!panelizer_is_panelized($type, $key)) {
+function panelizer_allowed_content_page($handler, $bundle) {
+  if (!$handler->is_panelized($bundle)) {
     return MENU_NOT_FOUND;
   }
 
   ctools_include('common', 'panels');
-  return drupal_get_form('panels_common_settings', 'panelizer_' . $type . ':' . $key);
+  return drupal_get_form('panels_common_settings', 'panelizer_' . $handler->entity_type . ':' . $bundle);
 }
 
-/**
- * Page to list available panelizer defaults for a given type and key combo.
- */
-function panelizer_default_list_page($type, $key) {
-  return 'placeholder';
-}
 
 /**
  * Page to configure basic settings for a panelizer default.
  */
-function panelizer_default_settings_page($type, $key, $name) {
-  $panelizer = panelizer_load_default($type, $key, $name);
+function panelizer_default_settings_page($handler, $bundle, $name) {
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;
   }
@@ -241,6 +226,10 @@ function panelizer_default_settings_page($type, $key, $name) {
     'no_redirect' => TRUE,
     'reset button' => TRUE,
   );
+
+  if ($handler->has_panel_choice($bundle)) {
+    $form_state['has title'] = TRUE;
+  }
 
   ctools_include('common', 'panelizer');
   $output = drupal_build_form('panelizer_settings_form', $form_state);
@@ -278,8 +267,8 @@ function panelizer_delete_panelizer_defaults($panelizer) {
 /**
  * Page to configure what content is available for a given node type.
  */
-function panelizer_default_context_page($type, $key, $name) {
-  $cache_key = $type . ':' . $key . ':' . $name;
+function panelizer_default_context_page($handler, $bundle, $name) {
+  $cache_key = $handler->entity_type . ':' . $bundle . ':' . $name;
   $panelizer = panelizer_context_cache_get('default', $cache_key);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;
@@ -288,7 +277,6 @@ function panelizer_default_context_page($type, $key, $name) {
   $form_state = array(
     'panelizer' => &$panelizer,
     'panelizer type' => 'default',
-    'panelizer id' => $type,
     'cache key' => $cache_key,
     'no_redirect' => TRUE,
   );
@@ -315,31 +303,35 @@ function panelizer_default_context_page($type, $key, $name) {
 /**
  * Pass through to the panels layout editor.
  */
-function panelizer_default_layout_page($type, $key, $name) {
-  $panelizer = panelizer_load_default($type, $key, $name);
+function panelizer_default_layout_page($handler, $bundle, $name, $step = NULL, $layout = NULL) {
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;
   }
 
-  $display = panelizer_load_display($panelizer);
+  $display = $panelizer->display;
+  $display->context = $handler->get_contexts($panelizer);
 
-  ctools_include('context');
-  $display->context = panelizer_get_contexts($panelizer);
-  $output = panels_edit_layout($display, t('Save'), '', 'panelizer_' . $type . ':' . $key);
-  if (is_object($output)) {
-    // The display was already saved, but if we were given a did, that
-    // needs to be saved too.
-    if ($panelizer->did != $output->did) {
-      ctools_include('export');
-      $panelizer->did = $output->did;
-      // Ensure we don't try to write again:
-      if (isset($panelizer->display)) {
-        unset($panelizer->display);
-      }
+  if ($name == 'default' && $handler->has_default_panel($bundle)) {
+    $path = 'admin/config/content/panelizer/' . $handler->entity_type . '/' . $bundle;
+  }
+  else {
+    $path = 'admin/config/content/panelizer/' . $handler->entity_type . '/' . $bundle . '/' . $name;
+  }
 
-      ctools_export_crud_save('panelizer_defaults', $panelizer);
-    }
-    drupal_goto($_GET['q']);
+  $form_state = array(
+    'display' => $display,
+    'wizard path' => $path . '/layout/%step',
+    'allowed_layouts' => 'panelizer_' . $handler->entity_type . ':' . $bundle,
+  );
+
+  ctools_include('common', 'panelizer');
+  $output = panelizer_change_layout_wizard($form_state, $step, $layout);
+  if (!empty($form_state['complete'])) {
+    $panelizer->display = $form_state['display'];
+    ctools_export_crud_save('panelizer_defaults', $panelizer);
+    drupal_set_message(t('The layout has been changed.'));
+    drupal_goto($path . '/content');
   }
 
   return $output;
@@ -348,38 +340,37 @@ function panelizer_default_layout_page($type, $key, $name) {
 /**
  * Pass through to the panels content editor.
  */
-function panelizer_default_content_page($type, $key, $name) {
-  $panelizer = panelizer_load_default($type, $key, $name);
+function panelizer_default_content_page($handler, $bundle, $name) {
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;
   }
 
-  $cache = panels_edit_cache_get('panelizer:default:' . $type . ':' . $key . ':' . $name);
+  $cache_key = 'panelizer:default:' . $handler->entity_type . ':' . $bundle . ':' . $name;
 
-  ctools_include('plugins', 'panels');
-  ctools_include('display-edit', 'panels');
-  ctools_include('context');
-  $renderer = panels_get_renderer_handler('editor', $cache->display);
-  $renderer->cache = $cache;
+  $form_state = array(
+    'display cache' => panels_edit_cache_get($cache_key),
+    'no_redirect' => TRUE,
+  );
 
-  $output = $renderer->edit();
-  if (is_object($output)) {
-    // The display was already saved, but if we were given a did, that
-    // needs to be saved too.
-
-    if ($panelizer->did != $output->did) {
-      ctools_include('export');
-      $panelizer->did = $output->did;
-      // Ensure we don't try to write again:
-      if (isset($panelizer->display)) {
-        unset($panelizer->display);
-      }
-
+  ctools_include('common', 'panelizer');
+  $output = drupal_build_form('panelizer_edit_content_form', $form_state);
+  if (!empty($form_state['executed'])) {
+    if (!empty($form_state['clicked_button']['#save-display'])) {
+      drupal_set_message(t('The settings have been updated.'));
+      $panelizer->display = $form_state['display'];
       ctools_export_crud_save('panelizer_defaults', $panelizer);
     }
-    panels_edit_cache_clear($cache);
+    else {
+      drupal_set_message(t('Changes have been discarded.'));
+    }
+
+    panels_edit_cache_clear($form_state['display cache']);
     drupal_goto($_GET['q']);
   }
 
-  return $output;
+  ctools_set_no_blocks(FALSE);
+  drupal_set_page_content($output);
+  $page = element_info('page');
+  return $page;
 }

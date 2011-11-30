@@ -84,7 +84,7 @@ function panelizer_schema_1() {
     ),
   );
 
-  $schema['panelizer_node'] = array(
+  $schema['panelizer_entity'] = array(
     'export' => array(
       'bulk export' => FALSE,
       'can disable' => FALSE,
@@ -92,11 +92,21 @@ function panelizer_schema_1() {
     ),
     'description' => 'Node panelizer references.',
     'fields' => array(
-      'nid' => array(
+      'entity_type' => array(
+        'description' => 'The type of the entity this panel is attached to.',
+        'type' => 'varchar',
+        'length' => 255,
+      ),
+      'entity_id' => array(
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0,
-        'description' => 'The node ID this panel is attached to.',
+        'description' => 'The entity ID this panel is attached to.',
+      ),
+      'revision_id' => array(
+        'description' => 'The revision id of the entity.',
+        'type' => 'int',
+        'unsigned' => TRUE,
       ),
       'name' => array(
         'type' => 'varchar',
@@ -104,7 +114,7 @@ function panelizer_schema_1() {
         'description' => 'The name of the default being used if there is one.',
       ),
     ) + $common_fields,
-    'primary key' => array('nid'),
+    'primary key' => array('entity_type', 'entity_id', 'revision_id'),
   );
 
   $schema['panelizer_defaults'] = array(
@@ -113,6 +123,7 @@ function panelizer_schema_1() {
       'primary key' => 'pnid',
       'key' => 'name',
       'key name' => 'Name',
+      'admin_title' => 'title',
       'identifier' => 'panelizer',
       'default hook' => 'panelizer_defaults',
       'api' => array(
@@ -125,6 +136,7 @@ function panelizer_schema_1() {
       'save callback' => 'panelizer_export_save_callback',
       'export callback' => 'panelizer_export_export_callback',
       'delete callback' => 'panelizer_export_delete_callback',
+      'subrecords callback' => 'panelizer_export_delete_callback_subrecords',
     ),
     'fields' => array(
       'pnid' => array(
@@ -145,12 +157,12 @@ function panelizer_schema_1() {
       'panelizer_type' => array(
         'type' => 'varchar',
         'length' => '32',
-        'description' => 'The panelizer type, such as node or user.',
+        'description' => 'The panelizer entity type, such as node or user.',
       ),
       'panelizer_key' => array(
         'type' => 'varchar',
         'length' => '128',
-        'description' => 'The panelizer key, such as node type or user role.',
+        'description' => 'The panelizer entity bundle.',
       ),
     ) + $common_fields,
     'primary key' => array('pnid'),
@@ -191,7 +203,7 @@ function panelizer_uninstall() {
 }
 
 /**
- * Implements hook_update_N().
+ * Update the panelizer variable to be more feature module friendly.
  */
 function panelizer_update_7100() {
   $panelizer_defaults = variable_get('panelizer_defaults', array());
@@ -205,4 +217,68 @@ function panelizer_update_7100() {
   }
 
   variable_del('panelizer_defaults');
+  return t('Updated panelizer variables.');
+}
+
+/**
+ * Update the panelizer node table to be the panelizer entity table.
+ */
+function panelizer_update_7101() {
+  // Rename the table.
+  db_rename_table('panelizer_node', 'panelizer_entity');
+
+  // Remove the primary key.
+  db_drop_primary_key('panelizer_entity');
+
+  // Add the entity type.
+  $entity_type = array(
+    'description' => 'The type of the entity this panel is attached to.',
+    'type' => 'varchar',
+    'length' => 255,
+  );
+
+  db_add_field('panelizer_entity', 'entity_type', $entity_type);
+
+  // Rename nid to entity_id.
+  $entity_id = array(
+    'type' => 'int',
+    'not null' => TRUE,
+    'default' => 0,
+    'description' => 'The entity ID this panel is attached to.',
+  );
+
+  db_change_field('panelizer_entity', 'nid', 'entity_id', $entity_id);
+
+  // Update the entity_type field to 'node' since all pre-existing
+  // panelizer objects are nodes.
+  db_update('panelizer_entity')
+    ->fields(array('entity_type' => 'node'))
+    ->execute();
+
+  // Add the new index
+  db_add_primary_key('panelizer_entity', array('entity_type', 'entity_id'));
+}
+
+/**
+ * Add revision support.
+ */
+function panelizer_update_7102() {
+  // Remove the primary key.
+  db_drop_primary_key('panelizer_entity');
+
+  // Add the entity type.
+  $revision_id = array(
+    'description' => 'The revision id of the entity.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+  );
+
+  db_add_field('panelizer_entity', 'revision_id', $revision_id);
+
+  db_query("UPDATE {panelizer_entity} pe LEFT JOIN {node} n ON pe.entity_id = n.nid SET pe.revision_id = n.nid");
+
+  // Add the new index
+  db_add_primary_key('panelizer_entity', array('entity_type', 'entity_id', 'revision_id'));
+
+  return t('Added revision support.');
 }
