@@ -116,12 +116,29 @@ interface PanelizerEntityInterface {
    *   the user can control whether or not a revision is created.
    */
   public function entity_allows_revisions($entity);
+
+  /**
+   * Get the visible identifier if the identity.
+   *
+   * This is overridable because it can be a bit awkward using the
+   * default label.
+   *
+   * @return
+   *   A translated, safe string.
+   */
+  public function entity_identifier($entity);
+
 }
 
 /**
  * Base class for the Panelizer Entity plugin.
  */
 abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
+  /**
+   * True if the entity supports revisions.
+   */
+  public $supports_revisions = FALSE;
+
   /**
    * The plugin metadata.
    */
@@ -274,7 +291,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     foreach ($entities as $entity) {
       list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
       if ($this->is_panelized($bundle)) {
-        $ids[] = $revision_id;
+        $ids[] = $this->supports_revisions ? $revision_id : $entity_id;
         $bundles[$entity_id] = $bundle;
       }
     }
@@ -284,8 +301,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     // Load all the panelizers associated with the list of entities.
-    $panelizers = db_query("SELECT * FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND revision_id IN (:ids)", array(':ids' => $ids))->fetchAllAssoc('entity_id');
-
+    if ($this->supports_revisions) {
+      $panelizers = db_query("SELECT * FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND revision_id IN (:ids)", array(':ids' => $ids))->fetchAllAssoc('entity_id');
+    }
+    else {
+      $panelizers = db_query("SELECT * FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id IN (:ids)", array(':ids' => $ids))->fetchAllAssoc('entity_id');
+    }
     $defaults = array();
     $dids = array();
     // Go through our entity list and generate a list of defaults and displays
@@ -397,17 +418,32 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       return;
     }
 
+    if ($this->supports_revisions) {
+      if (empty($entity->panelizer->revision_id) || $entity->panelizer->revision_id != $revision_id) {
+        $update = array();
+      }
+      else {
+        $update = array('entity_type', 'revision_id');
+      }
+    }
+    else {
+      if (empty($entity->panelizer->entity_id)) {
+        $update = array();
+      }
+      else {
+        $update = array('entity_type');
+      }
+    }
+
     // The editor will set this flag if the display is modified. This lets
     // us know if we need to clone a new display or not.
     // NOTE: This means that when exporting or deploying, we need to be sure
     // to set the display_is_modified flag to ensure this gets written.
     if (!empty($entity->panelizer->display_is_modified)) {
-      if (empty($entity->panelizer->revision_id) || $entity->panelizer->revision_id != $revision_id) {
-        $update = array();
+      if (!$update) {
         $panelizer = $this->clone_panelizer($entity->panelizer, $entity);
       }
       else {
-        $update = array('entity_type', 'revision_id');
         $panelizer = $entity->panelizer;
       }
 
@@ -424,17 +460,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       return drupal_write_record('panelizer_entity', $panelizer, $update);
     }
     else {
-      // If the panelizer has no revision id or if it's different, this is new.
-      if (empty($entity->panelizer->revision_id) || $entity->panelizer->revision_id != $revision_id) {
-        $update = array();
-      }
-      else {
-        $update = array('entity_type', 'revision_id');
-      }
-
       $entity->panelizer->entity_type = $this->entity_type;
       $entity->panelizer->entity_id = $entity_id;
-      $entity->panelizer->revision_id = $revision_id;
+      // The (int) ensures that entities that do not support revisions work
+      // since the revision_id cannot be NULL.
+      $entity->panelizer->revision_id = (int) $revision_id;
       drupal_write_record('panelizer_entity', $entity->panelizer, $update);
     }
   }
@@ -569,7 +599,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     $panelizer_clone->name = NULL;
     $panelizer_clone->entity_type = $this->entity_type;
     $panelizer_clone->entity_id = $entity_id;
-    $panelizer_clone->revision_id = $revision_id;
+    // The (int) ensures that entities that do not support revisions work
+    // since the revision_id cannot be NULL.
+    $panelizer_clone->revision_id = (int) $revision_id;
 
     return $panelizer_clone;
   }
@@ -893,7 +925,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    */
   function get_default_display() {
     // This is a straight up empty display.
-    $display = new panels_display;
+    $display = panels_new_display();
     $display->layout = 'flexible';
     return $display;
   }
@@ -1156,7 +1188,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $panelizer->base_contexts = $this->get_base_contexts($entity);
     }
 
-    return ctools_context_load_contexts($panelizer);
+    $contexts = ctools_context_load_contexts($panelizer);
+    return $contexts;
   }
 
   /**
@@ -1164,8 +1197,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    */
   public function get_base_contexts($entity = NULL) {
     ctools_include('context');
-    $entity_info = entity_get_info($this->entity_type);;
-
     if ($entity) {
       $context = ctools_context_create('entity:' . $this->entity_type, $entity);
     }
@@ -1177,18 +1208,28 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'type' => 'context',
         'conf' => array(
           'name' => $this->entity_type,
-          'identifier' => t('This @entity', array('@entity' => $entity_info['label'])),
+          'identifier' => $this->entity_identifier($entity),
           'keyword' => $this->entity_type,
           'context_settings' => array(),
         ),
       );
     }
 
-    $context->identifier = t('This @entity', array('@entity' => $entity_info['label']));
+    $context->identifier = $this->entity_identifier($entity);
     $context->keyword = $this->entity_type;
     return array('panelizer' => $context);
   }
 
+  /**
+   * Get the visible identifier if the identity.
+   *
+   * This is overridable because it can be a bit awkward using the
+   * default label.
+   */
+  public function entity_identifier($entity) {
+    $entity_info = entity_get_info($this->entity_type);
+    return t('This @entity', array('@entity' => $entity_info['label']));
+  }
   // Admin screens use a title callback for admin pages. This is used
   // to fill in that title.
   public function get_bundle_title($bundle) {

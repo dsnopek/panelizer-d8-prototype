@@ -772,6 +772,8 @@ function panelizer_panels_cache_save($argument, $cache) {
       $handler->entity_save($entities[$key]);
     }
   }
+  panelizer_panels_cache_clear($argument, $cache);
+
 }
 
 // ---------------------------------------------------------------------------

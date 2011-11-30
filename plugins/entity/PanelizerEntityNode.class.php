@@ -10,6 +10,10 @@
  * Handles node specific functionality for Panelizer.
  */
 class PanelizerEntityNode extends PanelizerEntityDefault {
+  /**
+   * True if the entity supports revisions.
+   */
+  public $supports_revisions = TRUE;
 
   public function entity_access($op, $entity) {
     // This must be implemented by the extending clas.
@@ -21,6 +25,10 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
    */
   public function entity_save($entity) {
     node_save($entity);
+  }
+
+  public function entity_identifier($entity) {
+    return t('This node');
   }
 
   /**

@@ -89,7 +89,6 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   }
 
   if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
-    $context->data->panelizer->base_contexts = $base_contexts;
     return $handler->render_entity($context->data, $args);
   }
 }
