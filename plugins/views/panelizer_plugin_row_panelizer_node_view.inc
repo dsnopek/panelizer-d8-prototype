@@ -48,8 +48,10 @@ class panelizer_plugin_row_panelizer_node_view extends views_plugin_row_node_vie
     if (empty($node)) {
       return;
     }
-    ctools_include('node', 'panelizer');
-    $info = panelizer_render_node($node);
+
+    $handler = panelizer_entity_plugin_get_handler('node');
+    $info = $handler->render_entity($node);
+
     if (empty($info)) {
       if (!empty($this->options['render_anything'])) {
         return parent::render($row);
