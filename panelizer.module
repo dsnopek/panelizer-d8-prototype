@@ -76,6 +76,20 @@ function panelizer_menu_alter(&$items) {
 }
 
 /**
+ * Implements hook_admin_paths().
+ */
+function panelizer_admin_paths() {
+  $items = array();
+
+  // Delegate.
+  foreach (panelizer_get_plugins_with_hook('admin_paths') as $handler) {
+    $handler->hook_admin_paths($items);
+  }
+
+  return $items;
+}
+
+/**
  * Implements hook_form_alter().
  */
 function panelizer_form_alter(&$form, &$form_state, $form_id) {

@@ -75,11 +75,13 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
     return FALSE;
   }
 
-  if (empty($context->data->panelizer->entity_type)) {
+  if (empty($context->data->panelizer)) {
     return FALSE;
   }
 
-  $entity_type = $context->data->panelizer->entity_type;
+  $panelizer = $context->data->panelizer;
+  // One of these two will always be set.
+  $entity_type = !empty($panelizer->entity_type) ? $panelizer->entity_type : $panelizer->panelizer_type;
 
   if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
     return $handler->render_entity($context->data, $args);

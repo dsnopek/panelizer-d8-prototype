@@ -18,6 +18,7 @@ interface PanelizerEntityInterface {
   public function hook_menu_alter(&$items);
   public function hook_form_alter(&$form, &$form_state, $form_id);
   public function hook_permission(&$items);
+  public function hook_admin_paths(&$items);
 
   // Entity specific Drupal hooks
   public function hook_entity_load(&$entities);
@@ -282,6 +283,23 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'content'),
         'weight' => 14,
       ) + $base;
+    }
+  }
+
+  /**
+   * Implements a delegated hook_menu.
+   */
+  public function hook_admin_paths(&$items) {
+    if (!empty($this->plugin['entity path'])) {
+      $bits = explode('/', $this->plugin['entity path']);
+      foreach ($bits as $count => $bit) {
+        if (strpos($bit, '%') === 0) {
+          $bits[$count] = '*';
+        }
+      }
+
+      $path = implode('/', $bits);
+      $items[$path . '/panelizer*'] = TRUE;
     }
   }
 
