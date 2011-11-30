@@ -733,7 +733,7 @@ function panelizer_panels_cache_clear($argument, $cache) {
  * Save all changes made to a display using the Page Manager page cache.
  */
 function panelizer_panels_cache_save($argument, $cache) {
-  list($type, $key) = explode(':', $argument, 2);
+  list($entity_type, $key) = explode(':', $argument, 2);
   $type = $entity_type;
   if ($entity_type == 'default') {
     list($entity_type, $bundle, $name) = @explode(':', $key, 3);
@@ -754,7 +754,8 @@ function panelizer_panels_cache_save($argument, $cache) {
   else {
     $entities = entity_load($entity_type, array($key));
     if ($entities[$key] && $entities[$key]->panelizer) {
-      $entities[$key]->panelizer = $cache->display;
+      $entities[$key]->panelizer->display = $cache->display;
+      $entities[$key]->panelizer->display_is_modified = TRUE;
       $handler->entity_save($entities[$key]);
     }
   }
