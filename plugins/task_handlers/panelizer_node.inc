@@ -122,28 +122,29 @@ function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler
     return;
   }
 
-  // Extract the node from the context so we can load the panelizer.
-  $node = &$context->data;
+  // Extract the entity from the context so we can load the panelizer.
+  $entity = &$context->data;
 
-  ctools_include('node', 'panelizer');
-  $panelizer = panelizer_load_node_panelizer($node);
-  if (empty($panelizer)) {
+  if (empty($entity->panelizer) || empty($entity->panelizer->display)) {
     return;
   }
 
   // Load the display
-  $display = panelizer_load_display($panelizer);
-  if (empty($display)) {
+  $display = $entity->panelizer->display;
+  // One of these two will always be set.
+  $entity_type = !empty($panelizer->entity_type) ? $panelizer->entity_type : $panelizer->panelizer_type;
+  $handler = panelizer_entity_plugin_get_handler($entity_type);
+  if (!$handler) {
     return;
   }
 
-  $display->context = panelizer_get_contexts($panelizer, $node);
+  list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
+
+  $display->context = panelizer_get_contexts($panelizer, $);
   $display->args = $arguments;
   $display->css_id = $panelizer->css_id;
 
-  // This means the IPE will use our cache which means it will get appropriate
-  // allowed content should it be selected.
-  $display->cache_key = 'panelizer:node:' . $node->nid;
+  $display->cache_key = implode(':', array('panelizer', $entity_type, $entity_id));
 
   $renderer = panels_get_renderer($panelizer->pipeline, $display);
   if ($type == 'content') {
