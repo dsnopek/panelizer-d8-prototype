@@ -1167,6 +1167,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    *   A fully-loaded entity object controlled by panelizer.
    * @param array $args
    *   Optional array of arguments to pass to the panels display.
+   * @param string $address
+   *   An optional address to send to the renderer to use for addressable
+   *   content.
    *
    * @return array
    *   If the entity isn't panelized, this returns NULL. Otherwise, it returns an
@@ -1175,7 +1178,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    *   - 'no_blocks': Boolean defining if the panels display wants to hide core
    *      blocks or not when being rendered.
    */
-  function render_entity($entity, $args = array()) {
+  function render_entity($entity, $args = array(), $address = NULL) {
     if (empty($entity->panelizer) || empty($entity->panelizer->display)) {
       return FALSE;
     }
@@ -1207,6 +1210,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     ctools_include('plugins', 'panels');
     $renderer = panels_get_renderer($panelizer->pipeline, $display);
+    $renderer->address = $address;
 
     $info = array(
       'content' => panels_render_display($display, $renderer),
