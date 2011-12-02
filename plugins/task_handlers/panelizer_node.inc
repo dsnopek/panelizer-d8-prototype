@@ -86,8 +86,10 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   // One of these two will always be set.
   $entity_type = !empty($panelizer->entity_type) ? $panelizer->entity_type : $panelizer->panelizer_type;
 
-  if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
-    return $handler->render_entity($context->data, $args, $address);
+  $address = implode('::', array('page_manager', $handler->task, $handler->subtask, $handler->name, implode('..', $args)));
+
+  if ($entity_handler = panelizer_entity_plugin_get_handler($entity_type)) {
+    return $entity_handler->render_entity($context->data, $args, $address);
   }
 }
 
@@ -140,7 +142,7 @@ function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler
 
   list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
 
-  $display->context = panelizer_get_contexts($panelizer, $);
+  $display->context = $handler->get_contexts($panelizer, $entity);
   $display->args = $arguments;
   $display->css_id = $panelizer->css_id;
 
