@@ -424,8 +424,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // On entity insert, we only write the display if it is not a default. That
     // probably means it came from an export or deploy or something along
     // those lines.
-    if (empty($panelizer->name)) {
-      $panelizer = $this->clone_panelizer($panelizer, $entity);
+    if (empty($entity->panelizer->name) && !empty($entity->panelizer->display)) {
+      $panelizer = $this->clone_panelizer($entity->panelizer, $entity);
       // First write the display
       panels_save_display($panelizer->display);
 
@@ -438,8 +438,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     else {
       // We write the panelizer record to record which name is being used.
       // And ensure the did is NULL:
-      $display->panelizer->did = NULL;
-      return drupal_write_record('panelizer_entity', $display->panelizer);
+      $entity->panelizer->did = NULL;
+      $entity->panelizer->entity_type = $this->entity_type;
+      $entity->panelizer->entity_id = $entity_id;
+      // The (int) ensures that entities that do not support revisions work
+      // since the revision_id cannot be NULL.
+      $entity->panelizer->revision_id = (int) $revision_id;
+      return drupal_write_record('panelizer_entity', $entity->panelizer);
     }
   }
 
