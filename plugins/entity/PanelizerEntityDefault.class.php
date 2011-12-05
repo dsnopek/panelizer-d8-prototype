@@ -250,6 +250,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'page callback' => 'panelizer_entity_plugin_switcher_page',
         'page arguments' => array($this->entity_type, 'settings', $position),
         'weight' => 11,
+        'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       ) + $base;
 
       $items[$this->plugin['entity path'] . '/panelizer/settings'] = array(
