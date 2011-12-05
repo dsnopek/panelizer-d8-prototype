@@ -1211,7 +1211,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       if (!$filename) {
         $filename = ctools_css_store($display->cache_key, $panelizer->css);
       }
-      drupal_add_css($filename);
+      drupal_add_css($filename, array('group' => CSS_THEME));
     }
 
     // We think this is handled as a page, so set the current page display.
