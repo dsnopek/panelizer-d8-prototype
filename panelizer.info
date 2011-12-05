@@ -5,14 +5,7 @@ dependencies[] = panels
 dependencies[] = ctools
 dependencies[] = page_manager
 core = 7.x
+configure = admin/config/content/panelizer
 
-files[] = panelizer.install
-files[] = panelizer.module
-files[] = includes/admin.inc
-files[] = includes/common.inc
-files[] = includes/node.inc
-files[] = includes/panelizer.pages_default.inc
-files[] = task_handlers/panelizer_node.inc
-files[] = plugins/views/panelizer.views.inc
 files[] = plugins/views/panelizer_handler_field_node_link.inc
 files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc
