@@ -382,6 +382,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // Now, go back through our entities and assign dids and defaults
     // accordingly.
     foreach ($entities as $entity_id => $entity) {
+      // Skip not panelized bundles.
+      if (empty($bundles[$entity_id])) {
+        continue;
+      }
       if (empty($entity->panelizer)) {
         $default_key = implode(':', array($this->entity_type, $bundles[$entity_id], 'default'));
         if (!empty($panelizer_defaults[$default_key])) {
