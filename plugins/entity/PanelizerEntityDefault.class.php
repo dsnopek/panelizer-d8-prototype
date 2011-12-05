@@ -485,7 +485,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // NOTE: This means that when exporting or deploying, we need to be sure
     // to set the display_is_modified flag to ensure this gets written.
     if (!empty($entity->panelizer->display_is_modified)) {
-      if (!$update) {
+      // If this is a new entry or the entry is using a display from a default,
+      // clone the display.
+      if (!$update || empty($entity->panelizer->did)) {
         $panelizer = $this->clone_panelizer($entity->panelizer, $entity);
       }
       else {
