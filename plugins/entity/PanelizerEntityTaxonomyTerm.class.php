@@ -52,7 +52,7 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
 
     if ($warn) {
       $task = page_manager_get_task('term_view');
-      if (!empty($task->disabled)) {
+      if (!empty($task['disabled'])) {
         drupal_set_message('The taxonomy term template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize taxonomy terms.', 'warning');
       }
 

@@ -44,7 +44,7 @@ class PanelizerEntityUser extends PanelizerEntityDefault {
 
     if (!empty($this->plugin['bundles']['user'])) {
       $task = page_manager_get_task('user_view');
-      if (!empty($task->disabled)) {
+      if (!empty($task['disabled'])) {
         drupal_set_message('The user template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize users.', 'warning');
       }
 
