@@ -115,52 +115,55 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     $pane->extras = array();
     $pane->position = 0;
     $display->content['new-1'] = $pane;
-    $display->panels['center'][0] = 'new-1';
-    $pane = new stdClass;
-    $pane->pid = 'new-2';
-    $pane->panel = 'center';
-    $pane->type = 'node_comments';
-    $pane->subtype = 'node_comments';
-    $pane->shown = TRUE;
-    $pane->access = array();
-    $pane->configuration = array(
-      'mode' => '4',
-      'order' => '2',
-      'comments_per_page' => '50',
-      'context' => 'panelizer',
-      'override_title' => 0,
-      'override_title_text' => '',
-    );
-    $pane->cache = array();
-    $pane->style = array(
-      'settings' => NULL,
-    );
-    $pane->css = array();
-    $pane->extras = array();
-    $pane->position = 1;
-    $display->content['new-2'] = $pane;
-    $display->panels['center'][1] = 'new-2';
-    $pane = new stdClass;
-    $pane->pid = 'new-3';
-    $pane->panel = 'center';
-    $pane->type = 'node_comment_form';
-    $pane->subtype = 'node_comment_form';
-    $pane->shown = TRUE;
-    $pane->access = array();
-    $pane->configuration = array(
-      'anon_links' => 1,
-      'context' => 'panelizer',
-      'override_title' => 0,
-      'override_title_text' => '',
-    );
-    $pane->cache = array();
-    $pane->style = array(
-      'settings' => NULL,
-    );
-    $pane->css = array();
-    $pane->extras = array();
-    $pane->position = 2;
-    $display->content['new-3'] = $pane;
+    if (module_exists('comment')) {
+      $display->panels['center'][0] = 'new-1';
+      $pane = new stdClass;
+      $pane->pid = 'new-2';
+      $pane->panel = 'center';
+      $pane->type = 'node_comments';
+      $pane->subtype = 'node_comments';
+      $pane->shown = TRUE;
+      $pane->access = array();
+      $pane->configuration = array(
+        'mode' => '4',
+        'order' => '2',
+        'comments_per_page' => '50',
+        'context' => 'panelizer',
+        'override_title' => 0,
+        'override_title_text' => '',
+      );
+      $pane->cache = array();
+      $pane->style = array(
+        'settings' => NULL,
+      );
+      $pane->css = array();
+      $pane->extras = array();
+      $pane->position = 1;
+      $display->content['new-2'] = $pane;
+      $display->panels['center'][1] = 'new-2';
+      $pane = new stdClass;
+      $pane->pid = 'new-3';
+      $pane->panel = 'center';
+      $pane->type = 'node_comment_form';
+      $pane->subtype = 'node_comment_form';
+      $pane->shown = TRUE;
+      $pane->access = array();
+      $pane->configuration = array(
+        'anon_links' => 1,
+        'context' => 'panelizer',
+        'override_title' => 0,
+        'override_title_text' => '',
+      );
+      $pane->cache = array();
+      $pane->style = array(
+        'settings' => NULL,
+      );
+      $pane->css = array();
+      $pane->extras = array();
+      $pane->position = 2;
+      $display->content['new-3'] = $pane;
+    }
+
     $display->panels['center'][2] = 'new-3';
     $display->hide_title = PANELS_TITLE_FIXED;
     $display->title_pane = 'new-1';
