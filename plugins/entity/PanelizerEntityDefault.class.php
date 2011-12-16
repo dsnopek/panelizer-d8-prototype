@@ -477,7 +477,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $update = array();
       }
       else {
-        $update = array('entity_type');
+        $update = array('entity_type', 'entity_id');
       }
     }
 
