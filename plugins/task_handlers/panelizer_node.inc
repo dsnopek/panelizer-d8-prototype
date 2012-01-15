@@ -22,7 +22,71 @@ $plugin = array(
   'addressable callback' => 'panelizer_panelizer_task_get_addressable',
 
   'test' => 'panelizer_panelizer_task_test',
+  'contextual link' => 'panelizer_panelizer_task_contextual_link',
 );
+
+/**
+ * Provide appropriate contextual links for Panelizer controled entities.
+ */
+function panelizer_panelizer_task_contextual_link($handler, $plugin, $contexts, $args) {
+  $links = array();
+
+  $context = reset($contexts);
+  if (empty($context->data)) {
+    return;
+  }
+
+  $entity = &$context->data;
+
+  if (empty($entity->panelizer)) {
+    return FALSE;
+  }
+
+  $panelizer = $entity->panelizer;
+  // One of these two will always be set.
+  $entity_type = !empty($panelizer->entity_type) ? $panelizer->entity_type : $panelizer->panelizer_type;
+
+  if ($entity_handler = panelizer_entity_plugin_get_handler($entity_type)) {
+    list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
+
+    $bits = explode('/', $entity_handler->plugin['entity path']);
+    foreach ($bits as $count => $bit) {
+      if (strpos($bit, '%') === 0) {
+        $bits[$count] = $entity_id;
+      }
+    }
+
+    $bits[] = 'panelizer';
+
+    $base_path = implode('/', $bits);
+    if ($entity_handler->panelizer_access('settings', $entity)) {
+      $links['settings'] = array(
+        'title' => t('Edit panelizer settings'),
+        'href' => "$base_path/settings",
+      );
+    }
+    if ($entity_handler->panelizer_access('context', $entity)) {
+      $links['context'] = array(
+        'title' => t('Edit panelizer contexts'),
+        'href' => "$base_path/context",
+      );
+    }
+    if ($entity_handler->panelizer_access('layout', $entity)) {
+      $links['layout'] = array(
+        'title' => t('Edit panelizer layout'),
+        'href' => "$base_path/layout",
+      );
+    }
+    if ($entity_handler->panelizer_access('content', $entity)) {
+      $links['content'] = array(
+        'title' => t('Edit panelizer content'),
+        'href' => "$base_path/content",
+      );
+    }
+  }
+
+  return $links;
+}
 
 /**
  * Callback to provide administrative summary of the task handler.
