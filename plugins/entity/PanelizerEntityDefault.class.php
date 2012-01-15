@@ -928,10 +928,20 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    * default actually have one.
    */
   public function hook_panelizer_defaults(&$panelizers) {
+    // For features integration, if they have modified a default and put
+    // it into the database, we do not want to show one as a default.
+    // Otherwise, features can't latch onto it.
+    $default_names = &drupal_static('panelizer_defaults_in_database', NULL);
+    if (!isset($default_names)) {
+      $default_names = db_query("SELECT name FROM {panelizer_defaults} WHERE name LIKE '%:default'")->fetchCol();
+    }
+
     foreach ($this->plugin['bundles'] as $bundle => $info) {
       if (!empty($info['status']) && !empty($info['default'])) {
         $panelizer = $this->get_internal_default_panelizer($bundle);
-        $panelizers[$panelizer->name] = $panelizer;
+        if (!empty($default_names[$panelizer->name])) {
+          $panelizers[$panelizer->name] = $panelizer;
+        }
       }
     }
   }
