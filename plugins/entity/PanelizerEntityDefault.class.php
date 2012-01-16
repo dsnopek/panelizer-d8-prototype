@@ -663,7 +663,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // If there is an $op, this must actually be panelized in order to pass.
     // If there is no op, then the settings page can provide us a "panelize it!"
     // page even if there is no panel.
-    if ($op && empty($entity->panelizer)) {
+    if ($op && $op != 'settings' && empty($entity->panelizer)) {
       return FALSE;
     }
 
