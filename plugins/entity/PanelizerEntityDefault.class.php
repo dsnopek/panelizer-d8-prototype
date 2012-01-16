@@ -240,7 +240,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Configure entity editing pages
       $base = array(
         'access callback' => 'panelizer_entity_plugin_callback_switcher',
-        'access arguments' => array($this->entity_type, 'access', 'admin', $position),
+        'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'settings'),
         'type' => MENU_LOCAL_TASK,
       );
 
