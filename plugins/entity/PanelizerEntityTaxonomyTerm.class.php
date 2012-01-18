@@ -92,7 +92,11 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
     $handler->subtask = '';
     $handler->handler = 'panelizer_node';
     $handler->weight = -100;
-    $handler->conf = array();
+    $handler->conf = array(
+      'title' => t('Term panelizer'),
+      'context' => page_manager_term_view_get_type() == 'multiple' ? 'argument_terms_1' : 'argument_term_1',
+      'access' => array(),
+    );
     $handlers['term_view_panelizer'] = $handler;
 
     return $handlers;
