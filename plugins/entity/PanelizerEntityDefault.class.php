@@ -572,6 +572,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       ),
       '#weight' => -10,
       '#tree' => TRUE,
+      // Put these here because submit does not get a real entity with
+      // the actual *(&)ing panelizer.
+      '#revision_id' => isset($entity->panelizer->revision_id) ? $entity->panelizer->revision_id : NULL,
+      '#entity_id' => isset($entity->panelizer->entity_id) ? $entity->panelizer->entity_id : NULL,
     );
 
     $panelizers = $this->get_default_panelizer_objects($bundle);
@@ -612,6 +616,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Guarantee we overwrite any previous settings or non-settings.
       $entity->panelizer = $this->get_default_panelizer_object($bundle, $form_state['values']['panelizer']['name']);
       $entity->panelizer->did = NULL;
+
+      // Ensure original values are maintained:
+      $entity->panelizer->entity_id = $form['panelizer']['#entity_id'];
+      $entity->panelizer->revision_id = $form['panelizer']['#revision_id'];
     }
   }
 
