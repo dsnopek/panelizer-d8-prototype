@@ -84,6 +84,8 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
    * in page manager for rendering.
    */
   public function hook_default_page_manager_handlers(&$handlers) {
+    page_manager_get_task('term_view');
+
     $handler = new stdClass;
     $handler->disabled = FALSE; /* Edit this to true to make a default handler disabled initially */
     $handler->api_version = 1;
