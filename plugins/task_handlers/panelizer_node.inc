@@ -326,7 +326,6 @@ function panelizer_panelizer_task_edit_settings($form, &$form_state) {
   $required_context = new ctools_context_required(t('Panelized entity'), 'entity');
   $form['context'] = ctools_context_selector($contexts, $required_context, isset($conf['context']) ? $conf['context'] : '');
 
-  dsm($form['context']);
   return $form;
 }
 
