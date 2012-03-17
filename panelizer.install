@@ -183,8 +183,6 @@ function panelizer_schema_1() {
  * Implements hook_install().
  */
 function panelizer_install() {
-  // TODO Please review the conversion of this statement to the D7 database API syntax.
-  /* db_query("UPDATE {system} SET weight = 21 WHERE name = 'panelizer'") */
   // Set the module weight so it can execute after Panels.
   db_update('system')
     ->fields(array(
@@ -296,6 +294,4 @@ function panelizer_update_7103() {
   db_change_field('panelizer_entity', 'entity_type', 'entity_type', $schema['panelizer_entity']['fields']['entity_type']);
   db_change_field('panelizer_entity', 'revision_id', 'revision_id', $schema['panelizer_entity']['fields']['revision_id']);
   db_change_field('panelizer_defaults', 'pnid', 'pnid', $schema['panelizer_defaults']['fields']['pnid']);
-
 }
-
