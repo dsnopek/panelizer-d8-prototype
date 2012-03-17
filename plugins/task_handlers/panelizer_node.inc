@@ -15,6 +15,7 @@ $plugin = array(
   'handler type' => 'context',
   // Administrative fields.
   'title' => t('Panelizer'),
+  'forms' => array(),
   'admin title' => 'panelizer_panelizer_task_title',
   'admin summary' => 'panelizer_panelizer_task_admin_summary',
   'operations' => array(),
@@ -24,6 +25,7 @@ $plugin = array(
   'addressable callback' => 'panelizer_panelizer_task_get_addressable',
 
   'test' => 'panelizer_panelizer_task_test',
+  'visible' => TRUE,
 
   // Provide custom panelizer specific contextual links.
   'contextual link' => 'panelizer_panelizer_task_contextual_link',
