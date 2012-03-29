@@ -280,8 +280,10 @@ function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler
     return;
   }
 
-  // Load the display
+  // Load the display.
   $display = $entity->panelizer->display;
+  // Load the panelizer info.
+  $panelizer = $entity->panelizer;
   // One of these two will always be set.
   $entity_type = !empty($panelizer->entity_type) ? $panelizer->entity_type : $panelizer->panelizer_type;
   $handler = panelizer_entity_plugin_get_handler($entity_type);
