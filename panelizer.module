@@ -832,6 +832,8 @@ function panelizer_features_export_alter(&$export, $module_name) {
         'panelizer_' . $entity_type . ':' . $bundle . '_default'
       );
 
+      $variables = array_diff($variables, array_keys(strongarm_vars_load()));
+
       foreach ($variables as $variable) {
         $export['features']['variable'][$variable] = $variable;
       }
