@@ -240,7 +240,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Configure entity editing pages
       $base = array(
         'access callback' => 'panelizer_entity_plugin_callback_switcher',
-        'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'settings'),
+        'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'content'),
         'type' => MENU_LOCAL_TASK,
       );
 
@@ -248,25 +248,17 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'title' => 'Panelizer',
         // make sure this is accessible to panelize entities with no defaults.
         'page callback' => 'panelizer_entity_plugin_switcher_page',
-        'page arguments' => array($this->entity_type, 'settings', $position),
+        'page arguments' => array($this->entity_type, 'content', $position),
         'weight' => 11,
         'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
       ) + $base;
 
-      $items[$this->plugin['entity path'] . '/panelizer/settings'] = array(
-        'title' => 'Settings',
+      $items[$this->plugin['entity path'] . '/panelizer/content'] = array(
+        'title' => 'Content',
         'page callback' => 'panelizer_entity_plugin_switcher_page',
-        'page arguments' => array($this->entity_type, 'settings', $position),
+        'page arguments' => array($this->entity_type, 'content', $position),
         'type' => MENU_DEFAULT_LOCAL_TASK,
         'weight' => 11,
-      ) + $base;
-
-      $items[$this->plugin['entity path'] . '/panelizer/context'] = array(
-        'title' => 'Context',
-        'page callback' => 'panelizer_entity_plugin_switcher_page',
-        'page arguments' => array($this->entity_type, 'context', $position),
-        'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'context'),
-        'weight' => 12,
       ) + $base;
 
       $items[$this->plugin['entity path'] . '/panelizer/layout'] = array(
@@ -274,14 +266,22 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'page callback' => 'panelizer_entity_plugin_switcher_page',
         'page arguments' => array($this->entity_type, 'layout', $position),
         'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'layout'),
+        'weight' => 12,
+      ) + $base;
+
+      $items[$this->plugin['entity path'] . '/panelizer/context'] = array(
+        'title' => 'Context',
+        'page callback' => 'panelizer_entity_plugin_switcher_page',
+        'page arguments' => array($this->entity_type, 'context', $position),
+        'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'context'),
         'weight' => 13,
       ) + $base;
 
-      $items[$this->plugin['entity path'] . '/panelizer/content'] = array(
-        'title' => 'Content',
+      $items[$this->plugin['entity path'] . '/panelizer/settings'] = array(
+        'title' => 'Settings',
         'page callback' => 'panelizer_entity_plugin_switcher_page',
-        'page arguments' => array($this->entity_type, 'content', $position),
-        'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'content'),
+        'page arguments' => array($this->entity_type, 'settings', $position),
+        'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'settings'),
         'weight' => 14,
       ) + $base;
     }
