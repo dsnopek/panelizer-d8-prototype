@@ -213,16 +213,13 @@ function panelizer_views_api() {
 }
 
 /**
- * Implements hook_panelizer_defaults().
+ * Implements hook_panelizer_defaults_alter().
  */
-function panelizer_panelizer_defaults() {
-  $items = array();
+function panelizer_panelizer_defaults_alter(&$items) {
   // Delegate.
   foreach (panelizer_get_plugins_with_hook('panelizer_defaults') as $handler) {
     $handler->hook_panelizer_defaults($items);
   }
-
-  return $items;
 }
 
 /**

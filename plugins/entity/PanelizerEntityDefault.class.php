@@ -947,7 +947,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     foreach ($this->plugin['bundles'] as $bundle => $info) {
       if (!empty($info['status']) && !empty($info['default'])) {
         $panelizer = $this->get_internal_default_panelizer($bundle);
-        if (empty($default_names[$panelizer->name])) {
+        if (empty($default_names[$panelizer->name]) && !isset($panelizers[$panelizer->name])) {
           $panelizers[$panelizer->name] = $panelizer;
         }
       }
