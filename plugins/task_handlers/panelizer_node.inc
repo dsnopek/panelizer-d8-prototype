@@ -300,12 +300,15 @@ function panelizer_panelizer_task_get_addressable($task, $subtask_name, $handler
   $display->cache_key = implode(':', array('panelizer', $entity_type, $entity_id));
 
   $renderer = panels_get_renderer($panelizer->pipeline, $display);
-  if ($type == 'content') {
-    $renderer->prepare();
+  $renderer->prepare();
 
-    $pid = array_shift($address);
-    if (!empty($renderer->prepared['panes'][$pid])) {
+  $pid = array_shift($address);
+  if (!empty($renderer->prepared['panes'][$pid])) {
+    if ($type == 'content') {
       return $renderer->render_pane($renderer->prepared['panes'][$pid]);
+    }
+    elseif ($type == 'pane') {
+      return $renderer->prepared['panes'][$pid];
     }
   }
 }
