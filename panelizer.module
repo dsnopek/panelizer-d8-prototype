@@ -769,7 +769,7 @@ function panelizer_panels_cache_save($argument, $cache) {
     return;
   }
 
-  if ($get_default) {
+  if (!empty($get_default)) {
     $panelizer = $handler->get_default_panelizer_object($bundle, $name);
     $panelizer->display = $cache->display;
     ctools_include('export');
