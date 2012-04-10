@@ -11,7 +11,6 @@
  * is delegated here to reduce code weight.
  */
 function panelizer_admin_hook_menu(&$items) {
-  // @todo -- delegate these to admin.inc
   // Configure settings pages.
   $settings_base = array(
     'access arguments' => array('administer panelizer'),
@@ -55,7 +54,6 @@ function panelizer_admin_hook_menu(&$items) {
     'page callback' => 'panelizer_default_settings_page',
     'weight' => -5,
   ) + $tabs_base;
-
 
   $items['admin/config/content/panelizer/%panelizer_handler/%/context'] = array(
     'title' => 'Contexts',
@@ -203,6 +201,10 @@ function panelizer_settings_page_form_submit($form, &$form_state) {
  * Page to configure what content is available for a given node type.
  */
 function panelizer_allowed_content_page($handler, $bundle) {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
   if (!$handler->is_panelized($bundle)) {
     return MENU_NOT_FOUND;
   }
@@ -216,6 +218,10 @@ function panelizer_allowed_content_page($handler, $bundle) {
  * Page to configure basic settings for a panelizer default.
  */
 function panelizer_default_settings_page($handler, $bundle, $name) {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
   $panelizer = $handler->get_default_panelizer_object($bundle, $name);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;
@@ -268,6 +274,10 @@ function panelizer_delete_panelizer_defaults($panelizer) {
  * Page to configure what content is available for a given node type.
  */
 function panelizer_default_context_page($handler, $bundle, $name) {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
   $cache_key = $handler->entity_type . ':' . $bundle . ':' . $name;
   $panelizer = panelizer_context_cache_get('default', $cache_key);
   if (empty($panelizer)) {
@@ -304,6 +314,10 @@ function panelizer_default_context_page($handler, $bundle, $name) {
  * Pass through to the panels layout editor.
  */
 function panelizer_default_layout_page($handler, $bundle, $name, $step = NULL, $layout = NULL) {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
   $panelizer = $handler->get_default_panelizer_object($bundle, $name);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;
@@ -341,6 +355,10 @@ function panelizer_default_layout_page($handler, $bundle, $name, $step = NULL, $
  * Pass through to the panels content editor.
  */
 function panelizer_default_content_page($handler, $bundle, $name) {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
   $panelizer = $handler->get_default_panelizer_object($bundle, $name);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;

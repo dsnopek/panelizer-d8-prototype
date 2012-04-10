@@ -14,6 +14,8 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
    * True if the entity supports revisions.
    */
   public $supports_revisions = TRUE;
+  public $entity_admin_root = 'admin/structure/types/manage/%panelizer_node_type';
+  public $entity_admin_bundle = 4;
 
   public function entity_access($op, $entity) {
     // This must be implemented by the extending clas.
@@ -195,6 +197,50 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     $handlers['node_view_panelizer'] = $handler;
 
     return $handlers;
+  }
+
+  /**
+   * Implements a delegated hook_form_alter.
+   *
+   * We want to add Panelizer settings for the bundle to the node type form.
+   */
+  public function hook_form_alter(&$form, &$form_state, $form_id) {
+    if ($form_id == 'node_type_form') {
+      if (isset($form['#node_type'])) {
+        $bundle = $form['#node_type']->type;
+        $this->add_bundle_setting_form($form, $form_state, $bundle, array('type'));
+      }
+    }
+  }
+
+  public function hook_page_alter(&$page) {
+    if ($_GET['q'] == 'admin/structure/types' && !empty($page['content']['system_main']['node_table'])) {
+      // shortcut
+      $table = &$page['content']['system_main']['node_table'];
+      // Modify the header.
+      $table['#header'][1]['colspan'] = 5;
+
+      // Since we can't tell what row a type is for, but we know that they
+      // were generated in this order, go through the original types
+      // list:
+      $types = node_type_get_types();
+      $names = node_type_get_names();
+      $row_index = 0;
+      foreach ($names as $bundle => $name) {
+        $type = $types[$bundle];
+        if (node_hook($type->type, 'form')) {
+          $type_url_str = str_replace('_', '-', $type->type);
+          if ($this->is_panelized($bundle) && panelizer_administer_entity_bundle($this, $bundle)) {
+            $table['#rows'][$row_index][] = array('data' => l(t('panelizer'), 'admin/structure/types/manage/' . $type_url_str . '/panelizer'));
+          }
+          else {
+            $table['#rows'][$row_index][] = array('data' => '');
+          }
+          // Update row index for next pass:
+          $row_index++;
+        }
+      }
+    }
   }
 
 }
