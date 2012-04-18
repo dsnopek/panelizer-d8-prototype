@@ -74,7 +74,7 @@ function panelizer_admin_hook_menu(&$items) {
   ) + $tabs_base;
 
   $subtabs_base = array(
-    'access callback' => 'panelizer_has_choice_callback',
+    'access callback' => 'panelizer_administer_panelizer_default',
     'access arguments' => array(4, 5, 7),
     'page arguments' => array(4, 5, 7),
     'type' => MENU_LOCAL_TASK,
@@ -111,6 +111,13 @@ function panelizer_admin_hook_menu(&$items) {
     'page callback' => 'panelizer_default_content_page',
     'weight' => -2,
   ) + $subtabs_base;
+
+  $items['admin/config/content/panelizer/%panelizer_handler/%/list/%/access'] = array(
+    'title' => 'Access',
+    'page callback' => 'panelizer_default_access_page',
+    'weight' => -2,
+  ) + $subtabs_base;
+
 }
 
 /**
@@ -346,6 +353,64 @@ function panelizer_default_layout_page($handler, $bundle, $name, $step = NULL, $
     ctools_export_crud_save('panelizer_defaults', $panelizer);
     drupal_set_message(t('The layout has been changed.'));
     drupal_goto($path . '/content');
+  }
+
+  return $output;
+}
+
+/**
+ * Determine edit access for this panelizer default.
+ */
+function panelizer_default_access_page($handler, $bundle, $name) {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
+  if (empty($panelizer)) {
+    return MENU_NOT_FOUND;
+  }
+
+  $argument = $name;
+
+  ctools_include('context-access-admin');
+  ctools_include('object-cache');
+
+  // Ensure that if they visit this page fresh, any cached data is removed:
+  if (empty($_POST)) {
+    ctools_object_cache_clear('panelizer_access', $argument);
+  }
+  else {
+    $access = ctools_object_cache_get('panelizer_access', $argument);
+  }
+
+  if (empty($access)) {
+    $access = $panelizer->access;
+  }
+
+  if (!is_array($access)) {
+    $access = array();
+  }
+
+  $form_state = array(
+    'access' => $access,
+    'module' => 'panelizer',
+    'callback argument' => $argument,
+    // A bug in context-access-admin requires this until it's fixed.
+    'argument' => $argument,
+    'contexts' => $handler->get_contexts($panelizer),
+    'no_redirect' => TRUE,
+  );
+
+  $output = drupal_build_form('ctools_access_admin_form', $form_state);
+
+  if (!empty($form_state['executed'])) {
+    ctools_object_cache_clear('panelizer_access', $argument);
+    $panelizer->access = $form_state['access'];
+    ctools_export_crud_save('panelizer_defaults', $panelizer);
+
+    drupal_set_message(t('The access settings have been updated.'));
+    drupal_goto($_GET['q']);
   }
 
   return $output;

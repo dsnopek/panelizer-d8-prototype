@@ -245,6 +245,74 @@ function panelizer_default_page_manager_handlers() {
   return $items;
 }
 
+/**
+ * Implement CTools access form caching callback: get.
+ */
+function panelizer_ctools_access_get($argument) {
+  list($entity_type, $bundle, $name) = explode(':', $argument);
+  $handler = panelizer_entity_plugin_get_handler($entity_type);
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
+
+  if (empty($panelizer)) {
+    return;
+  }
+
+  if (!$handler->access_default_panelizer_object($panelizer)) {
+    return;
+  }
+
+  // First, see if there's a cache
+  ctools_include('object-cache');
+  $access = ctools_object_cache_get('panelizer_access', $argument);
+  if (!$access) {
+    $access = $panelizer->access;
+  }
+
+  $context = $handler->get_contexts($panelizer);
+
+  return array($access, $context);
+}
+
+/**
+ * Implement CTools access form caching callback: set.
+ */
+function panelizer_ctools_access_set($argument, $access) {
+  list($entity_type, $bundle, $name) = explode(':', $argument);
+  $handler = panelizer_entity_plugin_get_handler($entity_type);
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
+
+  if (empty($panelizer)) {
+    return;
+  }
+
+  if (!$handler->access_default_panelizer_object($panelizer)) {
+    return;
+  }
+
+  ctools_include('object-cache');
+  ctools_object_cache_set('panelizer_access', $argument, $access);
+}
+
+/**
+ * Implement CTools access form caching callback: get.
+ */
+function panelizer_ctools_access_clear($argument) {
+  list($entity_type, $bundle, $name) = explode(':', $argument);
+  $handler = panelizer_entity_plugin_get_handler($entity_type);
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
+
+  if (empty($panelizer)) {
+    return;
+  }
+
+  if (!$handler->access_default_panelizer_object($panelizer)) {
+    return;
+  }
+
+  ctools_include('object-cache');
+  ctools_object_cache_clear('panelizer', $argument);
+}
+
 // -----------------------------------------------------------------------
 // CTools entity plugin support code
 
@@ -569,6 +637,22 @@ function panelizer_administer_entity_bundle($handler, $bundle) {
   }
 
   return user_access('administer panelizer') || user_access("administer panelizer $handler->entity_type $bundle defaults");
+}
+
+/**
+ * Access callback to see if a user can administer a particular panelizer default.
+ */
+function panelizer_administer_panelizer_default($handler, $bundle, $name) {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
+  $panelizer = $handler->get_default_panelizer_object($bundle, $name);
+  if (!$panelizer) {
+    return FALSE;
+  }
+
+  return $handler->access_default_panelizer_object($panelizer);
 }
 
 /**

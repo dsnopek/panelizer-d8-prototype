@@ -50,6 +50,11 @@ interface PanelizerEntityInterface {
   public function get_default_panelizer_object($bundle, $name);
 
   /**
+   * Determine if the current user has access to the $panelizer.
+   */
+  public function access_default_panelizer_object($panelizer);
+
+  /**
    * Determine if a bundle is panelized
    */
   public function is_panelized($bundle);
@@ -181,6 +186,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     $entity_info = entity_get_info($this->entity_type);
     // Make a permission for each bundle we control.
     foreach ($this->plugin['bundles'] as $bundle => $settings) {
+      // This is before the if because it shows up regardless of whether
+      // or not a type is panelized.
+      $items["administer panelizer $this->entity_type $bundle defaults"] = array(
+        'title' => t('%entity_name %bundle_name: Administer Panelizer default panels, allowed content and settings.', array(
+          '%entity_name' => $entity_info['label'],
+          '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
+        )),
+        'description' => t('Users with this permission can fully administer panelizer for this entity bundle.'),
+      );
+
       if (empty($settings['status'])) {
         continue;
       }
@@ -219,13 +234,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         );
       }
     }
-
-    $items["administer panelizer $this->entity_type $bundle defaults"] = array(
-      'title' => t('%entity_name %bundle_name: Administer Panelizer default panels, allowed content and settings.', array(
-        '%entity_name' => $entity_info['label'],
-        '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
-      )),
-    );
   }
 
   /**
@@ -386,7 +394,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     ) + $tabs_base;
 
     $subtabs_base = array(
-      'access callback' => 'panelizer_has_choice_callback',
+      'access callback' => 'panelizer_administer_panelizer_default',
       'access arguments' => array($this->entity_type, $bundle, $base_count + 2),
       'page arguments' => array($this->entity_type, $bundle, $base_count + 2),
       'type' => MENU_LOCAL_TASK,
@@ -424,6 +432,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       'weight' => -2,
     ) + $subtabs_base;
 
+    $items[$root . '/panelizer/list/%/access'] = array(
+      'title' => 'Access',
+      'page callback' => 'panelizer_default_access_page',
+      'weight' => -2,
+    ) + $subtabs_base;
+
     // Also make clones of all the export UI menu items. Again there is some
     // duplicated code here because of subtle differences.
     // Load the $plugin information
@@ -447,6 +461,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     unset($ui_items['context']);
     unset($ui_items['content']);
     unset($ui_items['layout']);
+    unset($ui_items['access']);
 
     // Change the callbacks for everything:
     foreach ($ui_items as $key => $item) {
@@ -1234,6 +1249,19 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     ctools_include('export');
     return ctools_export_load_object('panelizer_defaults', 'conditions', $conditions);
+  }
+
+  /**
+   * Determine if the current user has access to the $panelizer.
+   */
+  public function access_default_panelizer_object($panelizer) {
+    // Automatically true for this, regardless of anything else.
+    if (user_access('administer panelizer')) {
+      return TRUE;
+    }
+
+    ctools_include('context');
+    return user_access("administer panelizer $this->entity_type $panelizer->panelizer_key defaults") && ctools_access($panelizer->access, $this->get_contexts($panelizer));
   }
 
   /**
