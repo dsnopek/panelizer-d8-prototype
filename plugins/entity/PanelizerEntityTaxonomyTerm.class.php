@@ -12,6 +12,7 @@
 class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
   public $entity_admin_root = 'admin/structure/taxonomy/%';
   public $entity_admin_bundle = 3;
+  public $views_table = 'taxonomy_term_data';
 
   public function entity_access($op, $entity) {
     // This must be implemented by the extending class.

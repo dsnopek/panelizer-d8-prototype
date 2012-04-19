@@ -13,6 +13,7 @@ class PanelizerEntityUser extends PanelizerEntityDefault {
   public $entity_admin_root = 'admin/config/people/accounts';
   // No bundle support so we hardcode the default bundle.
   public $entity_admin_bundle = 'user';
+  public $views_table = 'users';
 
   public function entity_access($op, $entity) {
     // This must be implemented by the extending class.

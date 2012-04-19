@@ -7,5 +7,5 @@ dependencies[] = page_manager
 core = 7.x
 configure = admin/config/content/panelizer
 
-files[] = plugins/views/panelizer_handler_field_node_link.inc
+files[] = plugins/views/panelizer_handler_field_link.inc
 files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc

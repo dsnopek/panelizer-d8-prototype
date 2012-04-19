@@ -16,6 +16,7 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
   public $supports_revisions = TRUE;
   public $entity_admin_root = 'admin/structure/types/manage/%panelizer_node_type';
   public $entity_admin_bundle = 4;
+  public $views_table = 'node';
 
   public function entity_access($op, $entity) {
     // This must be implemented by the extending clas.
@@ -243,4 +244,25 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     }
   }
 
+  /**
+   * Implements hook_views_plugins_alter().
+   */
+  function hook_views_plugins_alter($plugins) {
+    // While it would be nice to genericize this plugin, there is no
+    // generic entity view. This means that to genericize it we'll still
+    // need to have each entity know how to do the view individually.
+    // @todo make this happen.
+    $path = drupal_get_path('module', 'panelizer') . '/plugins/views';
+    $plugins['row']['panelizer_node_view'] = array(
+      'title' => t('Panelizer display'),
+      'help' => t('Render entities using the panels display for any that have been panelized.'),
+      'handler' => 'panelizer_plugin_row_panelizer_node_view',
+      'parent' => 'node',
+      'base' => array('node'),
+      'path' => $path,
+      'uses options' => TRUE,
+      'type' => 'normal',
+      'register theme' => FALSE,
+    );
+  }
 }

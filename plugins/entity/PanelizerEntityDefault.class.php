@@ -19,6 +19,7 @@ interface PanelizerEntityInterface {
   public function hook_form_alter(&$form, &$form_state, $form_id);
   public function hook_permission(&$items);
   public function hook_admin_paths(&$items);
+  public function hook_views_data_alter(&$data);
 
   // Entity specific Drupal hooks
   public function hook_entity_load(&$entities);
@@ -160,6 +161,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    * True if the entity supports revisions.
    */
   public $supports_revisions = FALSE;
+
+  /**
+   * The base table in SQL the entity uses, for views support.
+   */
+  public $views_table = '';
 
   /**
    * The plugin metadata.
@@ -1659,6 +1665,21 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     return t('@entity bundle', array('@entity' => $entity_info['label']));
   }
 
+  /**
+   * Implement views support for panelizer entity types.
+   */
+  public function hook_views_data_alter(&$items) {
+    if (!empty($this->views_table)) {
+      $items[$this->views_table]['panelizer_link'] = array(
+        'field' => array(
+          'title' => t('Panelizer link'),
+          'help' => t('Provide a link to panelizer-related operations on the content.'),
+          'handler' => 'panelizer_handler_field_link',
+          'entity_type' => $this->entity_type,
+        ),
+      );
+    }
+  }
 }
 
 function panelizer_entity_default_bundle_form_submit($form, &$form_state) {

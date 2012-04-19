@@ -14,5 +14,6 @@ $plugin = array(
     'panelizer_defaults' => TRUE,
     'default_page_manager_handlers' => TRUE,
     'form_alter' => TRUE,
+    'views_data_alter' => TRUE,
   ),
 );
