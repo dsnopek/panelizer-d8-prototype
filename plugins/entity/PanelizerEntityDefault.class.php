@@ -933,7 +933,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
   public function hook_field_attach_submit($entity, &$form, &$form_state) {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
-    if (!empty($form_state['panelizer has choice'])) {
+    if (!empty($form_state['panelizer has choice']) && !empty($form_state['values']['panelizer']['name'])) {
       // Guarantee we overwrite any previous settings or non-settings.
       $entity->panelizer = $this->get_default_panelizer_object($bundle, $form_state['values']['panelizer']['name']);
       $entity->panelizer->did = NULL;
