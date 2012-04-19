@@ -19,23 +19,6 @@ function panelizer_views_data_alter(&$data) {
 }
 
 /**
- * Implementation of hook_views_handlers().
- */
-function panelizer_views_handlers() {
-  return array(
-    'info' => array(
-      'path' => drupal_get_path('module', 'panelizer') . '/plugins/views',
-    ),
-    'handlers' => array(
-      // field handlers
-      'panelizer_handler_field_node_link' => array(
-        'parent' => 'views_handler_field_node_link',
-      ),
-    ),
-  );
-}
-
-/**
  * Implementation of hook_views_plugins().
  */
 function panelizer_views_plugins() {
