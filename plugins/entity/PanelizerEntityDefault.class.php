@@ -680,15 +680,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       // If no panelizer was loaded, queue up defaults to load.
       if (empty($panelizers[$entity_id])) {
-        if ($this->has_default_panel($bundle)) {
-          $defaults[] = implode(':', array($this->entity_type, $bundle, 'default'));
+        if ($this->has_default_panel($bundles[$entity_id])) {
+          $name = implode(':', array($this->entity_type, $bundles[$entity_id], 'default'));
+          $defaults[$name] = $name;
         }
       }
       else {
         $entity->panelizer = ctools_export_unpack_object('panelizer_entity', $panelizers[$entity_id]);
         // Panelizers that do not have dids are just a selection of defaults
         // that has never actually been modified.
-        if (empty($entity->panelizer->did)) {
+        if (empty($entity->panelizer->did) && !empty($entity->panelizer->name)) {
           $defaults[] = $entity->panelizer->name;
         }
         else {
@@ -1675,6 +1676,14 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           'title' => t('Panelizer link'),
           'help' => t('Provide a link to panelizer-related operations on the content.'),
           'handler' => 'panelizer_handler_field_link',
+          'entity_type' => $this->entity_type,
+        ),
+      );
+      $items[$this->views_table]['panelizer_status'] = array(
+        'field' => array(
+          'title' => t('Panelizer status'),
+          'help' => t('Display whether an entity is panelized and which panelizer option it is using.'),
+          'handler' => 'panelizer_handler_panelizer_status',
           'entity_type' => $this->entity_type,
         ),
       );

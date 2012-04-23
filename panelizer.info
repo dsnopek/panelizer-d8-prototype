@@ -8,4 +8,5 @@ core = 7.x
 configure = admin/config/content/panelizer
 
 files[] = plugins/views/panelizer_handler_field_link.inc
+files[] = plugins/views/panelizer_handler_panelizer_status.inc
 files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc
