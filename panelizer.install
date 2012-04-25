@@ -290,7 +290,7 @@ function panelizer_update_7102() {
 
   db_add_field('panelizer_entity', 'revision_id', $revision_id);
 
-  db_query("UPDATE {panelizer_entity} pe LEFT JOIN {node} n ON pe.entity_id = n.nid SET pe.revision_id = n.nid");
+  db_query("UPDATE {panelizer_entity} pe LEFT JOIN {node} n ON pe.entity_id = n.nid SET pe.revision_id = n.vid");
 
   // Add the new index
   db_add_primary_key('panelizer_entity', array('entity_type', 'entity_id', 'revision_id'));
