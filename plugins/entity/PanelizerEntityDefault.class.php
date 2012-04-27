@@ -664,6 +664,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     else {
       $panelizers = db_query("SELECT * FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id IN (:ids)", array(':ids' => $ids))->fetchAllAssoc('entity_id');
     }
+
     $defaults = array();
     $dids = array();
     // Go through our entity list and generate a list of defaults and displays
@@ -1670,8 +1671,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    * Implement views support for panelizer entity types.
    */
   public function hook_views_data_alter(&$items) {
-    if (!empty($this->views_table)) {
-      $items[$this->views_table]['panelizer_link'] = array(
+    $entity_info = entity_get_info($this->entity_type);
+    if (!empty($entity_info['base table'])) {
+      $table = $entity_info['base table'];
+      $items[$table]['panelizer_link'] = array(
         'field' => array(
           'title' => t('Panelizer link'),
           'help' => t('Provide a link to panelizer-related operations on the content.'),
@@ -1679,11 +1682,47 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           'entity_type' => $this->entity_type,
         ),
       );
-      $items[$this->views_table]['panelizer_status'] = array(
+      $items[$table]['panelizer_status'] = array(
         'field' => array(
           'title' => t('Panelizer status'),
           'help' => t('Display whether an entity is panelized and which panelizer option it is using.'),
           'handler' => 'panelizer_handler_panelizer_status',
+          'entity_type' => $this->entity_type,
+        ),
+      );
+
+      // Join on revision id if possible or entity id if not.
+      if (!empty($entity_info['entity keys']['revision'])) {
+        $id_field = $entity_info['entity keys']['revision'];
+        $field = 'revision_id';
+      }
+      else {
+        $id_field = $entity_info['entity keys']['id'];
+        $field = 'entity_id';
+      }
+
+      $items['panelizer_entity_' . $table]['table']['join'] = array(
+        $table => array(
+          'handler' => 'views_join',
+          'table' => 'panelizer_entity',
+          'left_table' => $table,
+          'left_field' => $id_field,
+          'field' => $field,
+          'extra' => array(array(
+            'field' => 'entity_type',
+            'value' => $this->entity_type,
+            'operator' => '=',
+          )),
+        ),
+      );
+
+      $items['panelizer_entity_' . $table]['table']['group'] = t('Panelizer @entity', array('@entity' => $entity_info['label']));
+
+      $items['panelizer_entity_' . $table]['name'] = array(
+        'filter' => array(
+          'title' => t('Panelizer status'),
+          'help' => t('Filter entities based upon their panelizer status'),
+          'handler' => 'panelizer_handler_filter_panelizer_status',
           'entity_type' => $this->entity_type,
         ),
       );
