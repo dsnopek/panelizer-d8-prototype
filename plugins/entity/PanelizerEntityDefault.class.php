@@ -1716,12 +1716,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         ),
       );
 
-      $items['panelizer_entity_' . $table]['table']['group'] = t('Panelizer @entity', array('@entity' => $entity_info['label']));
+      $items['panelizer_entity_' . $table]['table']['group'] = $items[$table]['table']['group'];
 
       $items['panelizer_entity_' . $table]['name'] = array(
         'filter' => array(
           'title' => t('Panelizer status'),
-          'help' => t('Filter entities based upon their panelizer status'),
+          'help' => t('Filter based upon panelizer status.'),
           'handler' => 'panelizer_handler_filter_panelizer_status',
           'entity_type' => $this->entity_type,
         ),

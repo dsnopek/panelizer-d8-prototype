@@ -996,3 +996,96 @@ function panelizer_features_export_alter(&$export, $module_name) {
   return array();
 }
 
+// -----------------------------------------------------------------------
+// Drupal actions integration for VBO
+
+/**
+ * Implements hook_action_info().
+ */
+function panelizer_action_info() {
+  return array(
+    'panelizer_set_status_action' => array(
+      'type' => 'entity',
+      'label' => t('Set panelizer status'),
+      'vbo_configurable' => TRUE,
+      'behavior' => array('changes_property'),
+    )
+  );
+}
+
+/**
+ * Executes the panelizer_set_status action.
+ */
+function panelizer_set_status_action($entity, $context) {
+  list($entity_id, $revision_id, $bundle) = entity_extract_ids($context['entity_type'], $entity);
+  if (isset($context['panelizer_default'])) {
+    $entity->panelizer = $context['panelizer_default'];
+    $entity->panelizer->did = NULL;
+
+    // Ensure original values are maintained:
+    $entity->panelizer->entity_id = $entity_id;
+    $entity->panelizer->revision_id = $revision_id;
+  }
+  else {
+    $entity->panelizer->name = NULL;
+    $entity->panelizer->did = NULL;
+  }
+}
+
+/**
+ * Provides the panelizer_set_status_action form.
+ */
+function panelizer_set_status_action_form($context, &$form_state) {
+  $form = array();
+  $entity_info = entity_get_info($context['entity_type']);
+  $entities = entity_load($context['entity_type'], $form_state['selection']);
+  $bundles = array();
+
+  // Collect our list of bundles.
+  foreach ($entities as $entity) {
+    list($entity_id, $revision_id, $bundle) = entity_extract_ids($context['entity_type'], $entity);
+    $bundles[$bundle] = $bundle;
+  }
+
+  $conditions = array(
+    'panelizer_type' => $context['entity_type'],
+    'panelizer_key' => $bundles,
+  );
+
+  ctools_include('export');
+  $defaults = ctools_export_load_object('panelizer_defaults', 'conditions', $conditions);
+
+  foreach ($defaults as $name => $default) {
+    if (empty($default->title)) {
+      $default->title = t('Default');
+    }
+    $options[$name] = t('@bundle: @title', array('@bundle' => $entity_info['bundles'][$default->panelizer_key]['label'], '@title' => $default->title));
+  }
+
+  natcasesort($options);
+  $options = array(
+    'not' => t('Not panelized'),
+  ) + $options;
+
+  $form['panelizer'] = array(
+    '#type' => 'select',
+    '#title' => t('Panelizer status'),
+    '#options' => $options,
+  );
+
+  $form['#panelizer_defaults'] = $defaults;
+  return $form;
+}
+
+function panelizer_set_status_action_submit($form, $form_state) {
+  $retval = array(
+    'panelizer' => $form_state['values']['panelizer'],
+  );
+
+  if ($form_state['values']['panelizer'] != 'not') {
+    $retval['panelizer_default'] = $form['#panelizer_defaults'][$form_state['values']['panelizer']];
+  }
+
+  return $retval;
+}
+
