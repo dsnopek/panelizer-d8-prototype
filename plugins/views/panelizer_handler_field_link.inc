@@ -24,6 +24,7 @@ class panelizer_handler_field_link extends views_handler_field_node_link {
 
   function option_definition() {
     $options = parent::option_definition();
+    // @todo view mode
     $options['panelizer_tab'] = array('default' => 'panelizer');
     return $options;
   }
