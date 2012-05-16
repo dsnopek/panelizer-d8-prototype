@@ -6,6 +6,8 @@
  * privileged users.
  */
 
+define('PANELIZER_VERSION', '3.0');
+
 // -----------------------------------------------------------------------
 // Drupal core hooks
 
@@ -195,10 +197,17 @@ function panelizer_entity_view_alter(&$build, $entity_type) {
 
   list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
 
-  if ($info = $handler->render_entity($entity, $build['#view_mode'])) {
+  // If the requested view mode does not exist, rendering will fall back
+  // to 'default' and we should check that one instead.
+  $view_mode = $build['#view_mode'];
+  if (!isset($handler->plugin['view modes'][$view_mode])) {
+    $view_mode = 'default';
+  }
+
+  if ($info = $handler->render_entity($entity, $view_mode)) {
     // Change theming function and add the content on the $build array.
     $build['#theme'] = 'panelizer_view_mode';
-    $build['#panelizer'] = $entity->panelizer[$build['#view_mode']];
+    $build['#panelizer'] = $entity->panelizer[$view_mode];
     $build['#panelizer_content'] = $info;
     $build['#panelizer_handler'] = $handler;
     $build['#panelizer_entity'] = $entity;
