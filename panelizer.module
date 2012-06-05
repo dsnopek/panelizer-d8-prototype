@@ -1130,6 +1130,7 @@ function panelizer_action_info() {
       'vbo_configurable' => TRUE,
       'configurable' => FALSE,
       'behavior' => array('changes_property'),
+      'configurable' => TRUE,
     )
   );
 }
