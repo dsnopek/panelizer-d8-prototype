@@ -1139,19 +1139,23 @@ function panelizer_action_info() {
  * Executes the panelizer_set_status action.
  */
 function panelizer_set_status_action($entity, $context) {
-  // @todo view modes
+  $view_mode = 'page_manager';
+  if (isset($context['view_mode'])) {
+    $view_mode = $context['view_mode'];
+  }
+
   list($entity_id, $revision_id, $bundle) = entity_extract_ids($context['entity_type'], $entity);
   if (isset($context['panelizer_default'])) {
-    $entity->panelizer = $context['panelizer_default'];
-    $entity->panelizer['page_manager']->did = NULL;
+    $entity->panelizer[$view_mode] = $context['panelizer_default'];
+    $entity->panelizer[$view_mode]->did = NULL;
 
     // Ensure original values are maintained:
-    $entity->panelizer['page_manager']->entity_id = $entity_id;
-    $entity->panelizer['page_manager']->revision_id = $revision_id;
+    $entity->panelizer[$view_mode]->entity_id = $entity_id;
+    $entity->panelizer[$view_mode]->revision_id = $revision_id;
   }
   else {
-    $entity->panelizer['page_manager']->name = NULL;
-    $entity->panelizer['page_manager']->did = NULL;
+    $entity->panelizer[$view_mode]->name = NULL;
+    $entity->panelizer[$view_mode]->did = NULL;
   }
 }
 
@@ -1164,6 +1168,7 @@ function panelizer_set_status_action_form($context, &$form_state) {
   $entities = entity_load($context['entity_type'], $form_state['selection']);
   $bundles = array();
 
+  $handler = panelizer_entity_plugin_get_handler($context['entity_type']);
   // Collect our list of bundles.
   foreach ($entities as $entity) {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($context['entity_type'], $entity);
@@ -1182,18 +1187,46 @@ function panelizer_set_status_action_form($context, &$form_state) {
     if (empty($default->title)) {
       $default->title = t('Default');
     }
-    $options[$name] = t('@bundle: @title', array('@bundle' => $entity_info['bundles'][$default->panelizer_key]['label'], '@title' => $default->title));
+    $options[$default->view_mode][$name] = t('@bundle: @title', array('@bundle' => $entity_info['bundles'][$default->panelizer_key]['label'], '@title' => $default->title));
   }
 
-  natcasesort($options);
-  $options = array(
-    'not' => t('Not panelized'),
-  ) + $options;
+  $view_modes = array();
+  foreach ($handler->plugin['view modes'] as $view_mode => $view_mode_info) {
+    $view_modes[$view_mode] = $view_mode_info['label'];
+  }
 
-  $form['panelizer'] = array(
+  $form['panelizer']['#tree'] = TRUE;
+
+  foreach ($view_modes as $view_mode => $label) {
+    if (empty($options[$view_mode])) {
+      unset($view_modes[$view_mode]);
+      continue;
+    }
+
+    natcasesort($options[$view_mode]);
+    $panelizers = array(
+      'not' => t('Not panelized'),
+    ) + $options[$view_mode];
+
+
+    $form['panelizer'][$view_mode] = array(
+      '#type' => 'select',
+      '#title' => t('Panelizer status'),
+      '#options' => $panelizers,
+      '#states' => array(
+        'visible' => array(
+          '#panelizer-view-mode' => array('value' => $view_mode),
+        ),
+      ),
+    );
+  }
+
+  $form['view_mode'] = array(
     '#type' => 'select',
-    '#title' => t('Panelizer status'),
-    '#options' => $options,
+    '#title' => t('View mode'),
+    '#options' => $view_modes,
+    '#id' => 'panelizer-view-mode',
+    '#weight' => -10,
   );
 
   $form['#panelizer_defaults'] = $defaults;
@@ -1201,14 +1234,17 @@ function panelizer_set_status_action_form($context, &$form_state) {
 }
 
 function panelizer_set_status_action_submit($form, $form_state) {
+  $view_mode = $form_state['values']['view_mode'];
+  $panelizer = $form_state['values']['panelizer'][$view_mode];
+
   $retval = array(
-    'panelizer' => $form_state['values']['panelizer'],
+    'panelizer' => $panelizer,
+    'view_mode' => $view_mode,
   );
 
   if ($form_state['values']['panelizer'] != 'not') {
-    $retval['panelizer_default'] = $form['#panelizer_defaults'][$form_state['values']['panelizer']];
+    $retval['panelizer_default'] = $form['#panelizer_defaults'][$panelizer];
   }
 
   return $retval;
 }
-

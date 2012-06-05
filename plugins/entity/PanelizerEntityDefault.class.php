@@ -947,6 +947,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       if ($this->supports_revisions) {
         if (empty($panelizer->revision_id) || $panelizer->revision_id != $revision_id) {
+          $panelizer->revision_id = $revision_id;
           $update = array();
         }
         else {
