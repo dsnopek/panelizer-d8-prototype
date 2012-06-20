@@ -399,9 +399,11 @@ function panelizer_entity_plugin_process(&$plugin, $info) {
       ),
     );
 
-    foreach ($entity_info['view modes'] as $view_mode => $view_mode_info) {
-      if (!empty($view_mode_info['custom settings'])) {
-        $plugin['view modes'][$view_mode] = $view_mode_info;
+    if (!empty($entity_info['view modes'])) {
+      foreach ($entity_info['view modes'] as $view_mode => $view_mode_info) {
+        if (!empty($view_mode_info['custom settings'])) {
+          $plugin['view modes'][$view_mode] = $view_mode_info;
+        }
       }
     }
 
