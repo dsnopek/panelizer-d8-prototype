@@ -711,6 +711,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
   public function hook_entity_load(&$entities) {
     ctools_include('export');
     $ids = array();
+    $vids = array();
     $bundles = array();
 
     foreach ($entities as $entity) {
@@ -722,7 +723,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
       if ($this->is_panelized($bundle)) {
-        $ids[] = $this->supports_revisions ? $revision_id : $entity_id;
+        $ids[] = $entity_id;
+        if ($this->supports_revisions) {
+          $vids[] = $revision_id;
+        }
         $bundles[$entity_id] = $bundle;
       }
     }
@@ -733,7 +737,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     // Load all the panelizers associated with the list of entities.
     if ($this->supports_revisions) {
-      $result = db_query("SELECT * FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND revision_id IN (:ids)", array(':ids' => $ids));
+      $result = db_query("SELECT * FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id IN (:ids) AND revision_id IN (:vids)", array(':ids' => $ids, ':vids' => $vids));
     }
     else {
       $result = db_query("SELECT * FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id IN (:ids)", array(':ids' => $ids));
