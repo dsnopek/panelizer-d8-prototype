@@ -181,7 +181,7 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
   /**
    * Implements hook_views_plugins_alter().
    */
-  function hook_views_plugins_alter($plugins) {
+  function hook_views_plugins_alter(&$plugins) {
     // While it would be nice to genericize this plugin, there is no
     // generic entity view. This means that to genericize it we'll still
     // need to have each entity know how to do the view individually.
