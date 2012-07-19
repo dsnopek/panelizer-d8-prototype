@@ -21,7 +21,7 @@ Visit Configuration >> Panelizer to enable the module for the entities you
 need. You may need to visit Site Building >> Pages and enable the appropriate
 pages for supported entities.
 
-Note that in all cases, modifying panelizer settings for an entity requires
+Note that in all cases, modifying Panelizer settings for an entity requires
 update privileges for that entity.
 
 Panelizer operates in four basic modes:
@@ -45,7 +45,7 @@ Panelizer operates in four basic modes:
   "No Panel". When a panel has been chosen, users with permission can then
   customize that panel. Once this is done, the default choice will no
   longer be associated with the panel and a choice can no longer be made.
-  The "Reset" button on the panelizer settings tab for that entity can
+  The "Reset" button on the Panelizer settings tab for that entity can
   return the entity to a default state and restore the choice.
 
 - With default, With Choice
@@ -69,7 +69,7 @@ override.
 
 PERMISSIONS
 
-Once panelizer is enabled for an entity/bundle combination, it may be
+Once Panelizer is enabled for an entity/bundle combination, it may be
 necessary to visit People >> Permissions and give users appropriate
 permissions. All of the Panelizer tabs have their own permission, and
 if these are revoked it is possible to create panelized entities that can
@@ -111,6 +111,6 @@ entity.
 
 Future functionality
   - Implement panel subtabs. i.e, allow node/27/arbitrarylink to be a subtab
-    of an entity, using panelizer.
+    of an entity, using Panelizer.
   - Allow some other way of panelizing entities other than bundles. Either
     that or find a contrib module to allow users to have bundles.
