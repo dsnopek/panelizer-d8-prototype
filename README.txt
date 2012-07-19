@@ -57,15 +57,15 @@ Panelizer operates in four basic modes:
 
 VIEW MODES
 
-Panelizer will allow yout panelize each view mode individually. One view
-mode, the "Full page override" is not actually a view mode; it uses Page
-Manager to completely override the output of the page the entity is
-viewed one. This will often conflict somewhwat with the Default view
-mode. It is reommended that you do not panelize both the Default and
-the Full page override, but instead pick whichever one you think is most
-needed. The actually difference between the two are quite subtle: Placement
-of the title is different, and the comment form will not appear in the
-default view mode but it will appear in the full page override.
+Panelizer will allow you panelize each view mode individually. One view mode,
+the "Full page override" is not actually a view mode; it uses Page Manager to
+completely override the output of the page the entity is viewed one. This will
+often conflict somewhat with the Default view mode. It is recommended that you
+do not panelize both the Default and the Full page override, but instead pick
+whichever one you think is most needed. The actually difference between the two
+are quite subtle: Placement of the title is different, and the comment form
+will not appear in the default view mode but it will appear in the full page
+override.
 
 PERMISSIONS
 
