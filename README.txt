@@ -1,4 +1,4 @@
-ABOUT Panelizer 7.x-2.x
+ABOUT Panelizer 7.x-3.x
 
 Panelizer allows you to treat supported entity as panels, giving options
 for different default panels on a per bundle (node type/taxonomy vocabulary)
@@ -83,7 +83,7 @@ feature, though we are somewhat hampered by Drupal only allowing 2 levels
 of local tasks (tabs) where configuring for multiple view modes really would
 prefer a third level.
 
-Panelizer 7.x-2.x is Revision Aware. This has the downside that duplicating
+Panelizer 7.x-3.x is Revision Aware. This has the downside that duplicating
 panels for revisions can generate a lot of extra data. Please keep this in
 mind -- it may be necessary to periodically clean up older revisions. Panels
 will not duplicate a display if it thinks the display was not changed,
@@ -91,7 +91,7 @@ however.
 
 API
 
-Panelizer 7.x-2.x is constructed on an Object Oriented plugin. There is one
+Panelizer 7.x-3.x is constructed on an Object Oriented plugin. There is one
 plugin per entity type and it MUST be named exactly the same as the entity
 type. The easiest way to add Panelizer support for a custom entity is to 
 copy the node entity. 
