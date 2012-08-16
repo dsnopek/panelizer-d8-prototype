@@ -574,7 +574,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     );
 
     foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
-      $form['panelizer'][$view_mode] = array(
+      $form['panelizer']['view modes'][$view_mode] = array(
         '#type' => 'item',
         '#title' => $view_mode_info['label'],
         '#states' => array(
@@ -584,7 +584,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         ),
       );
 
-      $form['panelizer'][$view_mode]['status'] = array(
+      $form['panelizer']['view modes'][$view_mode]['status'] = array(
         '#title' => t('Panelize'),
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['status']),
@@ -595,7 +595,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           ),
         ),
       );
-      $form['panelizer'][$view_mode]['default'] = array(
+      $form['panelizer']['view modes'][$view_mode]['default'] = array(
         '#title' => t('Provide default panel'),
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['default']),
@@ -608,7 +608,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#description' => t('If checked, a default panel will be utilized for all existing and new entities.'),
       );
 
-      $form['panelizer'][$view_mode]['choice'] = array(
+      $form['panelizer']['view modes'][$view_mode]['choice'] = array(
         '#title' => t('Allow panel choice'),
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['choice']),
