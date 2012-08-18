@@ -1112,6 +1112,11 @@ function panelizer_features_export_alter(&$export, $module_name) {
       );
 
       if (module_exists('strongarm')) {
+        foreach ($variables as $key => $variable) {
+          if (variable_get($variable) === NULL) {
+            unset($variables[$key]);
+          }
+        }
         $variables = array_diff($variables, array_keys(strongarm_vars_load()));
       }
 
