@@ -1400,7 +1400,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Use array addition because forms will already be sorted so
       // #weight may not be effective.
       $output = array(
-          'panelizer_links' => array(
+        'panelizer_links' => array(
           '#markup' => $links,
           '#weight' => -10000,
         ),
