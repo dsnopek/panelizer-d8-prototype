@@ -25,19 +25,11 @@ function panelizer_admin_hook_menu(&$items) {
     'type' => MENU_NORMAL_ITEM,
   ) + $settings_base;
 
-  $items['admin/config/content/panelizer/%panelizer_handler/%'] = array(
-    'title callback' => 'panelizer_default_title_callback',
-    'title arguments' => array(4, 5),
+  $items['admin/config/content/panelizer/%panelizer_handler/%/allowed'] = array(
+    'title' => 'Allowed content',
     'page callback' => 'panelizer_allowed_content_page',
     'page arguments' => array(4, 5),
     'type' => MENU_CALLBACK,
-  ) + $settings_base;
-
-  $items['admin/config/content/panelizer/%panelizer_handler/%/allowed'] = array(
-    'title' => 'Available content',
-    'page callback' => 'panelizer_allowed_content_page',
-    'page arguments' => array(4, 5),
-    'type' => MENU_DEFAULT_LOCAL_TASK,
     'weight' => -10,
   ) + $settings_base;
 
@@ -49,10 +41,20 @@ function panelizer_admin_hook_menu(&$items) {
     'file' => 'includes/admin.inc',
   );
 
+  $items['admin/config/content/panelizer/%panelizer_handler/%'] = array(
+    'title callback' => 'panelizer_default_title_callback',
+    'title arguments' => array(4, 5),
+    'title' => 'Settings',
+    'page callback' => 'panelizer_default_settings_page',
+    'weight' => -5,
+    'type' => MENU_SUGGESTED_ITEM,
+  ) + $tabs_base;
+
   $items['admin/config/content/panelizer/%panelizer_handler/%/settings'] = array(
     'title' => 'Settings',
     'page callback' => 'panelizer_default_settings_page',
     'weight' => -5,
+    'type' => MENU_DEFAULT_LOCAL_TASK,
   ) + $tabs_base;
 
   $items['admin/config/content/panelizer/%panelizer_handler/%/context'] = array(

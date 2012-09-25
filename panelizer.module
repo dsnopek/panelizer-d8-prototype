@@ -672,7 +672,24 @@ function panelizer_default_title_callback($handler, $bundle) {
     return '';
   }
 
-  $title = $handler->get_bundle_title($bundle);
+  $entity_info = entity_get_info($handler->entity_type);
+
+  $title = $entity_info['label'];
+
+  if (strpos($bundle, '.') === FALSE) {
+    $bundle = $bundle;
+    $view_mode = '';
+  }
+  else {
+    list($bundle, $view_mode) = explode('.', $bundle);
+  }
+
+  $title .= ' | ' . $handler->get_bundle_title($bundle);
+
+  if ($view_mode && !empty($handler->plugin['view modes'][$view_mode]['label'])) {
+    $title .= ' | ' . $handler->plugin['view modes'][$view_mode]['label'];
+  }
+
   return $title;
 }
 

@@ -387,7 +387,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     ) + $settings_base;
 
     $items[$root . '/panelizer/allowed'] = array(
-      'title' => 'Available content',
+      'title' => 'Allowed content',
       'page callback' => 'panelizer_allowed_content_page',
       'page arguments' => array($this->entity_type, $bundle),
       'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -1290,6 +1290,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         );
       }
 
+      // Allow applications to add additional panelizer tabs.
+      drupal_alter('panelizer_overview_links', $links_array, $this->entity_type, $entity, $view_mode, $status, $panelized);
+
       $links = theme('links', array(
         'links' => $links_array,
         'attributes' => array('class' => 'links inline'),
@@ -1384,6 +1387,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'href' => $base_url . '/content',
       );
     }
+
+    // Allow applications to add additional panelizer tabs.
+    drupal_alter('panelizer_tab_links', $links_array, $this->entity_type, $bundle, $view_mode);
 
     // Only render if > 1 link, just like core.
     if (count($links_array) <= 1) {
