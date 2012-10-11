@@ -212,6 +212,12 @@ function panelizer_settings_page_form_submit($form, &$form_state) {
  * Page to configure what content is available for a given node type.
  */
 function panelizer_allowed_content_page($handler, $bundle) {
+  // Old URLs would include a view mode, but allowed content does not
+  // change for view modes, so make that version of the page not found.
+  if (strpos($bundle, '.') !== FALSE) {
+    return MENU_NOT_FOUND;
+  }
+
   if (is_string($handler)) {
     $handler = panelizer_entity_plugin_get_handler($handler);
   }
