@@ -277,8 +277,10 @@ function panelizer_ctools_plugin_api($module, $api) {
  */
 function panelizer_features_api() {
   $api = array();
-  $api['panelizer_defaults'] = _ctools_features_get_info('panelizer_defaults');
-  $api['panelizer_defaults']['alter_type'] = FEATURES_ALTER_TYPE_NONE;
+  if (function_exists('_ctools_features_get_info')) {
+    $api['panelizer_defaults'] = _ctools_features_get_info('panelizer_defaults');
+    $api['panelizer_defaults']['alter_type'] = FEATURES_ALTER_TYPE_NONE;
+  }
 
   return $api;
 }
