@@ -1040,6 +1040,7 @@ function panelizer_panels_cache_get($argument) {
   ctools_include('common', 'panels');
   $cache->display->cache_key = "panelizer:$type:$key";
   $cache->content_types = panels_common_get_allowed_types('panelizer_' . $type . ':' . $bundle, $cache->display->context);
+  $cache->display->allowed_layouts = panels_common_get_allowed_layouts('panelizer_' . $type . ':' . $bundle, $cache->display->context);
 
   return $cache;
 }
