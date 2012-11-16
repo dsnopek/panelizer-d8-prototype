@@ -2148,7 +2148,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
     }
 
-    $info['title'] = $display->get_title();
+    $info['title'] = $panelizer->display->get_title();
     return $info;
   }
 
