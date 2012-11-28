@@ -197,6 +197,7 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
       'uses options' => TRUE,
       'type' => 'normal',
       'register theme' => FALSE,
+      'name' => 'panelizer_node_view',
     );
   }
 }
