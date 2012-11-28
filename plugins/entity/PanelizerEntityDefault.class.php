@@ -1295,7 +1295,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       $links = theme('links', array(
         'links' => $links_array,
-        'attributes' => array('class' => 'links inline'),
+        'attributes' => array('class' => array('links', 'inline')),
       ));
 
       $row[] = $links;
@@ -1399,7 +1399,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // These fake tabs are pretty despicable, but they'll do.
     $links = '<div class="tabs clearfix">' . theme('links', array(
       'links' => $links_array,
-      'attributes' => array('class' => 'tabs secondary'),
+      'attributes' => array('class' => array('tabs', 'secondary')),
     )) . '</div>';
 
     if (is_array($output)) {
@@ -1891,7 +1891,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         );
         $links = theme('links', array(
           'links' => $links_array,
-          'attributes' => array('class' => 'links inline'),
+          'attributes' => array('class' => array('links', 'inline')),
         ));
       }
       else {
@@ -1994,7 +1994,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
           $links = theme('links', array(
             'links' => $links_array,
-            'attributes' => array('class' => 'links inline'),
+            'attributes' => array('class' => array('links', 'inline')),
           ));
         }
         else {
@@ -2024,7 +2024,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
           $links = theme('links', array(
             'links' => $links_array,
-            'attributes' => array('class' => 'links inline'),
+            'attributes' => array('class' => array('links', 'inline')),
           ));
         }
         else {
