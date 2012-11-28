@@ -2161,7 +2161,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    *   The render array that contains the entity.
    */
   public function get_entity_view_entity($build) {
-    $element = '#' . $entity_type;
+    $element = '#' . $this->entity_type;
     if (isset($build[$element])) {
       return $build[$element];
     }
