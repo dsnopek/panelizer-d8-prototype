@@ -243,17 +243,12 @@ function panelizer_entity_view_alter(&$build, $entity_type) {
     return;
   }
 
-  // Love this hack, eh?
-  if ($entity_type == 'user') {
-    $element = '#account';
+  $entity = $handler->get_entity_view_entity($build);
+
+  // Safety check in case we can't find the entity.
+  if (!$entity) {
+    return;
   }
-  elseif ($entity_type == 'taxonomy_term') {
-    $element = '#term';
-  }
-  else {
-    $element = '#' . $entity_type;
-  }
-  $entity = $build[$element];
 
   list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
 

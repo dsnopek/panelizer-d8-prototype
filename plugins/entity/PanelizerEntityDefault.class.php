@@ -147,6 +147,13 @@ interface PanelizerEntityInterface {
    */
   public function entity_bundle_label();
 
+  /**
+   * Fetch the entity out of a build for hook_entity_view.
+   *
+   * @param $build
+   *   The render array that contains the entity.
+   */
+  public function get_entity_view_entity($build);
 }
 
 /**
@@ -2224,6 +2231,19 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
   public function entity_bundle_label() {
     $entity_info = entity_get_info($this->entity_type);
     return t('@entity bundle', array('@entity' => $entity_info['label']));
+  }
+
+  /**
+   * Fetch the entity out of a build for hook_entity_view.
+   *
+   * @param $build
+   *   The render array that contains the entity.
+   */
+  public function get_entity_view_entity($build) {
+    $element = '#' . $entity_type;
+    if (isset($build[$element])) {
+      return $build[$element];
+    }
   }
 
   /**
