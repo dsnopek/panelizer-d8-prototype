@@ -873,7 +873,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
 
         // And write the new record.
-        drupal_write_record('panelizer_entity', $clone);
+        drupal_write_record('panelizer_entity', $panelizer);
       }
       else {
         // We write the panelizer record to record which name is being used.
