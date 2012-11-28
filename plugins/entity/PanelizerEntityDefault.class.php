@@ -991,7 +991,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $panelizer->name = NULL;
 
         // Make sure there is a view mode.
-        if (!isset($panelizer->view_mode)) {
+        if (empty($panelizer->view_mode)) {
           $panelizer->view_mode = $view_mode;
         }
 
