@@ -2057,6 +2057,17 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     ctools_include('plugins', 'panels');
     $renderer = panels_get_renderer($panelizer->pipeline, $display);
+
+    // If the IPE is enabled, but the user does not have access to edit
+    // the entity, load the standard renderer instead.
+
+    // use class_parents so we don't try to autoload the class we
+    // are testing.
+    $parents = class_parents($renderer);
+    if (!empty($parents['panels_renderer_editor']) && (!$this->panelizer_access('content', $entity, $view_mode) || !$this->entity_access('update', $entity))) {
+      $renderer = panels_get_renderer_handler('standard', $display);
+    }
+
     $renderer->address = $address;
 
     $info = array(
