@@ -544,6 +544,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     );
 
     foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
+      if (isset($this->plugin['view mode status'][$bundle][$view_mode]) && empty($this->plugin['view mode status'][$bundle][$view_mode])) {
+        continue;
+      }
       $form['panelizer']['view modes'][$view_mode] = array(
         '#type' => 'item',
         '#title' => $view_mode_info['label'],
@@ -1847,6 +1850,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       );
 
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
+        if (isset($this->plugin['view mode status'][$bundle][$view_mode]) && empty($this->plugin['view mode status'][$bundle][$view_mode])) {
+          continue;
+        }
+
         $base_id = str_replace(array('][', '_', ' '), '-', '#edit-entities-' . $this->entity_type . '-' . $bundle . '-' . $view_mode);
         $base_url = 'admin/config/content/panelizer/' . $this->entity_type . '/' . $bundle . '.' . $view_mode;
 

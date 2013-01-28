@@ -462,6 +462,12 @@ function panelizer_entity_plugin_process(&$plugin, $info) {
           $settings['status'] = $old_settings['status'];
         }
         $plugin['bundles'][$bundle] = $settings;
+
+        // Build the custom settings of the view modes for this bundle.
+        $view_mode_settings = field_view_mode_settings($entity_type, $bundle);
+        foreach ($entity_info['view modes'] as $view_mode_name => $view_mode_info) {
+          $plugin['view mode status'][$bundle][$view_mode_name] = !empty($view_mode_settings[$view_mode_name]['custom_settings']);
+        }
       }
     }
 
@@ -477,9 +483,7 @@ function panelizer_entity_plugin_process(&$plugin, $info) {
 
     if (!empty($entity_info['view modes'])) {
       foreach ($entity_info['view modes'] as $view_mode => $view_mode_info) {
-        if (!empty($view_mode_info['custom settings'])) {
-          $plugin['view modes'][$view_mode] = $view_mode_info;
-        }
+        $plugin['view modes'][$view_mode] = $view_mode_info;
       }
     }
 
