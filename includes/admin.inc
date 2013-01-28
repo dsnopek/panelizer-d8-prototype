@@ -243,7 +243,6 @@ function panelizer_default_settings_page($handler, $bundle, $name, $view_mode) {
   $form_state = array(
     'panelizer' => &$panelizer,
     'no_redirect' => TRUE,
-    'reset button' => TRUE,
     'view_mode' => $mode,
   );
 
@@ -254,16 +253,9 @@ function panelizer_default_settings_page($handler, $bundle, $name, $view_mode) {
   ctools_include('common', 'panelizer');
   $output = drupal_build_form('panelizer_settings_form', $form_state);
   if (!empty($form_state['executed'])) {
-    if (empty($form_state['clicked_button']['#reset'])) {
-      ctools_include('export');
-      ctools_export_crud_save('panelizer_defaults', $panelizer);
-      drupal_set_message(t('The settings have been updated.'));
-    }
-    else {
-      panelizer_delete_panelizer_defaults($panelizer);
-      drupal_set_message(t('The panelizer settings have been reset to the default.'));
-    }
-
+    ctools_include('export');
+    ctools_export_crud_save('panelizer_defaults', $panelizer);
+    drupal_set_message(t('The settings have been updated.'));
     drupal_goto($_GET['q']);
   }
 

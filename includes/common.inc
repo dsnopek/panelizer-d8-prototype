@@ -110,14 +110,6 @@ function panelizer_settings_form($form, &$form_state) {
     '#value' => t('Save'),
   );
 
-  if (!empty($form_state['reset button'])) {
-    $form['actions']['reset'] = array(
-      '#type' => 'submit',
-      '#value' => t('Reset to default'),
-      '#reset' => TRUE,
-   );
-  }
-
   return $form;
 }
 
@@ -312,6 +304,24 @@ function panelizer_panelize_entity_form($form, &$form_state) {
   );
 
   return $form;
+}
+
+/**
+ * Form used when an entity is panelized and is being reset.
+ */
+function panelizer_reset_entity_form($form, &$form_state) {
+  $entity_type = $form_state['panelizer']->entity_type;
+  $entity_info = entity_get_info($entity_type);
+  $form = array();
+
+  return confirm_form(
+    $form,
+    t('Are you sure you want to reset the panelizer status for this %entity?', array('%entity' => $entity_info['label'])),
+    dirname(dirname($_GET['q'])),
+    t('This %entity will be reset to the default panelizer state, discarding any modifications made to it. This action cannot be undone.', array('%entity' => $entity_info['label'])),
+    t('Reset'),
+    t('Cancel'),
+    'panelizer_reset_entity_confirm');
 }
 
 /**

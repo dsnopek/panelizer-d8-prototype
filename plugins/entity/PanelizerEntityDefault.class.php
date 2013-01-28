@@ -312,6 +312,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/' . $path]['file path'] = $operation['file path'];
           }
         }
+        // Add our special reset item:
+        $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/reset'] = array(
+          'title' => t('Reset to Defaults'),
+          'page callback' => 'panelizer_entity_plugin_switcher_page',
+          'page arguments' => array($this->entity_type, 'reset', $position, $view_mode),
+          'type' => MENU_CALLBACK,
+        ) + $base;
       }
     }
 
@@ -1238,6 +1245,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             );
           }
         }
+        if ($status == t('Custom')) {
+          $links_array['reset'] = array(
+            'title' => t('reset'),
+            'href' => $base_url . '/' . $view_mode . '/reset',
+          );
+        }
       }
       else {
         $links_array = array(
@@ -1364,6 +1377,30 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
   /**
    * Switched page callback to give the settings form.
    */
+  function page_reset($js, $input, $entity, $view_mode) {
+    $panelizer = $entity->panelizer[$view_mode];
+
+    $form_state = array(
+      'entity' => $entity,
+      'panelizer' => $panelizer,
+      'view_mode' => $view_mode,
+      'no_redirect' => TRUE,
+    );
+
+    ctools_include('common', 'panelizer');
+    $output = drupal_build_form('panelizer_reset_entity_form', $form_state);
+    if (!empty($form_state['executed'])) {
+      drupal_set_message(t('Panelizer information has been reset.'));
+      $this->delete_entity_panelizer($entity, $view_mode);
+      drupal_goto(dirname(dirname($_GET['q'])));
+    }
+
+    return $output;
+  }
+
+  /**
+   * Switched page callback to give the settings form.
+   */
   function page_settings($js, $input, $entity, $view_mode) {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
@@ -1384,7 +1421,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
     else {
       $form_id = 'panelizer_settings_form';
-      $reset_button = TRUE;
       $panelizer = $entity->panelizer[$view_mode];
     }
 
@@ -1396,26 +1432,17 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       'no_redirect' => TRUE,
     );
 
-    if (!empty($reset_button)) {
-      $form_state['reset button'] = TRUE;
-    }
-
     ctools_include('common', 'panelizer');
     $output = drupal_build_form($form_id, $form_state);
     if (!empty($form_state['executed'])) {
-      if (empty($form_state['clicked_button']['#reset'])) {
-        drupal_set_message(t('The settings have been updated.'));
-        $entity->panelizer[$view_mode] = $form_state['panelizer'];
-        // Make sure that entity_save knows that the panelizer settings
-        // are modified and must be made local to the entity.
-        if (empty($panelizer->did) || !empty($panelizer->name)) {
-          $panelizer->display_is_modified = TRUE;
-        }
-        $this->entity_save($entity);
+      drupal_set_message(t('The settings have been updated.'));
+      $entity->panelizer[$view_mode] = $form_state['panelizer'];
+      // Make sure that entity_save knows that the panelizer settings
+      // are modified and must be made local to the entity.
+      if (empty($panelizer->did) || !empty($panelizer->name)) {
+        $panelizer->display_is_modified = TRUE;
       }
-      else {
-        $this->delete_entity_panelizer($entity, $view_mode);
-      }
+      $this->entity_save($entity);
 
       drupal_goto($_GET['q']);
     }
