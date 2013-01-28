@@ -635,6 +635,31 @@ function panelizer_entity_plugin_callback_switcher($entity_type, $switcher_type,
 }
 
 /**
+ * Page callback to delegate to either the settings page or list page.
+ */
+function panelizer_default_list_or_settings_page($handler, $bundle, $name, $view_mode, $operation = 'list') {
+  if (is_string($handler)) {
+    $handler = panelizer_entity_plugin_get_handler($handler);
+  }
+
+  // We need a version of $bundle with $view_mode but we need to retain one
+  // without it so we can pass straight $bundle to the settings page.
+  $test_bundle = $bundle;
+  if ($view_mode) {
+    $test_bundle .= '.' . $view_mode;
+  }
+
+  if ($handler->has_panel_choice($test_bundle)) {
+    // Call through to the UI switcher for the list
+    ctools_include('export-ui');
+    return panelizer_export_ui_switcher_page($handler, $test_bundle, 'panelizer_defaults', $operation);
+  }
+  else {
+    return panelizer_default_settings_page($handler, $bundle, $name, $view_mode);
+  }
+}
+
+/**
  * Specialized version of ctools_export_ui_switcher_page()
  *
  * This one is designed to set our entity handler and bundle on the
@@ -772,6 +797,13 @@ function panelizer_has_choice_callback($handler, $bundle, $name = NULL) {
   }
 
   return $handler->has_panel_choice($bundle);
+}
+
+/**
+ * Menu callback to determine if a type has a choice of defaults, with view mode.
+ */
+function panelizer_has_choice_callback_view_mode($handler, $bundle, $view_mode) {
+  return panelizer_has_choice_callback($handler, $bundle . '.' . $view_mode);
 }
 
 /**

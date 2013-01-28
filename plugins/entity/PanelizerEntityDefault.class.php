@@ -477,9 +477,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Change the callbacks for everything:
       foreach ($ui_items as $key => $item) {
         // originally admin/config/content/panelizer/%panelizer_handler
-        $ui_items[$key]['access callback'] = 'panelizer_has_choice_callback';
-        $ui_items[$key]['access arguments'] = array($this->entity_type, $bundle, '');
-        $ui_items[$key]['page callback'] = 'panelizer_export_ui_switcher_page';
+        $ui_items[$key]['access callback'] = 'panelizer_has_choice_callback_view_mode';
+        $ui_items[$key]['access arguments'] = array($this->entity_type, $bundle, $view_mode);
+        $ui_items[$key]['page callback'] = 'panelizer_default_list_or_settings_page';
+        $ui_items[$key]['page arguments'][0] = $view_mode;
+        array_unshift($ui_items[$key]['page arguments'], '');
         array_unshift($ui_items[$key]['page arguments'], $bundle);
         array_unshift($ui_items[$key]['page arguments'], $this->entity_type);
         $ui_items[$key]['path'] = str_replace('list/', '', $ui_items[$key]['path']);

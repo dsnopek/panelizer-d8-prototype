@@ -215,31 +215,6 @@ function panelizer_allowed_content_page($handler, $bundle) {
 }
 
 /**
- * Page callback to delegate to either the settings page or list page.
- */
-function panelizer_default_list_or_settings_page($handler, $bundle, $name, $view_mode) {
-  if (is_string($handler)) {
-    $handler = panelizer_entity_plugin_get_handler($handler);
-  }
-
-  // We need a version of $bundle with $view_mode but we need to retain one
-  // without it so we can pass straight $bundle to the settings page.
-  $test_bundle = $bundle;
-  if ($view_mode) {
-    $test_bundle .= '.' . $view_mode;
-  }
-
-  if ($handler->has_panel_choice($test_bundle)) {
-    // Call through to the UI switcher for the list
-    ctools_include('export-ui');
-    return panelizer_export_ui_switcher_page($handler, $test_bundle, 'panelizer_defaults', 'list');
-  }
-  else {
-    return panelizer_default_settings_page($handler, $bundle, $name, $view_mode);
-  }
-}
-
-/**
  * Page to configure basic settings for a panelizer default.
  */
 function panelizer_default_settings_page($handler, $bundle, $name, $view_mode) {
