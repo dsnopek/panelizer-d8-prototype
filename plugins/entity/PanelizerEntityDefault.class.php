@@ -2185,6 +2185,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     if (isset($build[$element])) {
       return $build[$element];
     }
+    else if (isset($build['#entity'])) {
+      return $build['#entity'];
+    }
   }
 
   /**
