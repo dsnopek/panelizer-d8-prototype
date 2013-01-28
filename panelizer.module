@@ -255,7 +255,9 @@ function panelizer_entity_view_alter(&$build, $entity_type) {
   // If the requested view mode does not exist, rendering will fall back
   // to 'default' and we should check that one instead.
   $view_mode = $build['#view_mode'];
-  if (!isset($handler->plugin['view modes'][$view_mode])) {
+
+  // Test to see if this view mode is actually panelizable at all.
+  if (!isset($handler->plugin['view modes'][$view_mode]) || (empty($handler->plugin['view modes'][$view_mode]['custom settings']) && empty($handler->plugin['view mode status'][$bundle][$view_mode]))) {
     $view_mode = 'default';
   }
 
