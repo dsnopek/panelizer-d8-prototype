@@ -83,6 +83,15 @@ function panelizer_settings_form($form, &$form_state) {
       '#description' => t('The CSS class to apply to this panel. You may use context substitions here.'),
     );
   }
+  else {
+    $form['css_class'] = array(
+      '#type' => 'textfield',
+      '#size' => 35,
+      '#default_value' => $panelizer->css_class,
+      '#title' => t('Body class'),
+      '#description' => t('The CSS class to apply to the BODY tag. You may use context substitions here.'),
+    );
+  }
 
   $form['css_id'] = array(
     '#type' => 'textfield',
@@ -122,10 +131,10 @@ function panelizer_settings_form_submit(&$form, &$form_state) {
     $panelizer->no_blocks = $form_state['values']['no_blocks'];
   }
   else {
-    $panelizer->css_class = $form_state['values']['css_class'];
     $panelizer->title_element = $form_state['values']['title_element'];
   }
 
+  $panelizer->css_class = $form_state['values']['css_class'];
   $panelizer->css = $form_state['values']['css'];
   $panelizer->css_id = $form_state['values']['css_id'];
   $panelizer->pipeline = $form_state['values']['pipeline'];

@@ -240,7 +240,15 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   $address = implode('::', array('page_manager', $handler->task, $handler->subtask, $handler->name, implode('..', $args)));
 
   if ($entity_handler = panelizer_entity_plugin_get_handler($entity_type)) {
-    return $entity_handler->render_entity($context->data, 'page_manager', NULL, $args, $address);
+    $info = $entity_handler->render_entity($context->data, 'page_manager', NULL, $args, $address);
+
+    // Remove and add body element classes
+    $panel_body_css = &drupal_static('panel_body_css');
+    if (!empty($info['classes_array']) && !isset($panel_body_css['body_classes_to_add'])) {
+      $panel_body_css['body_classes_to_add'] = implode(' ', $info['classes_array']);
+    }
+
+    return $info;
   }
 }
 
