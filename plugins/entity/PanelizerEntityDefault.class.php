@@ -1215,6 +1215,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $panelized = TRUE;
 
       if (!empty($entity->panelizer[$view_mode]->name)) {
+        ctools_include('export');
         $panelizer = ctools_export_crud_load('panelizer_defaults', $entity->panelizer[$view_mode]->name);
         $status = !empty($panelizer->title) ? check_plain($panelizer->title) : t('Default');
       }
