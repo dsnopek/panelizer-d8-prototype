@@ -259,7 +259,7 @@ function panelizer_default_settings_page($handler, $bundle, $name, $view_mode) {
     drupal_goto($_GET['q']);
   }
 
-  if ($view_mode) {
+  if ($view_mode && !$handler->has_panel_choice($bundle)) {
     $output = $handler->wrap_default_panelizer_pages($bundle, $output);
   }
 
@@ -321,7 +321,7 @@ function panelizer_default_context_page($handler, $bundle, $name, $view_mode) {
     drupal_goto($_GET['q']);
   }
 
-  if ($view_mode) {
+  if ($view_mode && !$handler->has_panel_choice($bundle)) {
     $output = $handler->wrap_default_panelizer_pages($bundle, $output);
   }
 
@@ -370,7 +370,7 @@ function panelizer_default_layout_page($handler, $bundle, $name, $view_mode, $st
     drupal_goto($path . '/content');
   }
 
-  if ($view_mode) {
+  if ($view_mode && !$handler->has_panel_choice($bundle)) {
     $output = $handler->wrap_default_panelizer_pages($bundle, $output);
   }
 
@@ -481,7 +481,7 @@ function panelizer_default_content_page($handler, $bundle, $name, $view_mode) {
 
   ctools_set_no_blocks(FALSE);
 
-  if ($view_mode) {
+  if ($view_mode && !$handler->has_panel_choice($bundle)) {
     $output = $handler->wrap_default_panelizer_pages($bundle, $output);
   }
 
