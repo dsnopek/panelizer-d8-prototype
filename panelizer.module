@@ -643,7 +643,7 @@ function panelizer_entity_plugin_callback_switcher($entity_type, $switcher_type,
 /**
  * Page callback to delegate to either the settings page or list page.
  */
-function panelizer_default_list_or_settings_page($handler, $bundle, $name, $view_mode, $operation = 'list') {
+function panelizer_default_list_or_settings_page($handler, $bundle, $name, $view_mode, $operation = 'list', $item = NULL) {
   if (is_string($handler)) {
     $handler = panelizer_entity_plugin_get_handler($handler);
   }
@@ -658,7 +658,7 @@ function panelizer_default_list_or_settings_page($handler, $bundle, $name, $view
   if ($handler->has_panel_choice($test_bundle)) {
     // Call through to the UI switcher for the list
     ctools_include('export-ui');
-    return panelizer_export_ui_switcher_page($handler, $test_bundle, 'panelizer_defaults', $operation);
+    return panelizer_export_ui_switcher_page($handler, $test_bundle, 'panelizer_defaults', $operation, $item);
   }
   else {
     return panelizer_default_settings_page($handler, $bundle, $name, $view_mode);
