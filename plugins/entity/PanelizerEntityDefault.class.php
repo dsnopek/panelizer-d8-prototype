@@ -2124,6 +2124,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
     }
 
+    if (!empty($parents['panels_renderer_editor'])) {
+      ctools_add_css('panelizer-ipe', 'panelizer');
+      ctools_add_js('panelizer-ipe', 'panelizer');
+      drupal_add_js(drupal_get_path('module', 'panelizer') . "/js/panelizer-ipe.js", array('group' => JS_LIBRARY));
+    }
+
     $info['title'] = $panelizer->display->get_title();
     return $info;
   }
