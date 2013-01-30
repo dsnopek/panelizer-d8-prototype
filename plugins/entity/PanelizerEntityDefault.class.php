@@ -219,6 +219,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           '%entity_name' => $entity_info['label'],
           '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
         )),
+        'description' => t('Allow access to the panelizer overview page for the entity type/bundle. Note: This permission will be required for panelizer tabs to appear on an entity.'),
       );
       foreach (panelizer_operations() as $path => $operation) {
         $items["administer panelizer $this->entity_type $bundle $path"] = array(
