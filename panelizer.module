@@ -1176,6 +1176,7 @@ function panelizer_panels_cache_save($argument, $cache) {
   // If this is set, they clicked a button that saves a different panelizer
   // than was being edited, such as saving to default rather than customizing
   // an entity.
+  $original = $argument;
   if (isset($cache->display->swap_cache_key)) {
     $argument = $cache->display->swap_cache_key;
   }
@@ -1191,7 +1192,6 @@ function panelizer_panels_cache_save($argument, $cache) {
   if (!$handler) {
     return;
   }
-
 
   if (!empty($get_default)) {
     $panelizer = $handler->get_default_panelizer_object($bundle, $name);
@@ -1212,7 +1212,7 @@ function panelizer_panels_cache_save($argument, $cache) {
       $cache->display->context = $handler->get_contexts($entities[$entity_id]->panelizer[$view_mode], $entities[$entity_id]);
     }
   }
-  panelizer_panels_cache_clear($argument, $cache);
+  panelizer_panels_cache_clear($original, $cache);
 }
 
 // ---------------------------------------------------------------------------
@@ -1531,6 +1531,22 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
   // Change the default button to say "Save as custom".
   $form['buttons']['submit']['#value'] = t('Save as custom');
 
+  // Calculate the proper name to add to the cache key, which
+  // has some data stripped off of the true name.
+  if (empty($panelizer->name)) {
+    $name = 'default';
+  }
+  else {
+    $pieces = explode(':', $panelizer->name);
+    // Strip off entity type
+    array_shift($pieces);
+    // Strip off entity bundle
+    array_shift($pieces);
+    // Strip off view mode
+    array_shift($pieces);
+    $name = implode(':', $pieces);
+  }
+
   // Add another button to save as the default instead:
   $form['buttons']['save_default'] = array(
     '#type' => 'submit',
@@ -1540,7 +1556,7 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
     '#weight' => -1,
     // precalculate the cache key so we don't have to unwind a bunch of stuff
     // in the submit handler.
-    '#cache_key' => 'default:' . $handler->entity_type . ':' . $bundle . '.' . $panelizer->view_mode . ':' . $panelizer->name,
+    '#cache_key' => 'default:' . $handler->entity_type . ':' . $bundle . '.' . $panelizer->view_mode . ':' . $name,
     '#attributes' => array('class' => array('panels-ipe-save')),
     '#id' => 'panelizer-save-default',
   );
