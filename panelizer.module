@@ -332,7 +332,12 @@ function panelizer_features_api() {
   $api = array();
   if (function_exists('_ctools_features_get_info') && defined('FEATURES_ALTER_TYPE_NONE')) {
     $api['panelizer_defaults'] = _ctools_features_get_info('panelizer_defaults');
-    $api['panelizer_defaults']['alter_type'] = FEATURES_ALTER_TYPE_NONE;
+    // CTools calls our hook_panelizer_defaults_alter so prevent Features from
+    // calling it too. FEATURES_ALTER_TYPE_INLINE means we are handling alter
+    // hooks ourselves here.
+    $api['panelizer_defaults']['alter_type'] = FEATURES_ALTER_TYPE_INLINE;
+    // Provide a separate alter hook for features_override.
+    $api['panelizer_defaults']['alter_hook'] = 'panelizer_defaults_override';
   }
 
   return $api;
@@ -356,6 +361,9 @@ function panelizer_panelizer_defaults_alter(&$items) {
   foreach (panelizer_get_plugins_with_hook('panelizer_defaults') as $handler) {
     $handler->hook_panelizer_defaults($items);
   }
+
+  // Allow features_overrides to alter the config.
+  drupal_alter('panelizer_defaults_override', $items);
 }
 
 /**
