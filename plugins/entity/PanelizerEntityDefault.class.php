@@ -231,14 +231,20 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         );
       }
 
-      if (!empty($settings['choice'])) {
-        $items["administer panelizer $this->entity_type $bundle choice"] = array(
-          'title' => t('%entity_name %bundle_name: Choose panels', array(
-            '%entity_name' => $entity_info['label'],
-            '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
-          )),
-          'description' => t('Allows the user to choose which default panel the entity uses.'),
-        );
+      // Account for the choice permission when dealing with view modes.
+      foreach ($settings['view modes'] as $view_mode => $view_mode_settings) {
+        if (!empty($view_mode_settings['choice'])) {
+          $items["administer panelizer $this->entity_type $bundle choice"] = array(
+            'title' => t('%entity_name %bundle_name: Choose panels', array(
+              '%entity_name' => $entity_info['label'],
+              '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
+            )),
+            'description' => t('Allows the user to choose which default panel the entity uses.'),
+          );
+          // Break out of loop after finding one we just need to see if we should
+          // enable the permission.
+          break;
+        }
       }
     }
   }
