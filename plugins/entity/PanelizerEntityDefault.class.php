@@ -539,15 +539,15 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       '#collapsed' => FALSE,
       '#group' => 'additional_settings',
       '#attributes' => array(
-        'class' => array('panelizer-node-type-settings-form'),
+        'class' => array('panelizer-entity-bundle'),
       ),
       '#bundle' => $bundle,
       '#location' => $type_location,
       '#tree' => TRUE,
       '#access' => panelizer_administer_entity_bundle($this, $bundle),
-//      '#attached' => array(
-//        'js' => array(drupal_get_path('module', 'comment') . '/panelizer-entity-form.js'),
-//      ),
+      '#attached' => array(
+        'js' => array(ctools_attach_js('panelizer-entity-bundle', 'panelizer')),
+      ),
     );
 
     $form['panelizer']['status'] = array(
@@ -576,6 +576,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['status']),
         '#id' => 'panelizer-' . $view_mode . '-status',
+        '#attributes' => array(
+          'title' => $view_mode_info['label'],
+        ),
         '#states' => array(
           'visible' => array(
             '#panelizer-status' => array('checked' => TRUE),
