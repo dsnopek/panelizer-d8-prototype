@@ -20,7 +20,7 @@ Drupal.behaviors.panelizerFieldsetSummary = {
         vals.push(Drupal.t("@name: enabled", {'@name' : $(this).attr('title')}));
       });
 
-      // It allows no view modes to be selected.
+      // The view modes might not actually be enabled.
       if (vals.length == 0) {
         return Drupal.t('No view modes enabled');
       }
