@@ -2,7 +2,7 @@
 /**
  * @file
  *
- * Documentation for panelizer hooks.
+ * Documentation for Panelizer's hooks.
  */
 
 /**
