@@ -12,6 +12,19 @@ define('PANELIZER_VERSION', '3.0');
 // Drupal core hooks
 
 /**
+ * Implements hook_hook_info().
+ */
+function panelizer_hook_info() {
+  $hooks = array(
+    'panelizer_defaults_override_alter',
+    'panelizer_entity_plugin_process_alter',
+    'panelizer_operations_alter',
+  );
+
+  return array_fill_keys($hooks, array('group' => 'panelizer'));
+}
+
+/**
  * Implements hook_permission().
  */
 function panelizer_permission() {

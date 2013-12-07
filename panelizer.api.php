@@ -6,6 +6,14 @@
  */
 
 /**
+ * Allow panelizer_defaults_override to be customized.
+ *
+ * Primarily for use by Features Overrides.
+ */
+function hook_panelizer_defaults_override_alter(&$items) {
+}
+
+/**
  * Add operations to Panelizer objects.
  *
  * Operations can be performed on panelizer defaults as well as entities.
@@ -39,4 +47,10 @@ function hook_panelizer_operations_alter(&$operations) {
     'entity callback' => 'mymodule_panelizer_example_entity_page',
     'admin callback' => 'mymodule_panelizer_example_admin_page',
   );
+}
+
+/**
+ * Allow panelizer_entity_plugin_process to be customized.
+ */
+function hook_panelizer_entity_plugin_process_alter(&$plugin, $info) {
 }
