@@ -589,6 +589,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#title' => t('Provide default panel'),
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['default']),
+        '#id' => 'panelizer-' . $view_mode . '-initial',
         '#states' => array(
           'visible' => array(
             '#panelizer-status' => array('checked' => TRUE),
@@ -602,6 +603,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#title' => t('Allow panel choice'),
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['choice']),
+        '#id' => 'panelizer-' . $view_mode . '-choice',
         '#states' => array(
           'visible' => array(
             '#panelizer-status' => array('checked' => TRUE),
