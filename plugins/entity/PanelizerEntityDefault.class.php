@@ -988,7 +988,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
 
         // And write the new record.
-        return drupal_write_record('panelizer_entity', $panelizer, $update);
+        drupal_write_record('panelizer_entity', $panelizer, $update);
       }
       else {
         $panelizer->entity_type = $this->entity_type;
