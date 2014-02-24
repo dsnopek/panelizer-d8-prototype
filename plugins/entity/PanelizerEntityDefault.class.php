@@ -878,6 +878,17 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $view_mode = 'page_manager';
       }
 
+      // In certain circumstances $panelizer will be the default's name rather
+      // than a full object.
+      if (!is_object($panelizer) && is_array($panelizer) && !empty($panelizer['name'])) {
+        $panelizer = $this->get_default_panelizer_object($bundle . '.' . $view_mode, $panelizer['name']);
+        $panelizer->did = NULL;
+
+        // Ensure original values are maintained.
+        $panelizer->entity_id = $entity_id;
+        $panelizer->revision_id = $revision_id;
+      }
+
       // On entity insert, we only write the display if it is not a default.
       // That probably means it came from an export or deploy or something
       // along those lines.
