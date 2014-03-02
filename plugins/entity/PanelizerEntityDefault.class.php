@@ -947,6 +947,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     foreach ($entity->panelizer as $view_mode => $panelizer) {
+      // In some cases $panelizer is array, convert it to an object.
+      if (is_array($panelizer)) {
+        $panelizer = (object) $panelizer;
+      }
+
       // Just a safety check to make sure we can't have a missing view mode.
       if (empty($view_mode)) {
         $view_mode = 'page_manager';
