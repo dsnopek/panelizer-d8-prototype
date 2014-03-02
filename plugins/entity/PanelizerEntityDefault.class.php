@@ -835,7 +835,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $entity->panelizer[$view_mode]->did = NULL;
           }
         }
-        else if (empty($entity->panelizer[$view_mode]->display)) {
+        elseif (empty($entity->panelizer[$view_mode]->display)) {
           if (!empty($entity->panelizer[$view_mode]->did)) {
             if (empty($displays[$entity->panelizer[$view_mode]->did])) {
               // Somehow the display for this entity has gotten lost?
@@ -848,7 +848,25 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           }
           else {
             if (!empty($panelizer_defaults[$entity->panelizer[$view_mode]->name])) {
-              $entity->panelizer[$view_mode]->display = $panelizer_defaults[$entity->panelizer[$view_mode]->name]->display;
+              // Reload the settings from the default configuration.
+              $settings = array(
+                'contexts',
+                'css',
+                'css_class',
+                'css_id',
+                'display',
+                'extra',
+                'link_to_entity',
+                'no_blocks',
+                'pipeline',
+                'relationships',
+                'title_element',
+              );
+              foreach ($settings as $setting) {
+                if (isset($panelizer_defaults[$entity->panelizer[$view_mode]->name]->$setting)) {
+                  $entity->panelizer[$view_mode]->$setting = $panelizer_defaults[$entity->panelizer[$view_mode]->name]->$setting;
+                }
+              }
             }
           }
         }
