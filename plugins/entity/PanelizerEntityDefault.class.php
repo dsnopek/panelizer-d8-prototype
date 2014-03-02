@@ -1018,7 +1018,21 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           $panelizer->view_mode = $view_mode;
         }
 
+        // Update the existing record.
         drupal_write_record('panelizer_entity', $panelizer, $update);
+      }
+
+      // If there was a CSS value saved before, update the exported file. This
+      // is done after the entity is updated to ensure that the next page load
+      // gets the new file.
+      ctools_include('css');
+      $cache_key = implode(':', array('panelizer', $this->entity_type, $entity_id, $view_mode));
+      $filename = ctools_css_retrieve($cache_key);
+      if ($filename) {
+        ctools_css_clear($cache_key);
+      }
+      if (!empty($panelizer->css)) {
+        ctools_css_store($cache_key, $panelizer->css);
       }
     }
   }
