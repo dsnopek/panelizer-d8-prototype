@@ -463,3 +463,35 @@ function panelizer_update_7110() {
     array('primary key' => array('entity_type', 'entity_id', 'revision_id', 'view_mode'))
   );
 }
+
+/**
+ * Delete all default {panelizer_entity} records, they will be handled
+ * automatically.
+ */
+function panelizer_update_7111() {
+  // Loop through all entity types.
+  foreach (entity_get_info() as $entity_type => $entity_info) {
+    // Only proceed if this entity has view modes and bundles.
+    if (!empty($entity_info['view modes']) && is_array($entity_info['view modes'])
+      && !empty($entity_info['bundles']) && is_array($entity_info['bundles'])) {
+      // Also add an item for the 'default' display.
+      $view_modes = $entity_info['view modes'] + array('default');
+      foreach ($view_modes as $view_mode => $view_mode_info) {
+        foreach ($entity_info['bundles'] as $bundle => $bundle_info) {
+          $default_name = implode(':', array($entity_type, $bundle, 'default'));
+          if ($view_mode != 'page_manager') {
+            $default_name .= ':' . $view_mode;
+          }
+          // Update each record that has the default selection. Records are
+          // using a default value if a) the 'name' is the same as a default,
+          // and b) the did is 0.
+          db_delete('panelizer_entity')
+            ->condition('entity_type', $entity_type)
+            ->condition('name', $default_name)
+            ->condition('did', 0)
+            ->execute();
+        }
+      }
+    }
+  }
+}

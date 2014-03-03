@@ -835,7 +835,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $entity->panelizer[$view_mode]->did = NULL;
           }
         }
-        elseif (empty($entity->panelizer[$view_mode]->display)) {
+        elseif (empty($entity->panelizer[$view_mode]->display) || empty($entity->panelizer[$view_mode]->did)) {
           if (!empty($entity->panelizer[$view_mode]->did)) {
             if (empty($displays[$entity->panelizer[$view_mode]->did])) {
               // Somehow the display for this entity has gotten lost?
@@ -846,28 +846,15 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
               $entity->panelizer[$view_mode]->display = $displays[$entity->panelizer[$view_mode]->did];
             }
           }
-          else {
-            if (!empty($panelizer_defaults[$entity->panelizer[$view_mode]->name])) {
-              // Reload the settings from the default configuration.
-              $settings = array(
-                'contexts',
-                'css',
-                'css_class',
-                'css_id',
-                'display',
-                'extra',
-                'link_to_entity',
-                'no_blocks',
-                'pipeline',
-                'relationships',
-                'title_element',
-              );
-              foreach ($settings as $setting) {
-                if (isset($panelizer_defaults[$entity->panelizer[$view_mode]->name]->$setting)) {
-                  $entity->panelizer[$view_mode]->$setting = $panelizer_defaults[$entity->panelizer[$view_mode]->name]->$setting;
-                }
-              }
-            }
+          // Load the appropriate default display for this view mode.
+          elseif (!empty($panelizer_defaults[$entity->panelizer[$view_mode]->name])) {
+            $entity->panelizer[$view_mode] = clone $panelizer_defaults[$entity->panelizer[$view_mode]->name];
+            // Make this record match would come from {panelizer_entity}; used
+            // elsewhere.
+            $entity->panelizer[$view_mode]->did = NULL;
+            list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
+            $entity->panelizer[$view_mode]->entity_id = $entity_id;
+            $entity->panelizer[$view_mode]->revision_id = (int) $revision_id;
           }
         }
       }
@@ -907,30 +894,36 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $panelizer->revision_id = $revision_id;
       }
 
-      // On entity insert, we only write the display if it is not a default.
-      // That probably means it came from an export or deploy or something
-      // along those lines.
+      // Work out the default display name for this bundle & view mode.
+      $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
+      if ($view_mode != 'page_manager') {
+        $default_name .= ':' . $view_mode;
+      }
+
+      // May not need to save the record.
+      $save_panelizer = FALSE;
+
+      // Scenario 1: This is a custom display, i.e. not a default. That
+      // probably means it came from an export or deploy or something along
+      // those lines.
       if (empty($panelizer->name) && !empty($panelizer->display)) {
         // Ensure we don't accidentally overwrite existing display
         // data or anything silly like that.
         $panelizer = $this->clone_panelizer($panelizer, $entity);
-        // First write the display
+        // First, write the display.
         panels_save_display($panelizer->display);
 
         // Make sure we have the new did.
         $panelizer->did = $panelizer->display->did;
 
-        // Make sure there is a view mode.
-        if (empty($panelizer->view_mode)) {
-          $panelizer->view_mode = $view_mode;
-        }
-
-        // And write the new record.
-        drupal_write_record('panelizer_entity', $panelizer);
+        // Save the record.
+        $save_panelizer = TRUE;
       }
-      else {
-        // We write the panelizer record to record which name is being used.
-        // And ensure the did is NULL:
+
+      // Scenario 2: The selected display is not the default display.
+      elseif (!empty($panelizer->name) && $panelizer->name != $default_name) {
+        // We write the panelizer record to record which name is being used,
+        // and ensure the did is NULL.
         $panelizer->did = NULL;
         $panelizer->entity_type = $this->entity_type;
         $panelizer->entity_id = $entity_id;
@@ -938,11 +931,18 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         // since the revision_id cannot be NULL.
         $panelizer->revision_id = (int) $revision_id;
 
+        // Save the record.
+        $save_panelizer = TRUE;
+      }
+
+      // Only save the record if one of the above scenarios matches.
+      if ($save_panelizer) {
         // Make sure there is a view mode.
         if (empty($panelizer->view_mode)) {
           $panelizer->view_mode = $view_mode;
         }
 
+        // And write the new record.
         drupal_write_record('panelizer_entity', $panelizer);
       }
     }
@@ -954,7 +954,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       return;
     }
 
-    // If there's no panelizer information on the entity then there is nothing to do.
+    // If there's no panelizer information on the entity then there is nothing
+    // to do.
     if (empty($entity->panelizer)) {
       return;
     }
@@ -975,6 +976,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $view_mode = 'page_manager';
       }
 
+      // Work out the default display name for this bundle & view mode.
+      $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
+      if ($view_mode != 'page_manager') {
+        $default_name .= ':' . $view_mode;
+      }
+
+      // May not need to save the record.
+      $save_panelizer = FALSE;
+
+      // Work out how to save this record. 
       if ($this->supports_revisions) {
         if (empty($panelizer->revision_id) || $panelizer->revision_id != $revision_id) {
           $panelizer->revision_id = $revision_id;
@@ -993,50 +1004,69 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
       }
 
+      // Scenario 1: This is a custom display, just save it.
       // The editor will set this flag if the display is modified. This lets
       // us know if we need to clone a new display or not.
       // NOTE: This means that when exporting or deploying, we need to be sure
       // to set the display_is_modified flag to ensure this gets written.
       if (!empty($panelizer->display_is_modified)) {
-        // If this is a new entry or the entry is using a display from a default,
-        // clone the display.
+        // If this is a new entry or the entry is using a display from a
+        // default, clone the display.
         if (!$update || empty($panelizer->did)) {
           $entity->panelizer[$view_mode] = $panelizer = $this->clone_panelizer($panelizer, $entity);
 
-          // Update the cache key since we are adding a new display
+          // Update the cache key since we are adding a new display.
           $panelizer->display->cache_key = implode(':', array('panelizer', $panelizer->entity_type, $panelizer->entity_id, $view_mode));
         }
 
-        // First write the display
+        // First write the display.
         panels_save_display($panelizer->display);
 
         // Make sure we have the did.
         $panelizer->did = $panelizer->display->did;
 
-        // Ensure that we always write this as NULL when we have our own panel:
+        // Ensure that we always write this as NULL when we have our own
+        // panel.
         $panelizer->name = NULL;
 
-        // Make sure there is a view mode.
-        if (empty($panelizer->view_mode)) {
-          $panelizer->view_mode = $view_mode;
-        }
-
-        // And write the new record.
-        drupal_write_record('panelizer_entity', $panelizer, $update);
+        // Save the record.
+        $save_panelizer = TRUE;
       }
-      else {
+
+      // Scenario 2:
+      // Display is set to the default display.
+      elseif (!empty($panelizer->name) && $panelizer->name == $default_name) {
+        // Delete the existing record, if one exists.
+        db_delete('panelizer_entity')
+          ->condition('entity_type', $this->entity_type)
+          ->condition('entity_id', $entity_id)
+          ->condition('revision_id', $revision_id)
+          ->condition('view_mode', $view_mode)
+          ->execute();
+      }
+
+      // Scenario 3:
+      // Display is set to a non-default display.
+      elseif (!empty($panelizer->name) && $panelizer->name != $default_name) {
+        $panelizer->did = NULL;
         $panelizer->entity_type = $this->entity_type;
         $panelizer->entity_id = $entity_id;
         // The (int) ensures that entities that do not support revisions work
         // since the revision_id cannot be NULL.
         $panelizer->revision_id = (int) $revision_id;
 
+        // Save the record.
+        $save_panelizer = TRUE;
+      }
+
+      // Only save the record if one of the above scenarios matches.
+      if ($save_panelizer) {
         // Make sure there is a view mode.
         if (empty($panelizer->view_mode)) {
           $panelizer->view_mode = $view_mode;
         }
 
-        // Update the existing record.
+        // And write the new record.
         drupal_write_record('panelizer_entity', $panelizer, $update);
       }
 
