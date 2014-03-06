@@ -7,7 +7,7 @@
 if (module_exists('comment')) {
   $plugin = array(
     'handler' => 'PanelizerEntityComment',
-    'entity path' => 'comment/%',
+    'entity path' => 'comment/%comment',
     'uses page manager' => FALSE,
     'hooks' => array(
       'menu' => TRUE,
