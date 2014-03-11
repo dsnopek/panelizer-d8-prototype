@@ -463,3 +463,10 @@ function panelizer_update_7110() {
     array('primary key' => array('entity_type', 'entity_id', 'revision_id', 'view_mode'))
   );
 }
+
+/**
+ * This update script was removed, nothing to see here.
+ */
+function panelizer_update_7111() {
+  // Nothing.
+}
