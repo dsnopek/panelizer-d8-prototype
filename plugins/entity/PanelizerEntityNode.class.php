@@ -135,36 +135,39 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
   }
 
   public function hook_page_alter(&$page) {
-    if ($_GET['q'] == 'admin/structure/types' && !empty($page['content']['system_main']['node_table'])) {
-      // shortcut
-      $table = &$page['content']['system_main']['node_table'];
+    // Add an extra "Panelizer" action on the content types admin page.
+    if ($_GET['q'] == 'admin/structure/types') {
+      // This only works with some themes.
+      if (!empty($page['content']['system_main']['node_table'])) {
+        // Shortcut.
+        $table = &$page['content']['system_main']['node_table'];
 
-      // Operations column should always be the last column in header. Increase
-      // its colspan by one to include possible panelizer link.
-      $operationsCol = end($table['#header']);
-      if (!empty($operationsCol['colspan'])) {
-        $operationsColKey = key($table['#header']);
-        $table['#header'][$operationsColKey]['colspan']++;
-      }
+        // Operations column should always be the last column in header.
+        // Increase its colspan by one to include possible panelizer link.
+        $operationsCol = end($table['#header']);
+        if (!empty($operationsCol['colspan'])) {
+          $operationsColKey = key($table['#header']);
+          $table['#header'][$operationsColKey]['colspan']++;
+        }
 
-      // Since we can't tell what row a type is for, but we know that they
-      // were generated in this order, go through the original types
-      // list:
-      $types = node_type_get_types();
-      $names = node_type_get_names();
-      $row_index = 0;
-      foreach ($names as $bundle => $name) {
-        $type = $types[$bundle];
-        if (node_hook($type->type, 'form')) {
-          $type_url_str = str_replace('_', '-', $type->type);
-          if ($this->is_panelized($bundle) && panelizer_administer_entity_bundle($this, $bundle)) {
-            $table['#rows'][$row_index][] = array('data' => l(t('panelizer'), 'admin/structure/types/manage/' . $type_url_str . '/panelizer'));
+        // Since we can't tell what row a type is for, but we know that they
+        // were generated in this order, go through the original types list.
+        $types = node_type_get_types();
+        $names = node_type_get_names();
+        $row_index = 0;
+        foreach ($names as $bundle => $name) {
+          $type = $types[$bundle];
+          if (node_hook($type->type, 'form')) {
+            $type_url_str = str_replace('_', '-', $type->type);
+            if ($this->is_panelized($bundle) && panelizer_administer_entity_bundle($this, $bundle)) {
+              $table['#rows'][$row_index][] = array('data' => l(t('panelizer'), 'admin/structure/types/manage/' . $type_url_str . '/panelizer'));
+            }
+            else {
+              $table['#rows'][$row_index][] = array('data' => '');
+            }
+            // Update row index for next pass.
+            $row_index++;
           }
-          else {
-            $table['#rows'][$row_index][] = array('data' => '');
-          }
-          // Update row index for next pass:
-          $row_index++;
         }
       }
     }
