@@ -835,7 +835,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $entity->panelizer[$view_mode]->did = NULL;
           }
         }
-        elseif (empty($entity->panelizer[$view_mode]->display)) {
+        else if (empty($entity->panelizer[$view_mode]->display) || empty($entity->panelizer[$view_mode]->did)) {
           if (!empty($entity->panelizer[$view_mode]->did)) {
             if (empty($displays[$entity->panelizer[$view_mode]->did])) {
               // Somehow the display for this entity has gotten lost?
@@ -849,24 +849,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           else {
             if (!empty($panelizer_defaults[$entity->panelizer[$view_mode]->name])) {
               // Reload the settings from the default configuration.
-              $settings = array(
-                'contexts',
-                'css',
-                'css_class',
-                'css_id',
-                'display',
-                'extra',
-                'link_to_entity',
-                'no_blocks',
-                'pipeline',
-                'relationships',
-                'title_element',
-              );
-              foreach ($settings as $setting) {
-                if (isset($panelizer_defaults[$entity->panelizer[$view_mode]->name]->$setting)) {
-                  $entity->panelizer[$view_mode]->$setting = $panelizer_defaults[$entity->panelizer[$view_mode]->name]->$setting;
-                }
-              }
+              $entity->panelizer[$view_mode] = clone $panelizer_defaults[$entity->panelizer[$view_mode]->name];
+              $entity->panelizer[$view_mode]->did = NULL;
+              list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
+              $entity->panelizer[$view_mode]->entity_id = $entity_id;
+              $entity->panelizer[$view_mode]->revision_id = (int) $revision_id;
             }
           }
         }
