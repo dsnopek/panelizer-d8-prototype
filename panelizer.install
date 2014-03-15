@@ -470,3 +470,30 @@ function panelizer_update_7110() {
 function panelizer_update_7111() {
   // Nothing.
 }
+
+/**
+ * Fix Panelizer settings.
+ */
+function panelizer_update_7112() {
+  foreach (entity_get_info() as $entity_type => $entity_info) {
+    if (!empty($entity_info) && !empty($entity_info['bundles'])) {
+      foreach ($entity_info['bundles'] as $bundle => &$bundle_info) {
+        $var_name = 'panelizer_defaults_' . $entity_type . '_' . $bundle;
+        $settings = variable_get($var_name);
+        if (!empty($settings) && !empty($settings['view modes'])) {
+          foreach ($settings['view modes'] as $view_mode => &$config) {
+            // If the bundle itself or this view mode are disabled, make sure
+            // all settings are disabled.
+            if (empty($settings['status']) || empty($config['status'])) {
+              foreach ($config as $key => $val) {
+                $config[$key] = 0;
+              }
+            }
+          }
+          // Update the settings.
+          variable_set($var_name, $settings);
+        }
+      }
+    }
+  }
+}
