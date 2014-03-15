@@ -1689,6 +1689,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     $delete->execute();
+
+    // Reset the entity's cache. If the EntityCache module is enabled, this also
+    // resets its permanent cache.
+    entity_get_controller($this->entity_type)->resetCache(array($entity_id));
   }
 
   /**

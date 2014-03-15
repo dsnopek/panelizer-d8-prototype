@@ -959,6 +959,11 @@ function panelizer_export_save_callback(&$object) {
     $object->export_type = EXPORT_IN_DATABASE;
   }
 
+  // Reset the entity's cache. If the EntityCache module is enabled, this also
+  // resets its permanent cache.
+  list($entity_type, ) = explode(':', $object->name);
+  entity_get_controller($entity_type)->resetCache();
+
   return drupal_write_record('panelizer_defaults', $object, $update);
 }
 
