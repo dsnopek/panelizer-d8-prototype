@@ -586,7 +586,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         ),
       );
       $form['panelizer']['view modes'][$view_mode]['default'] = array(
-        '#title' => t('Provide default panel'),
+        '#title' => t('Provide initial display'),
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['status']) && !empty($settings['view modes'][$view_mode]['default']),
         '#id' => 'panelizer-' . $view_mode . '-initial',
@@ -596,9 +596,72 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('If checked, a default panel will be utilized for all existing and new entities.'),
+        '#description' => t('If checked, a panel will be provided named "Default", which will be used as the default display, unless another one is created & selected below.', array('%bundle' => $bundle)),
       );
 
+      // Obtain a list of all available panels for this view mode / bundle.
+      $panelizers = $this->get_default_panelizer_objects($bundle . '.' . $view_mode);
+      $options = array();
+      if (!empty($panelizers)) {
+        foreach ($panelizers as $name => $panelizer) {
+          // Don't show disabled displays.
+          if (empty($panelizer->disabled)) {
+            $options[$name] = $panelizer->title;
+          }
+        }
+      }
+      if (!empty($options)) {
+        ksort($options);
+      }
+
+      // The default display to be used if nothing found.
+      $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
+      $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
+      if ($view_mode != 'page_manager') {
+        $default_name .= ':' . $view_mode;
+      }
+      // If this has not been set previously, use the 'default' as the default
+      // selection.
+      $default_value = variable_get($variable_name, FALSE);
+      if ($default_value === FALSE) {
+        $default_value = $default_name;
+      }
+      // Indicate which item is actually the default.
+      if (count($options) > 1 && isset($options[$default_value])) {
+        $options[$default_value] .= ' (' . t('default') . ')';
+      }
+
+      $form['panelizer']['view modes'][$view_mode]['default display'] = array(
+        '#title' => t('Default panel'),
+        '#type' => 'select',
+        '#options' => $options,
+        '#default_value' => $default_value,
+        '#id' => 'panelizer-' . $view_mode . '-default',
+        '#states' => array(
+          'visible' => array(
+            '#panelizer-status' => array('checked' => TRUE),
+            '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
+          ),
+        ),
+        '#required' => count($options),
+        '#disabled' => count($options) == 0,
+        '#description' => t('The default panel to be used for new %bundle records. If "Allow panel choice" is not enabled, the item selected will be used for any new %bundle. All existing %bundle records will have to be manually updated to the new selection.', array('%bundle' => $bundle)),
+      );
+
+      // First time this is displayed there won't be any defaults assigned, so
+      // show a placeholder indicating the page needs to be saved before they
+      // will show.
+      if (count($options) == 0) {
+        $form['panelizer']['view modes'][$view_mode]['default display']['#options'] = array(
+          '' => '* ' . t('No displays available yet') . ' *'
+        );
+        $form['panelizer']['view modes'][$view_mode]['default display']['#description'] .= '<br />'
+          . '<em>'
+          . t('No displays have been created yet, the default may not be assigned.')
+          . '</em>';
+      }
+
+      // Control whether the default can be selected.
       $form['panelizer']['view modes'][$view_mode]['choice'] = array(
         '#title' => t('Allow panel choice'),
         '#type' => 'checkbox',
@@ -610,7 +673,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('If checked multiple panels can be created and each entity will get a selector to choose which panel to use.'),
+        '#description' => t('If enabled, each @bundle will have an option to choose which panel to use.', array('@bundle' => $bundle)),
       );
     }
 
@@ -632,7 +695,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $new_bundle = $bundle;
     }
 
-    // Check to see if the bundle has changed. If so we need to move stuff around.
+    // Check to see if the bundle has changed. If so, we need to move stuff
+    // around.
     if ($bundle && $new_bundle != $bundle) {
       // Remove old settings.
       variable_del('panelizer_defaults_' . $this->entity_type . '_' . $bundle);
@@ -650,21 +714,32 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Load up all panelizer defaults for the old bundle and resave them
       // for the new bundle.
       $panelizer_defaults = $this->get_default_panelizer_objects($bundle);
-      foreach ($panelizer_defaults as $panelizer) {
-        list($entity_type, $old_bundle, $name) = explode(':', $panelizer->name);
-        $panelizer->name = implode(':', array($entity_type, $new_bundle, $name));
-        if ($panelizer->view_mode != 'page_manager') {
-          $panelizer->name .= ':' . $panelizer->view_mode;
-        }
+      if (!empty($panelizer_defaults)) {
+        foreach ($panelizer_defaults as $panelizer) {
+          list($entity_type, $old_bundle, $name) = explode(':', $panelizer->name);
+          $panelizer->name = implode(':', array($entity_type, $new_bundle, $name));
+          if ($panelizer->view_mode != 'page_manager') {
+            $panelizer->name .= ':' . $panelizer->view_mode;
+          }
 
-        $panelizer->panelizer_key = $new_bundle;
-        // If there's a pnid this should change the name and retain the pnid.
-        // If there is no pnid this will create a new one in the database
-        // because exported panelizer defaults attached to a bundle will have
-        // to be moved to the database in order to follow along and
-        // then be re-exported.
-        // @todo -- should we warn the user about this?
-        ctools_export_crud_save('panelizer_defaults', $panelizer);
+          // The default display selection.
+          $old_variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $panelizer->view_mode . '_selection';
+          $new_variable_name = 'panelizer_' . $this->entity_type . ':' . $new_bundle . ':' . $panelizer->view_mode . '_selection';
+          $default_layout = variable_get($old_variable_name, NULL);
+          if (!is_null($default_layout)) {
+            variable_set($new_variable_name, $default_layout);
+            variable_del($old_variable_name);
+          }
+
+          $panelizer->panelizer_key = $new_bundle;
+          // If there's a pnid this should change the name and retain the pnid.
+          // If there is no pnid this will create a new one in the database
+          // because exported panelizer defaults attached to a bundle will have
+          // to be moved to the database in order to follow along and then be
+          // re-exported.
+          // @todo Should we warn the user about this?
+          ctools_export_crud_save('panelizer_defaults', $panelizer);
+        }
       }
     }
 
@@ -683,6 +758,19 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
       }
     }
+
+    // Save the default display for this bundle to a variable so that it may be
+    // controlled separately.
+    foreach ($this->get_default_panelizer_objects($new_bundle) as $panelizer) {
+      if (!empty($form_state['values']['panelizer']['view modes'][$panelizer->view_mode]['default display'])) {
+        $new_value = $form_state['values']['panelizer']['view modes'][$panelizer->view_mode]['default display'];
+        $variable_name = 'panelizer_' . $this->entity_type . ':' . $new_bundle . ':' . $panelizer->view_mode . '_selection';
+        variable_set($variable_name, $new_value);
+        // Don't save the setting with the rest of the settings bundle.
+        unset($form_state['values']['panelizer']['view modes'][$panelizer->view_mode]['default display']);
+      }
+    }
+
     variable_set('panelizer_defaults_' . $this->entity_type . '_' . $new_bundle, $form_state['values']['panelizer']);
 
     // Unset this so that the type save forms don't try to save it to variables.
@@ -839,15 +927,25 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
         if (empty($entity->panelizer[$view_mode])) {
           // @todo there should be a convenience function for this.
-          $default_key = implode(':', array($this->entity_type, $bundles[$entity_id], 'default'));
+          // Load the configured default display.
+          $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
+          $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
           if ($view_mode != 'page_manager') {
-            $default_key .= ':' . $view_mode;
+            $default_name .= ':' . $view_mode;
+          }
+          // If this has not been set previously, use the 'default' as the
+          // default selection.
+          $default_value = variable_get($variable_name, FALSE);
+          if ($default_value === FALSE) {
+            $default_value = $default_name;
           }
 
-          if (!empty($panelizer_defaults[$default_key])) {
-            $entity->panelizer[$view_mode] = clone $panelizer_defaults[$default_key];
-            // make sure this entity can't write to the default display.
+          if (!empty($panelizer_defaults[$default_value])) {
+            $entity->panelizer[$view_mode] = clone $panelizer_defaults[$default_value];
+            // Make sure this entity can't write to the default display.
             $entity->panelizer[$view_mode]->did = NULL;
+            $entity->panelizer[$view_mode]->entity_id = $entity_id;
+            $entity->panelizer[$view_mode]->revision_id = (int) $revision_id;
           }
         }
         else if (empty($entity->panelizer[$view_mode]->display) || empty($entity->panelizer[$view_mode]->did)) {
@@ -1144,35 +1242,44 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
       }
 
+      // Load the configured default display.
+      $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
+      $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
+      if ($view_mode != 'page_manager') {
+        $default_name .= ':' . $view_mode;
+      }
+      // If this has not been set previously, use the 'default' as the default
+      // selection.
+      $default_value = variable_get($variable_name, FALSE);
+      if ($default_value === FALSE) {
+        $default_value = $default_name;
+      }
+
+      // The selected value.
+      $selected = $default_value;
       if (!empty($entity->panelizer[$view_mode]->name)) {
-        $name = $entity->panelizer[$view_mode]->name;
-      }
-      else {
-        if ($this->has_default_panel($view_bundle)) {
-          $name = implode(':', array($this->entity_type, $bundle, 'default'));
-          if ($view_mode != 'page_manager') {
-            $name .= ':' . $view_mode;
-          }
-        }
-        else {
-          $name = '';
-        }
+        $selected = $entity->panelizer[$view_mode]->name;
       }
 
-      if (!$this->has_default_panel($view_bundle)) {
-        $options = array('' => t('-- No panel --')) + $options;
-      }
+      // Only display the selector if options were available.
+      if (!empty($options)) {
+        // Indicate which item is the default.
+        if (isset($options[$default_value])) {
+          $options[$default_value] .= ' (' . t("default for '@bundle'", array('@bundle' => $bundle)) . ')';
+        }
 
-      $widgets[$view_mode]['name'] = array(
-        '#title' => $view_mode_info['label'],
-        '#type' => 'select',
-        '#options' => $options,
-        '#default_value' => $name,
-        // Put these here because submit does not get a real entity with
-        // the actual *(&)ing panelizer.
-        '#revision_id' => isset($entity->panelizer[$view_mode]->revision_id) ? $entity->panelizer[$view_mode]->revision_id : NULL,
-        '#entity_id' => isset($entity->panelizer[$view_mode]->entity_id) ? $entity->panelizer[$view_mode]->entity_id : NULL,
-      );
+        $widgets[$view_mode]['name'] = array(
+          '#title' => $view_mode_info['label'],
+          '#type' => 'select',
+          '#options' => $options,
+          '#default_value' => $selected,
+          '#required' => TRUE,
+          // Put these here because submit does not get a real entity with the
+          // actual *(&)ing panelizer.
+          '#revision_id' => isset($entity->panelizer[$view_mode]->revision_id) ? $entity->panelizer[$view_mode]->revision_id : NULL,
+          '#entity_id' => isset($entity->panelizer[$view_mode]->entity_id) ? $entity->panelizer[$view_mode]->entity_id : NULL,
+        );
+      }
     }
 
     // Only display this if the entity has options available.
@@ -1731,7 +1838,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     if (strpos($bundle, '.') === FALSE) {
       $bundle .= '.page_manager';
     }
-      list($bundle, $view_mode) = explode('.', $bundle);
+    list($bundle, $view_mode) = explode('.', $bundle);
 
     return $this->is_panelized($bundle) && !empty($this->plugin['bundles'][$bundle]['view modes'][$view_mode]['choice']);
   }
@@ -1759,13 +1866,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     // If the entity bundle is not panelized, nothing to do here.
     if (!$this->is_panelized($bundle)) {
-      return;
+      return array();
     }
 
     if (!empty($view_mode)) {
       // If this view mode is not panelized, nothing to do here.
       if (!$this->is_panelized($bundle . '.' . $view_mode)) {
-        return;
+        return array();
       }
 
       $conditions['view_mode'] = $view_mode;
@@ -1931,11 +2038,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       '#header' => array(
         array('data' => $this->entity_bundle_label(), 'width' => '15%'),
         t('Panelize'),
-        t('Provide default panel'),
+        t('Provide initial display'),
         t('Allow panel choice'),
+        t('Default panel'),
         array('data' => t('Operations'), 'width' => '50%'),
       ),
-      '#columns' => array('title', 'status', 'default', 'choice', 'links'),
+      '#columns' => array('title', 'status', 'default', 'choice', 'selection', 'links'),
     );
 
     $entity_info = entity_get_info($this->entity_type);
@@ -2047,6 +2155,62 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           ),
         );
 
+        // Obtain a list of all available panels for this view mode / bundle.
+        $panelizers = $this->get_default_panelizer_objects($bundle . '.' . $view_mode);
+        $options = array();
+        if (!empty($panelizers)) {
+          foreach ($panelizers as $name => $panelizer) {
+            // Don't show disabled displays.
+            if (empty($panelizer->disabled)) {
+              $options[$name] = $panelizer->title;
+            }
+          }
+        }
+        if (!empty($options)) {
+          ksort($options);
+        }
+
+        // The default display to be used if nothing found.
+        $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
+        $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
+        if ($view_mode != 'page_manager') {
+          $default_name .= ':' . $view_mode;
+        }
+        // If this has not been set previously, use the 'default' as the default
+        // selection.
+        $default_value = variable_get($variable_name, FALSE);
+        if ($default_value === FALSE) {
+          $default_value = $default_name;
+        }
+
+        // First time this is displayed there won't be any defaults assigned, so
+        // show a placeholder indicating the page needs to be saved before they
+        // will show.
+        if (count($options) == 0) {
+          if ($default_value == $default_name) {
+            $options = array('' => t('Save to access selector'));
+          }
+          else {
+            $options = array('' => t('No displays created yet'));
+          }
+        }
+        // Indicate which item is actually the default.
+        if (count($options) > 1 && isset($options[$default_value])) {
+          $options[$default_value] .= ' (' . t('default') . ')';
+        }
+        $form['entities'][$this->entity_type][$bundle][$view_mode]['selection'] = array(
+          '#type' => 'select',
+          '#options' => $options,
+          '#default_value' => $default_value,
+          '#states' => array(
+            'visible' => array(
+              $bundle_id . '-status' => array('checked' => TRUE),
+              $base_id . '-status' => array('checked' => TRUE),
+            ),
+          ),
+          '#disabled' => count($options) == 1,
+        );
+
         $form['entities'][$this->entity_type][$bundle][$view_mode]['links'] = array(
           '#prefix' => '<div class="container-inline">',
           '#suffix' => '</div>',
@@ -2149,6 +2313,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
                 $config[$key] = 0;
               }
             }
+
+            // Save the default display for this bundle to a variable so that it
+            // may be controlled separately.
+            if (!empty($config['selection'])) {
+              $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
+              variable_set($variable_name, $config['selection']);
+              // Don't save the setting with the rest of the settings bundle.
+              unset($config['selection']);
+            }
+
             $settings['view modes'][$view_mode] = $config;
           }
         }

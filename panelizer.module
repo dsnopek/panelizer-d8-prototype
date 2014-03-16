@@ -1290,6 +1290,15 @@ function panelizer_features_pipe_panelizer_defaults_alter(&$more, $data, $export
       'panelizer_' . $entity_type . ':' . $bundle . '_default',
     );
 
+    // Add default display variables for each view mode.
+    $entity_info = entity_get_info($entity_type);
+    $default_base = 'panelizer_' . $entity_type . ':' . $bundle . ':';
+    foreach ($entity_info['view modes'] as $view_mode => $view_info) {
+      $variables[] = $default_base . $view_mode . '_selection';
+    }
+    $variables[] = $default_base . 'page_manager' . '_selection';
+    $variables[] = $default_base . 'default' . '_selection';
+
     foreach ($variables as $variable) {
       $more['variable'][$variable] = $variable;
     }
