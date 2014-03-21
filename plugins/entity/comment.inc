@@ -11,7 +11,6 @@ if (module_exists('comment')) {
     'uses page manager' => FALSE,
     'hooks' => array(
       'menu' => TRUE,
-      'admin_paths' => TRUE,
       'permission' => TRUE,
       'panelizer_defaults' => TRUE,
       'default_page_manager_handlers' => TRUE,

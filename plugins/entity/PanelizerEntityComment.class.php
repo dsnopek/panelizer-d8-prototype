@@ -10,8 +10,6 @@
  * Handles comment specific functionality for Panelizer.
  */
 class PanelizerEntityComment extends PanelizerEntityDefault {
-  public $entity_admin_root = 'admin/structure/types/manage/%panelizer_node_type';
-  public $entity_admin_bundle = 4;
   public $views_table = 'comment';
   public $uses_page_manager = FALSE;
 
