@@ -10,7 +10,7 @@
 function panelizer_schema() {
   // This should always point to our 'current' schema. This makes it
   // relatively easy to keep a record of schema as we make changes to it.
-  return panelizer_schema_3();
+  return panelizer_schema_4();
 }
 
 /**
@@ -244,6 +244,13 @@ function panelizer_schema_3() {
     'serialize' => TRUE,
     'object default' => array(),
   );
+
+  return $schema;
+}
+
+function panelizer_schema_4() {
+  $schema = panelizer_schema_3();
+  $schema['panelizer_entity']['fields']['view_mode']['not null'] = TRUE;
 
   return $schema;
 }
@@ -496,4 +503,20 @@ function panelizer_update_7112() {
       }
     }
   }
+}
+
+/**
+ * Make {panelizer_entity}.view_mode NOT NULL.
+ */
+function panelizer_update_7113() {
+  db_drop_primary_key('panelizer_entity');
+  db_change_field('panelizer_entity', 'view_mode', 'view_mode',
+    array(
+      'description' => 'Contains the view mode this panelizer is for.',
+      'type' => 'varchar',
+      'length' => '128',
+      'not null' => TRUE,
+    ),
+    array('primary key' => array('entity_type', 'entity_id', 'revision_id', 'view_mode'))
+  );
 }
