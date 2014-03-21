@@ -944,8 +944,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $entity->panelizer[$view_mode] = clone $panelizer_defaults[$default_value];
             // Make sure this entity can't write to the default display.
             $entity->panelizer[$view_mode]->did = NULL;
-            $entity->panelizer[$view_mode]->entity_id = $entity_id;
-            $entity->panelizer[$view_mode]->revision_id = (int) $revision_id;
+            $entity->panelizer[$view_mode]->entity_id = 0;
+            $entity->panelizer[$view_mode]->revision_id = 0;
           }
         }
         else if (empty($entity->panelizer[$view_mode]->display) || empty($entity->panelizer[$view_mode]->did)) {
@@ -964,9 +964,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
               // Reload the settings from the default configuration.
               $entity->panelizer[$view_mode] = clone $panelizer_defaults[$entity->panelizer[$view_mode]->name];
               $entity->panelizer[$view_mode]->did = NULL;
-              list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
-              $entity->panelizer[$view_mode]->entity_id = $entity_id;
-              $entity->panelizer[$view_mode]->revision_id = (int) $revision_id;
+              $entity->panelizer[$view_mode]->entity_id = 0;
+              $entity->panelizer[$view_mode]->revision_id = 0;
             }
           }
         }
@@ -1139,14 +1138,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
         // Ensure that we always write this as NULL when we have our own panel:
         $panelizer->name = NULL;
-
-        // Make sure there is a view mode.
-        if (empty($panelizer->view_mode)) {
-          $panelizer->view_mode = $view_mode;
-        }
-
-        // And write the new record.
-        drupal_write_record('panelizer_entity', $panelizer, $update);
       }
       else {
         $panelizer->entity_type = $this->entity_type;
@@ -1155,21 +1146,20 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         // since the revision_id cannot be NULL.
         $panelizer->revision_id = (int) $revision_id;
 
-        // Make sure there is a view mode.
-        if (empty($panelizer->view_mode)) {
-          $panelizer->view_mode = $view_mode;
-        }
-
         // Make sure we keep the same did as the original if the layout wasn't
         // changed.
         if (empty($panelizer->did) && !empty($entity->original->panelizer[$view_mode]->did)) {
           $panelizer->did = $entity->original->panelizer[$view_mode]->did;
           $update = array('entity_type', 'revision_id', 'view_mode');
         }
-
-        // Update the existing record.
-        drupal_write_record('panelizer_entity', $panelizer, $update);
       }
+
+      // Make sure there is a view mode.
+      if (empty($panelizer->view_mode)) {
+        $panelizer->view_mode = $view_mode;
+      }
+      // Save the record.
+      drupal_write_record('panelizer_entity', $panelizer, $update);
 
       // If there was a CSS value saved before, update the exported file. This
       // is done after the entity is updated to ensure that the next page load
