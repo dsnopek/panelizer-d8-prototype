@@ -279,6 +279,12 @@ function panelizer_entity_view_alter(&$build, $entity_type) {
     return;
   }
 
+  // Also verify that the configuration exists. This may happen if a display is
+  // improperly configured.
+  if (empty($entity->panelizer[$view_mode])) {
+    return;
+  }
+
   if (!empty($recursion_prevention[$entity_type][$entity_id][$view_mode])) {
     return;
   }
