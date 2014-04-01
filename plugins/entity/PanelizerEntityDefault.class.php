@@ -964,8 +964,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
               // Reload the settings from the default configuration.
               $entity->panelizer[$view_mode] = clone $panelizer_defaults[$entity->panelizer[$view_mode]->name];
               $entity->panelizer[$view_mode]->did = NULL;
-              $entity->panelizer[$view_mode]->entity_id = 0;
-              $entity->panelizer[$view_mode]->revision_id = 0;
+              $entity->panelizer[$view_mode]->entity_id = $entity_id;
+              $entity->panelizer[$view_mode]->revision_id = $revision_id;
             }
           }
         }
