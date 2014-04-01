@@ -1590,6 +1590,7 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
     '#cache_key' => 'default:' . $handler->entity_type . ':' . $bundle . '.' . $panelizer->view_mode . ':' . $name,
     '#attributes' => array('class' => array('panels-ipe-save')),
     '#id' => 'panelizer-save-default',
+    '#access' => $handler->panelizer_access('defaults', $entity, $panelizer->view_mode),
   );
 }
 
