@@ -162,12 +162,12 @@ function panelizer_add_revision_info_form(&$form, &$form_state) {
 
   $entity = $form_state['entity'];
 
-  list($use_revisions, $control_revisions) = $form_state['revision info'];
+  list($use_revisions, $control_revisions, $default_revision) = $form_state['revision info'];
 
   if ($use_revisions) {
     // @todo -- what if an entity uses some other flag to control revisioning?
     if (!isset($entity->revision)) {
-      $entity->revision = $use_revisions;
+      $entity->revision = $default_revision;
       $entity->log = '';
     }
 

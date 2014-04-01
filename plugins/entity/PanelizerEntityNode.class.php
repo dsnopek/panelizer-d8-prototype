@@ -48,8 +48,9 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
     $node_options = variable_get('node_options_' . $bundle, array('status', 'promote'));
-    $retval[0] = in_array('revision', $node_options);
+    $retval[0] = TRUE;
     $retval[1] = user_access('administer nodes');
+    $retval[2] = in_array('revision', $node_options);
 
     return $retval;
   }

@@ -120,8 +120,9 @@ interface PanelizerEntityInterface {
    *   The entity in question.
    * @return
    *   An array. The first parameter is a boolean as to whether or not the
-   *   entity supports revisions and the second parameter is whether or not
-   *   the user can control whether or not a revision is created.
+   *   entity supports revisions, the second parameter is whether or not the
+   *   user can control whether or not a revision is created, the third states
+   *   whether or not the revision is created by default.
    */
   public function entity_allows_revisions($entity);
 
@@ -1317,13 +1318,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    *   The entity to test.
    *
    * @return array
-   *   An array containing two boolean values. The first one lets the system
-   *   know whether or not the entity currently allows revisions. The second
-   *   one lets us know if the user has access to control whether or not a
-   *   new revision is created.
+   *   An array. The first parameter is a boolean as to whether or not the
+   *   entity supports revisions, the second parameter is whether or not the
+   *   user can control whether or not a revision is created, the third states
+   *   whether or not the revision is created by default.
    */
   public function entity_allows_revisions($entity) {
-    return array(FALSE, FALSE);
+    return array(FALSE, FALSE, FALSE);
   }
 
   /**
