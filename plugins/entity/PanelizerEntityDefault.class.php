@@ -1304,9 +1304,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           if (!empty($entity->panelizer[$view_mode])) {
             $entity->panelizer[$view_mode]->did = NULL;
 
-            // Ensure original values are maintained.
-            $entity->panelizer[$view_mode]->entity_id = $form['panelizer'][$view_mode]['name']['#entity_id'];
-            $entity->panelizer[$view_mode]->revision_id = $form['panelizer'][$view_mode]['name']['#revision_id'];
+            // Ensure original values are maintained, if they exist.
+            if (isset($form['panelizer'][$view_mode]['name'])) {
+              $entity->panelizer[$view_mode]->entity_id = $form['panelizer'][$view_mode]['name']['#entity_id'];
+              $entity->panelizer[$view_mode]->revision_id = $form['panelizer'][$view_mode]['name']['#revision_id'];
+            }
           }
         }
       }
