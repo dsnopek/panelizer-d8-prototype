@@ -1766,15 +1766,15 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
   function delete_entity_panelizer($entity, $view_mode = NULL) {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
+    // Locate and delete all displays associated with the entity.
     if (empty($view_mode)) {
-      // Locate and delete all displays associated with the entity.
       $dids = db_query("SELECT did FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id = :id", array(':id' => $entity_id))->fetchCol();
     }
     else {
       $dids = db_query("SELECT did FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id = :id AND view_mode = :view_mode", array(':id' => $entity_id, ':view_mode' => $view_mode))->fetchCol();
     }
 
-    foreach (array_unique($dids) as $did) {
+    foreach (array_unique(array_filter($dids)) as $did) {
       panels_delete_display($did);
     }
 
