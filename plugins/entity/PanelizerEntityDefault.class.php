@@ -532,6 +532,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    */
   public function add_bundle_setting_form(&$form, &$form_state, $bundle, $type_location) {
     $settings = !empty($this->plugin['bundles'][$bundle]) ? $this->plugin['bundles'][$bundle] : array('status' => FALSE, 'default' => FALSE, 'choice' => FALSE);
+    $entity_info = entity_get_info($this->entity_type);
+    $perms_url = url('admin/people/permissions');
 
     $form['panelizer'] = array(
       '#type' => 'fieldset',
@@ -556,6 +558,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       '#type' => 'checkbox',
       '#default_value' => !empty($settings['status']),
       '#id' => 'panelizer-status',
+      '#description' => t('Allow content of this type to have its display controlled by Panelizer. Once enabled, each individual view mode will have further options.<br />Enabling a view mode adds adds <a href="!perm_url">several new permissions</a> for it.', array('!perm_url' => $perms_url)),
     );
 
     foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
@@ -585,6 +588,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-status' => array('checked' => TRUE),
           ),
         ),
+        '#description' => t('Allow entities of this type to have this view mode controlled by Panelizer.'),
       );
       $form['panelizer']['view modes'][$view_mode]['default'] = array(
         '#title' => t('Provide initial display'),
@@ -597,7 +601,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('If checked, a panel will be provided named "Default", which will be used as the default display, unless another one is created & selected below.', array('%bundle' => $bundle)),
+        '#description' => t('If checked, a panel will be provided named "Default", which will be used as the default display, unless another one is created & selected below.'),
       );
 
       // Obtain a list of all available panels for this view mode / bundle.
@@ -674,7 +678,18 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('If enabled, each @bundle will have an option to choose which panel to use.', array('@bundle' => $bundle)),
+        '#description' => t('Allows multiple panels to be created for this view mode. Once created, a selector will be provided on the @bundle edit form allowing the display of this view mode to be chosen. Additionally, any customizations made will be based upon the selected display.<br />This option adds a <a href="!perm_url">new permission</a>: !perm',
+          array(
+            '@bundle' => $bundle,
+            '!perm_url' => $perms_url,
+            '!perm' => t('%entity_name %bundle_name: Choose panels',
+              array(
+                '%entity_name' => $entity_info['label'],
+                '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
+              )
+            ),
+          )
+        ),
       );
     }
 
