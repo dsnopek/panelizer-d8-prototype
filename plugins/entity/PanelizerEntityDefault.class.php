@@ -1377,20 +1377,39 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    * Determine if the user has access to the panelizer operation for this type.
    */
   function panelizer_access($op, $bundle, $view_mode) {
+    $og_access = FALSE;
     if (is_object($bundle)) {
       $entity = $bundle;
       list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
+      // Additional support for Organic Groups.
+      if (module_exists('og')) { 
+        if (og_is_group($this->entity_type, $entity)) {
+          $og_access = og_user_access($this->entity_type, $entity_id, "administer panelizer og_group $op");
+        }
+        else {
+          $og_groups = og_get_entity_groups($this->entity_type, $entity);
+          foreach ($og_groups as $og_group_type => $og_gids) {
+            foreach ($og_gids as $og_gid) {
+              if (og_user_access($og_group_type, $og_gid, "administer panelizer $this->entity_type $bundle $op")) {
+                $og_access = TRUE;
+              }
+            }
+          }
+        }
+      }
+
       // If there is an $op, this must actually be panelized in order to pass.
-      // If there is no op, then the settings page can provide us a "panelize it!"
-      // page even if there is no panel.
+      // If there is no $op, then the settings page can provide us a "panelize
+      // it!" page even if there is no panel.
       if ($op && $op != 'overview' && $op != 'settings' && $op != 'choice' && empty($entity->panelizer[$view_mode])) {
         return FALSE;
       }
     }
 
-    return user_access('administer panelizer') || user_access("administer panelizer $this->entity_type $bundle $op");
+    return user_access('administer panelizer') || user_access("administer panelizer $this->entity_type $bundle $op") || $og_access;
   }
+
 
   /**
    * Switched page callback to give the overview page

@@ -44,6 +44,50 @@ function panelizer_permission() {
 }
 
 /**
+ * Implements hook_og_permission().
+ */
+function panelizer_og_permission() {
+  $items = array();
+
+  // Delegate.
+  foreach (panelizer_get_plugins_with_hook('permission') as $handler) {
+    if ($handler->entity_type == 'node') {
+      $handler->hook_permission($items);
+    }
+  }
+
+  $final = array(
+    'administer panelizer og_group defaults' => array(
+      'title' => t('Group: Administer Panelizer default panels, allowed content and settings.'),
+      'description' => t('Users with this permission can fully administer panelizer for this entity bundle.'),
+    ),
+    'administer panelizer og_group overview' => array(
+      'title' => t('Group: Administer Panelizer overview.'),
+      'description' => t('Allow access to the panelizer overview page for the entity type/bundle. Note: This permission will be required for panelizer tabs to appear on an entity.'),
+    ),
+  );
+
+  foreach (panelizer_operations() as $path => $operation) {
+    $final["administer panelizer og_group $path"] = array(
+      'title' => t('Group: Administer Panelizer @operation', array(
+        '@operation' => $operation['link title'],
+      )),
+    );
+  }
+
+  foreach ($items as $key => $item) {
+    // Get node bundle.
+    $words = explode(' ', $key);
+    $bundle = $words[3];
+    if (og_is_group_content_type('node', $bundle)) {
+      $final[$key] = $item;
+    }
+  }
+
+  return $final;
+}
+
+/**
  * Implements hook_theme().
  */
 function panelizer_theme() {
