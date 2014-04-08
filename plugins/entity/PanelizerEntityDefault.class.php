@@ -650,7 +650,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         ),
         '#required' => count($options),
         '#disabled' => count($options) == 0,
-        '#description' => t('The default panel to be used for new %bundle records. If "Allow panel choice" is not enabled, the item selected will be used for any new %bundle. All existing %bundle records will have to be manually updated to the new selection.', array('%bundle' => $bundle)),
+        '#description' => t('The default panel to be used for new %bundle records. If "Allow panel choice" is not enabled, the item selected will be used for any new %bundle record. All existing %bundle records will have to be manually updated to the new selection.', array('%bundle' => $bundle)),
       );
 
       // First time this is displayed there won't be any defaults assigned, so
@@ -678,19 +678,22 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('Allows multiple panels to be created for this view mode. Once created, a selector will be provided on the @bundle edit form allowing the display of this view mode to be chosen. Additionally, any customizations made will be based upon the selected display.<br />This option adds a <a href="!perm_url">new permission</a>: !perm',
-          array(
-            '@bundle' => $bundle,
-            '!perm_url' => $perms_url,
-            '!perm' => t('%entity_name %bundle_name: Choose panels',
-              array(
-                '%entity_name' => $entity_info['label'],
-                '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
-              )
-            ),
-          )
-        ),
+        '#description' => t('Allows multiple panels to be created for this view mode. Once created, a selector will be provided on the @bundle edit form allowing the display of this view mode to be chosen. Additionally, any customizations made will be based upon the selected display.', array('@bundle' => $bundle)),
       );
+      if (!empty($bundle)) {
+        $form['panelizer']['view modes'][$view_mode]['choice']['#description'] .= '<br />'
+          . t('This option adds a <a href="!perm_url">new permission</a>: !perm',
+            array(
+              '!perm_url' => $perms_url,
+              '!perm' => t('%entity_name %bundle_name: Choose panels',
+                array(
+                  '%entity_name' => $entity_info['label'],
+                  '%bundle_name' => $entity_info['bundles'][$bundle]['label'],
+                )
+              ),
+            )
+          );
+      }
     }
 
     array_unshift($form['#submit'], 'panelizer_entity_default_bundle_form_submit');

@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2156359 by DamienMcKenna: Follow-up to fix bugs when creating an entity bundle.
 By DamienMcKenna: Added a CHANGELOG.txt file.
 #2156359 by DamienMcKenna: UX improvements on the entity bundle form.
 #2024831 by jhedstrom: Permission fix on node access check when using IPE.
