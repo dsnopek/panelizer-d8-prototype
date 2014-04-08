@@ -35,6 +35,12 @@ class panelizer_defaults_ui extends ctools_export_ui {
 
     // Change the callbacks for everything:
     foreach ($this->plugin['menu']['items'] as $key => $item) {
+      // The item has already been set; continue to next item to avoid shifting
+      // items onto the page arguments array more than once.
+      if ($this->plugin['menu']['items'][$key]['access callback'] == 'panelizer_has_choice_callback') {
+        continue;
+      }
+
       $this->plugin['menu']['items'][$key]['access callback'] = 'panelizer_has_choice_callback';
       $this->plugin['menu']['items'][$key]['access arguments'] = array(4, 5, '');
       $this->plugin['menu']['items'][$key]['page callback'] = 'panelizer_export_ui_switcher_page';
