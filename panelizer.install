@@ -273,10 +273,10 @@ function panelizer_install() {
  */
 function panelizer_uninstall() {
   db_delete('variable')
-    ->condition('name', 'panelizer_defaults_%')
+    ->condition('name', 'panelizer_defaults_%', 'LIKE')
     ->execute();
   db_delete('variable')
-    ->condition('name', 'panelizer_node:%')
+    ->condition('name', 'panelizer_node:%', 'LIKE')
     ->execute();
 }
 
