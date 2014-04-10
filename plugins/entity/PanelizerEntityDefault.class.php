@@ -291,7 +291,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'page callback' => 'panelizer_entity_plugin_switcher_page',
         'page arguments' => array($this->entity_type, 'overview', $position),
         'type' => MENU_DEFAULT_LOCAL_TASK,
-        'weight' => 11,
+        'weight' => -10,
       ) + $base;
 
       // Put in all of our view mode based paths.
