@@ -1739,7 +1739,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       'revision info' => $this->entity_allows_revisions($entity),
       'display' => $display,
       'wizard path' => $path . '/layout/%step',
-      'allowed_layouts' => 'panelizer_' . $this->entity_type . ':' . $bundle,
+      'allowed_layouts' => panelizer_get_allowed_layouts_option($this->entity_type, $bundle),
     );
 
     ctools_include('common', 'panelizer');

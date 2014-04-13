@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#1822136 by tim.plunkett: 'Use the same allowed layouts as standard Panels
+  pages' option is ignored.
 #1989100 by akamustang, DamienMcKenna: Always include the entity_id when
   updating records.
 #2237937 by DamienMcKenna: The "Overview" local task should be the left-most.

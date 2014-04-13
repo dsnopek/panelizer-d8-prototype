@@ -336,6 +336,7 @@ function panelizer_default_layout_page($handler, $bundle, $name, $view_mode, $st
     $handler = panelizer_entity_plugin_get_handler($handler);
   }
 
+  $original_bundle = $bundle;
   if ($view_mode) {
     $bundle .= '.' . $view_mode;
   }
@@ -358,7 +359,7 @@ function panelizer_default_layout_page($handler, $bundle, $name, $view_mode, $st
   $form_state = array(
     'display' => $display,
     'wizard path' => $path . '/layout/%step',
-    'allowed_layouts' => 'panelizer_' . $handler->entity_type . ':' . $bundle,
+    'allowed_layouts' => panelizer_get_allowed_layouts_option($handler->entity_type, $original_bundle),
   );
 
   ctools_include('common', 'panelizer');
