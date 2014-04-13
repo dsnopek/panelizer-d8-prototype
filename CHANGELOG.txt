@@ -1,6 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
-#1989100 by DamienMcKenna: Always include the entity_id when updating records.
+#1989100 by akamustang, DamienMcKenna: Always include the entity_id when
+  updating records.
 #2237937 by DamienMcKenna: The "Overview" local task should be the left-most.
 #2156359 by DamienMcKenna: Follow-up to fix bugs when creating an entity bundle.
 By DamienMcKenna: Added a CHANGELOG.txt file.
