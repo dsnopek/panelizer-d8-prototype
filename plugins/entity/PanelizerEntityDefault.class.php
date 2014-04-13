@@ -1112,7 +1112,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           $update = array();
         }
         else {
-          $update = array('entity_type', 'revision_id', 'view_mode');
+          $update = array('entity_type', 'entity_id', 'revision_id', 'view_mode');
         }
       }
       else {
@@ -1169,7 +1169,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         // changed.
         if (empty($panelizer->did) && !empty($entity->original->panelizer[$view_mode]->did)) {
           $panelizer->did = $entity->original->panelizer[$view_mode]->did;
-          $update = array('entity_type', 'revision_id', 'view_mode');
+          $update = array('entity_type', 'entity_id', 'revision_id', 'view_mode');
         }
       }
 
