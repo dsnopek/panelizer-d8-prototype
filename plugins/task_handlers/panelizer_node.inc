@@ -242,10 +242,11 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   if ($entity_handler = panelizer_entity_plugin_get_handler($entity_type)) {
     $info = $entity_handler->render_entity($context->data, 'page_manager', NULL, $args, $address);
 
-    // Remove and add body element classes
-    $panel_body_css = &drupal_static('panel_body_css');
-    if (!empty($info['classes_array']) && !isset($panel_body_css['body_classes_to_add'])) {
-      $panel_body_css['body_classes_to_add'] = implode(' ', $info['classes_array']);
+    // Add body element classes, appending to the existing value.
+    $panel_body_css = &drupal_static('panel_body_css', array());
+    if (!empty($info['classes_array'])){
+      $panel_body_css += array('body_classes_to_add' => '');
+      $panel_body_css['body_classes_to_add'] = trim($panel_body_css['body_classes_to_add'] . ' ' . implode(' ', $info['classes_array']));
     }
 
     return $info;
