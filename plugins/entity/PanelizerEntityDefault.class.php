@@ -1188,6 +1188,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       if (empty($panelizer->view_mode)) {
         $panelizer->view_mode = $view_mode;
       }
+
+      // Make sure there is a 'did' value. This can happen when the value is
+      // passed via inline_entity_form.
+      if (!isset($panelizer->did)) {
+        $panelizer->did = 0;
+      }
+
       // Save the record.
       drupal_write_record('panelizer_entity', $panelizer, $update);
 
