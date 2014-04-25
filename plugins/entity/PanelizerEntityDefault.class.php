@@ -678,7 +678,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('Allows multiple panels to be created for this view mode. Once created, a selector will be provided on the @bundle edit form allowing the display of this view mode to be chosen. Additionally, any customizations made will be based upon the selected display.', array('@bundle' => $bundle)),
+        '#description' => t('Allows multiple panels to be created for this view mode. Once created, a selector will be provided on the @bundle edit form allowing the display of this view mode to be chosen. Additionally, any customizations made will be based upon the selected display. Note: the selector will not be shown if there is only one display, instead the default will be automatically selected.', array('@bundle' => $bundle)),
       );
       if (!empty($bundle)) {
         $form['panelizer']['view modes'][$view_mode]['choice']['#description'] .= '<br />'
@@ -1250,6 +1250,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // We'll store the form array here so that we can tell at the end if we
     // have any and need to add our fieldset.
     $widgets = array();
+    // Need to track the number of actual visible widgets because
+    // element_get_visible_children doesn't handle nested fields.
+    $visible_widgets = 0;
 
     foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
       $view_bundle = $bundle . '.' . $view_mode;
@@ -1295,21 +1298,36 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           $options[$default_value] .= ' (' . t("default for '@bundle'", array('@bundle' => $bundle)) . ')';
         }
 
-        $widgets[$view_mode]['name'] = array(
-          '#title' => $view_mode_info['label'],
-          '#type' => 'select',
-          '#options' => $options,
-          '#default_value' => $selected,
-          '#required' => TRUE,
-          // Put these here because submit does not get a real entity with the
-          // actual *(&)ing panelizer.
-          '#revision_id' => isset($entity->panelizer[$view_mode]->revision_id) ? $entity->panelizer[$view_mode]->revision_id : NULL,
-          '#entity_id' => isset($entity->panelizer[$view_mode]->entity_id) ? $entity->panelizer[$view_mode]->entity_id : NULL,
-        );
+        // If only one option is available, don't show the selector.
+        if (count($options) === 1) {
+          $widgets[$view_mode]['name'] = array(
+            '#title' => $view_mode_info['label'],
+            '#type' => 'value',
+            '#value' => $selected,
+            // Put these here because submit does not get a real entity with the
+            // actual *(&)ing panelizer.
+            '#revision_id' => isset($entity->panelizer[$view_mode]->revision_id) ? $entity->panelizer[$view_mode]->revision_id : NULL,
+            '#entity_id' => isset($entity->panelizer[$view_mode]->entity_id) ? $entity->panelizer[$view_mode]->entity_id : NULL,
+          );
+        }
+        else {
+          $widgets[$view_mode]['name'] = array(
+            '#title' => $view_mode_info['label'],
+            '#type' => 'select',
+            '#options' => $options,
+            '#default_value' => $selected,
+            '#required' => TRUE,
+            // Put these here because submit does not get a real entity with the
+            // actual *(&)ing panelizer.
+            '#revision_id' => isset($entity->panelizer[$view_mode]->revision_id) ? $entity->panelizer[$view_mode]->revision_id : NULL,
+            '#entity_id' => isset($entity->panelizer[$view_mode]->entity_id) ? $entity->panelizer[$view_mode]->entity_id : NULL,
+          );
+          $visible_widgets++;
+        }
       }
     }
 
-    // Only display this if the entity has options available.
+    // Only display this if the entity has visible options available.
     if (!empty($widgets)) {
       $form_state['panelizer has choice'] = TRUE;
       $form['panelizer'] = array(
@@ -1328,6 +1346,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#weight' => -10,
         '#tree' => TRUE,
       ) + $widgets;
+      // If there are no visible widgets, don't display the fieldset.
+      if ($visible_widgets == 0) {
+        $form['panelizer']['#access'] = FALSE;
+      }
     }
   }
 

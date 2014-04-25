@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2155715 by DamienMcKenna: Don't show the "Allow" selector if there's only one
+  item.
 #2248275 by DamienMcKenna: Ensure there's always a 'did' value prior to saving.
 #1623536 by Artem Dotsenko: Avoid errors when updating object via entity APIs.
 #2246871 by DamienMcKenna: Body classes not output when using Panels Everywhere.
