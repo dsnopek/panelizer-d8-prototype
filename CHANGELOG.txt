@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2218275 by DamienMcKenna: 'Reset' action should reset to the default, not
+  delete all {panelizer_entity} records.
 #2155715 by DamienMcKenna: Don't show the "Allow" selector if there's only one
   item.
 #2248275 by DamienMcKenna: Ensure there's always a 'did' value prior to saving.
