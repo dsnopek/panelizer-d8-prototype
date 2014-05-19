@@ -1692,3 +1692,18 @@ function panels_ipe_revert_to_default($form, &$form_state) {
 
   $renderer->commands[] = ajax_command_replace("#panels-ipe-display-{$renderer->clean_key}", panels_render_display($display, $renderer));
 }
+
+/**
+ * Implements hook_panelizer_pre_render_alter().
+ *
+ * Panelizer fails to communicate to the theme layer what view mode an entity's
+ * fields are being rendered in, so we unfortunately have to do that ourselves.
+ */
+function panelizer_panelizer_pre_render_alter(&$panelizer, &$display, &$entity) {
+  foreach ($entity->panelizer as $view_mode => $reference_panelizer) {
+    if ($reference_panelizer === $panelizer) {
+      $entity->panelizer_view_mode = $view_mode;
+      break;
+    }
+  }
+}

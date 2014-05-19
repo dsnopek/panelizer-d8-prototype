@@ -1,5 +1,8 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2267601 by Wim Leers, DamienMcKenna: Added a new variable (panelizer_view_mode)
+  so hook_preprocess_field() can know what view mode is being used to display
+  the entity the field is attached to.
 #2218275 by DamienMcKenna: 'Reset' action should reset to the default, not
   delete all {panelizer_entity} records.
 #2155715 by DamienMcKenna: Don't show the "Allow" selector if there's only one
