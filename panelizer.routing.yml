@@ -1,0 +1,7 @@
+panelizer.node.page_panelizer:
+  path: '/node/{node}/panelizer'
+  defaults:
+    _title: 'Panelizer'
+    _content: '\Drupal\panelizer\Controller\PanelizerController::nodePanelizer'
+  requirements:
+    _entity_access: 'node.update'

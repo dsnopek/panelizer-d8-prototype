@@ -1,0 +1,4 @@
+panelizer.node.page_panelizer:
+  route_name: panelizer.node.page_panelizer
+  base_route: node.view
+  title: Panelizer

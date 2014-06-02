@@ -11,7 +11,10 @@ use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\FieldDefinition;
+use Drupal\page_manager\PageExecutable;
 use Drupal\page_manager\PageInterface;
+use Drupal\page_manager\Plugin\ConditionPluginBag;
+use Drupal\page_manager\Plugin\PageVariantBag;
 
 /**
  * Defines the Panelizer content entity class.
@@ -150,7 +153,20 @@ class PanelizerContentEntity extends ContentEntityBase implements PageInterface 
     if (!$this->getPageVariants()->count()) {
       // TODO: Call $this->addPageVariant() with the default PageVariant,
       // which could have been created by the user or the default-default.
+      $this->addPageVariant(array(
+        'id' => 'block_page',
+        'label' => 'Default',
+        'weight' => 0,
+      ));
     }
+  }
+
+  /**
+   * Gets the first PageVariant, which is all we really care about.
+   */
+  public function getPrimaryPageVariantId() {
+    $instanceIds = $this->getPageVariants()->getInstanceIds();
+    return reset($instanceIds);
   }
 
   /**
