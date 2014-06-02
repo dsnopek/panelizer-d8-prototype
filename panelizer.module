@@ -1,0 +1,51 @@
+<?php
+/**
+ * @file
+ * Panelizer hook functions.
+ */
+
+/**
+ * Implements hook_form_alter().
+ */
+function panelizer_form_alter(&$form, &$form_state, $form_id) {
+  // TODO: For the moment, we only handle nodes. We should be passing this off
+  // to plugins for the specific Entity types.
+  if ($form_id == 'node_type_edit_form') {
+    panelizer_add_bundle_setting_form($form, $form_state);
+  }
+}
+
+/**
+ * Put Panelizer settings onto the Entity bundle form.
+ *
+ * Rough replacement for PanelizerEntityDefault:::add_bundle_setting_form().
+ *
+ * @param &$form
+ *   Form API array.
+ * @param &$form_state
+ *   Form state array.
+ */
+function panelizer_add_bundle_setting_form(&$form, &$form_state) {
+  // TODO: Hard-coded for nodes.
+  $entity_type = 'node';
+  $bundle = $form['type']['#default_value'];
+
+  $config = \Drupal::config("panelizer.entities.{$entity_type}.{$bundle}");
+
+  $form['panelizer'] = array(
+    '#type' => 'details',
+    '#title' => t('Panelizer'),
+    '#group' => 'additional_settings',
+    '#tree' => TRUE,
+    // TODO: Control access to this!
+    //'#access' => panelizer_administer_entity_bundle(...),
+  );
+
+  $form['panelizer']['status'] = array(
+    '#title' => t('Panelize'),
+    '#type' => 'checkbox',
+    '#default_value' => $config->get('status'),
+  );
+
+  //dsm($form);
+}
