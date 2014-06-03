@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2275421 by maximpodorov: Undefined variable in
+  panelizer_handler_filter_panelizer_status().
 #2267601 by Wim Leers, DamienMcKenna: Added a new variable (panelizer_view_mode)
   so hook_preprocess_field() can know what view mode is being used to display
   the entity the field is attached to.
