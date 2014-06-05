@@ -274,13 +274,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $base = array(
         'access callback' => 'panelizer_entity_plugin_callback_switcher',
         'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'overview'),
+        'page callback' => 'panelizer_entity_plugin_switcher_page',
         'type' => MENU_LOCAL_TASK,
       );
 
       $items[$this->plugin['entity path'] . '/panelizer'] = array(
         'title' => 'Panelizer',
         // make sure this is accessible to panelize entities with no defaults.
-        'page callback' => 'panelizer_entity_plugin_switcher_page',
         'page arguments' => array($this->entity_type, 'overview', $position),
         'weight' => 11,
         'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
@@ -288,7 +288,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       $items[$this->plugin['entity path'] . '/panelizer/overview'] = array(
         'title' => 'Overview',
-        'page callback' => 'panelizer_entity_plugin_switcher_page',
         'page arguments' => array($this->entity_type, 'overview', $position),
         'type' => MENU_DEFAULT_LOCAL_TASK,
         'weight' => -10,
@@ -299,7 +298,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
         $items[$this->plugin['entity path'] . "/panelizer/$view_mode"] = array(
           'title' => $view_mode_info['label'],
-          'page callback' => 'panelizer_entity_plugin_switcher_page',
           'page arguments' => array($this->entity_type, 'settings', $position, $view_mode),
           'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'settings', $view_mode),
           'weight' => $weight++,
@@ -308,7 +306,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         foreach (panelizer_operations() as $path => $operation) {
           $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/' . $path] = array(
             'title' => $operation['menu title'],
-            'page callback' => 'panelizer_entity_plugin_switcher_page',
             'page arguments' => array($this->entity_type, $path, $position, $view_mode),
             'access arguments' => array($this->entity_type, 'access', 'admin', $position, $path, $view_mode),
             'weight' => $weight++,
@@ -323,7 +320,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         // Add our special reset item:
         $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/reset'] = array(
           'title' => t('Reset to Defaults'),
-          'page callback' => 'panelizer_entity_plugin_switcher_page',
           'page arguments' => array($this->entity_type, 'reset', $position, $view_mode),
           'type' => MENU_CALLBACK,
         ) + $base;
