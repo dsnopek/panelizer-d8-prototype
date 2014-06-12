@@ -938,6 +938,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       if (empty($bundles[$entity_id])) {
         continue;
       }
+
+      // Reload these.
+      list(, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
+
       // Check for each view mode.
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
         if (empty($entity->panelizer[$view_mode])) {
