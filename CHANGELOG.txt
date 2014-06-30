@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2295091 by DamienMcKenna: Added a warning about Pathauto loosing entity URL
+  aliases.
 #2248781 by DamienMcKenna: hook_entity_load was not resetting $revision_id for
   each entity, leading to errors upon hook_entity_update.
 #2280467 by DamienMcKenna: Clean up hook_menu().
