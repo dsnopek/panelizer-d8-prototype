@@ -527,7 +527,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    *   can update as much as possible.
    */
   public function add_bundle_setting_form(&$form, &$form_state, $bundle, $type_location) {
-    $settings = !empty($this->plugin['bundles'][$bundle]) ? $this->plugin['bundles'][$bundle] : array('status' => FALSE, 'default' => FALSE, 'choice' => FALSE);
+    $settings = !empty($this->plugin['bundles'][$bundle]) ? $this->plugin['bundles'][$bundle] : array('status' => FALSE, 'choice' => FALSE);
     $entity_info = entity_get_info($this->entity_type);
     $perms_url = url('admin/people/permissions');
 
@@ -781,10 +781,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $new_value = $form_state['values']['panelizer']['view modes'][$panelizer->view_mode]['default display'];
         $variable_name = 'panelizer_' . $this->entity_type . ':' . $new_bundle . ':' . $panelizer->view_mode . '_selection';
         variable_set($variable_name, $new_value);
-        // Don't save the setting with the rest of the settings bundle.
-        unset($form_state['values']['panelizer']['view modes'][$panelizer->view_mode]['default display']);
       }
     }
+
+    // Remove some settings that shouldn't be saved with the others.
+    unset($form_state['values']['panelizer']['view modes'][$panelizer->view_mode]['default display']);
 
     variable_set('panelizer_defaults_' . $this->entity_type . '_' . $new_bundle, $form_state['values']['panelizer']);
 

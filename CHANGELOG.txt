@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2303079 by DamienMcKenna: Tidied up the entity bundle configuration variable.
 #2288683 by dstol: Ensure PanelizerEntityDefault class is always available.
 #2295091 by DamienMcKenna: Added a warning about Pathauto loosing entity URL
   aliases.
