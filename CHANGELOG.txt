@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2291537 by DamienMcKenna: Removed the unused and empty CSS file.
 #2302867 by DamienMcKenna, Andrew M Riley: has_default_panel() did not check if
   a default display existed, and related regressions.
 #2303079 by DamienMcKenna: Tidied up the entity bundle configuration variable.
