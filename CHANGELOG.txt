@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2302867 by DamienMcKenna, Andrew M Riley: has_default_panel() did not check if
+  a default display existed, and related regressions.
 #2303079 by DamienMcKenna: Tidied up the entity bundle configuration variable.
 #2288683 by dstol: Ensure PanelizerEntityDefault class is always available.
 #2295091 by DamienMcKenna: Added a warning about Pathauto loosing entity URL
