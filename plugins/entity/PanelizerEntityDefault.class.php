@@ -956,7 +956,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Check for each view mode.
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
         // Load the default display for this entity bundle / view_mode.
-        $name = $this->get_default_display_name($bundle, $view_mode);
+        $name = $this->get_default_display_name($bundles[$entity_id], $view_mode);
 
         // If no panelizer was loaded for the view mode, queue up defaults.
         if (empty($panelizers[$entity_id][$view_mode]) && $this->has_default_panel($bundles[$entity_id] . '.' . $view_mode)) {
@@ -967,8 +967,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           $entity->panelizer[$view_mode] = ctools_export_unpack_object('panelizer_entity', $panelizers[$entity_id][$view_mode]);
           // If somehow we have no name AND no did, fill in the default.
           // This can happen if use of defaults has switched around maybe?
-          if (empty($entity->panelizer[$view_mode]->did) &&
-            empty($entity->panelizer[$view_mode]->name)) {
+          if (empty($entity->panelizer[$view_mode]->did) && empty($entity->panelizer[$view_mode]->name)) {
             if ($this->has_default_panel($bundles[$entity_id] . '.' . $view_mode)) {
               $entity->panelizer[$view_mode]->name = $name;
             }
@@ -1023,19 +1022,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Check for each view mode.
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
         if (empty($entity->panelizer[$view_mode])) {
-          // @todo there should be a convenience function for this.
           // Load the configured default display.
-          $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
-          $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
-          if ($view_mode != 'page_manager') {
-            $default_name .= ':' . $view_mode;
-          }
-          // If this has not been set previously, use the 'default' as the
-          // default selection.
-          $default_value = variable_get($variable_name, FALSE);
-          if ($default_value === FALSE) {
-            $default_value = $default_name;
-          }
+          $default_value = $this->get_default_display_name($bundle, $view_mode);
 
           if (!empty($panelizer_defaults[$default_value])) {
             $entity->panelizer[$view_mode] = clone $panelizer_defaults[$default_value];
@@ -1045,7 +1033,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $entity->panelizer[$view_mode]->revision_id = 0;
           }
         }
-        else if (empty($entity->panelizer[$view_mode]->display) || empty($entity->panelizer[$view_mode]->did)) {
+        elseif (empty($entity->panelizer[$view_mode]->display) || empty($entity->panelizer[$view_mode]->did)) {
           if (!empty($entity->panelizer[$view_mode]->did)) {
             if (empty($displays[$entity->panelizer[$view_mode]->did])) {
               // Somehow the display for this entity has gotten lost?
@@ -1351,17 +1339,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
 
       // Load the configured default display.
-      $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
-      $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
-      if ($view_mode != 'page_manager') {
-        $default_name .= ':' . $view_mode;
-      }
-      // If this has not been set previously, use the 'default' as the default
-      // selection.
-      $default_value = variable_get($variable_name, FALSE);
-      if ($default_value === FALSE) {
-        $default_value = $default_name;
-      }
+      $default_value = $this->get_default_display_name($bundle, $view_mode);
 
       // The selected value.
       $selected = $default_value;
