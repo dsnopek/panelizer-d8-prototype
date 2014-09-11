@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2336989 by DamienMcKenna: Error saving content type form.
 #2302867 by DamienMcKenna: Resolve problems in hook_entity_load().
 #2291537 by DamienMcKenna: Removed the unused and empty CSS file.
 #2302867 by DamienMcKenna, Andrew M Riley: has_default_panel() did not check if

@@ -814,7 +814,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     // Remove some settings that shouldn't be saved with the others.
-    unset($form_state['values']['panelizer']['view modes'][$panelizer->view_mode]['default display']);
+    if (!empty($form_state['values']['panelizer']['view modes'])) {
+      foreach ($form_state['values']['panelizer']['view modes'] as $view_mode => $settings) {
+        unset($form_state['values']['panelizer']['view modes'][$view_mode]['default display']);
+      }
+    }
 
     variable_set('panelizer_defaults_' . $this->entity_type . '_' . $new_bundle, $form_state['values']['panelizer']);
 
