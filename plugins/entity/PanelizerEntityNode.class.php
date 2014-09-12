@@ -69,12 +69,12 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     if ($warn) {
       $task = page_manager_get_task('node_view');
       if (!empty($task['disabled'])) {
-        drupal_set_message('The node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes using the "Full page override" view mode.', 'warning');
+        drupal_set_message(t('The node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes using the "Full page override" view mode.'), 'warning', FALSE);
       }
 
       $handler = page_manager_load_task_handler($task, '', 'node_view_panelizer');
       if (!empty($handler->disabled)) {
-        drupal_set_message('The panelizer variant on the node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes using the "Full page override" view mode.', 'warning');
+        drupal_set_message(t('The panelizer variant on the node template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize nodes using the "Full page override" view mode.'), 'warning', FALSE);
       }
     }
   }

@@ -132,8 +132,7 @@ class panelizer_defaults_ui extends ctools_export_ui {
     if (!empty($form_state['executed'])) {
       ctools_export_crud_delete($this->plugin['schema'], $item);
       $export_key = $this->plugin['export']['key'];
-      $message = str_replace('%title', check_plain($item->title), $this->plugin['strings']['confirmation'][$form_state['op']]['success']);
-      drupal_set_message($message);
+      drupal_set_message(t($this->plugin['strings']['confirmation'][$form_state['op']]['success'], array('%title' => $item->title)));
       drupal_goto(ctools_export_ui_plugin_base_path($this->plugin) . '/list');
     }
 

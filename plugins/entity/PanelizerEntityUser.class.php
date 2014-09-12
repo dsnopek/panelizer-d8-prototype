@@ -43,12 +43,12 @@ class PanelizerEntityUser extends PanelizerEntityDefault {
     if (!empty($this->plugin['bundles']['user']['status']) && !empty($this->plugin['bundles']['user']['view modes']['page_manager']['status'])) {
       $task = page_manager_get_task('user_view');
       if (!empty($task['disabled'])) {
-        drupal_set_message('The user template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize users using the "Full page override" view mode.', 'warning');
+        drupal_set_message(t('The user template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize users using the "Full page override" view mode.'), 'warning', FALSE);
       }
 
       $handler = page_manager_load_task_handler($task, '', 'user_view_panelizer');
       if (!empty($handler->disabled)) {
-        drupal_set_message('The panelizer variant on the user template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize users using the "Full page override" view mode.', 'warning');
+        drupal_set_message(t('The panelizer variant on the user template page is currently not enabled in page manager. You must enable this for Panelizer to be able to panelize users using the "Full page override" view mode.'), 'warning', FALSE);
       }
     }
   }
