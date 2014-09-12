@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2332997 by DamienMcKenna: Option to update entities when changing defaults.
 #2336989 by DamienMcKenna: Error saving content type form.
 #2302867 by DamienMcKenna: Resolve problems in hook_entity_load().
 #2291537 by DamienMcKenna: Removed the unused and empty CSS file.
