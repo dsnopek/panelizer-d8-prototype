@@ -2235,7 +2235,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // If the name is not in the format of entitytype:bundle:name which is
     // the machine name used, split that out automatically.
     if (strpos($name, ':') === FALSE) {
-      $name = implode(':', array($this->entity_type, $bundle, $name));
+      $name = implode(':', array($this->entity_type, $bundle, 'default'));
       // This is the default view mode and older defaults won't have this,
       // so we don't enforce it.
       if ($view_mode != 'page_manager') {
@@ -2244,7 +2244,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     ctools_include('export');
-    return ctools_export_crud_load('panelizer_defaults', $name);
+    $panelizer = ctools_export_load_object('panelizer_defaults', 'names', array($name));
+    return reset($panelizer);
   }
 
   /**
