@@ -1642,7 +1642,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
 
       // Allow applications to add additional panelizer tabs.
-      drupal_alter('panelizer_overview_links', $links_array, $this->entity_type, $entity, $view_mode, $status, $panelized);
+      $context = array(
+        'entity' => $entity,
+        'view_mode' => $view_mode,
+        'status' => $status,
+        'panelized' => $panelized,
+      );
+      drupal_alter('panelizer_overview_links', $links_array, $this->entity_type, $context);
 
       $links = theme('links', array(
         'links' => $links_array,

@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2289537 by ndewhurst: hook_panelizer_overview_links_alter() had incorrect args.
 #2328615 by mglaman: get_default_panelizer_object() gives wrong value for
   exported displays due to incorrect usage of ctools_export_load_object().
 #2325457 by DamienMcKenna: Minor fixes to JS via JSHint.

@@ -54,3 +54,9 @@ function hook_panelizer_operations_alter(&$operations) {
  */
 function hook_panelizer_entity_plugin_process_alter(&$plugin, $info) {
 }
+
+/**
+ * Allow the links on the Overview page to be customized.
+ */
+function hook_panelizer_overview_links_alter(&$links_array, $entity_type, $context) {
+}
