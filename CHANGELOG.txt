@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2325457 by DamienMcKenna: Minor fixes to JS via JSHint.
 #2344335 by DamienMcKenna: Page arguments were incorrect on actions for certain
   entities.
 #2337213 by DamienMcKenna: Some drupal_set_message strings were not translated.

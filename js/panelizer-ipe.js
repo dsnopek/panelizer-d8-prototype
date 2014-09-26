@@ -1,8 +1,11 @@
 /**
  * @file
- * Provides confirm forms for additional IPE buttons that are Panelizer specific.
+ * Provides confirm forms for additional IPE buttons that are Panelizer
+ * specific.
  */
+
 (function ($) {
+  'use strict';
 
 Drupal.behaviors.PanelizerIPE = {
   attach: function (context) {
