@@ -10,14 +10,11 @@
  * Handles node specific functionality for Panelizer.
  */
 class PanelizerEntityNode extends PanelizerEntityDefault {
-  /**
-   * True if the entity supports revisions.
-   */
-  public $supports_revisions = TRUE;
   public $entity_admin_root = 'admin/structure/types/manage/%panelizer_node_type';
   public $entity_admin_bundle = 4;
   public $views_table = 'node';
   public $uses_page_manager = TRUE;
+  public $supports_revisions = TRUE;
 
   public function entity_access($op, $entity) {
     // This must be implemented by the extending clas.

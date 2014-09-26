@@ -33,4 +33,3 @@ foreach (panelizer_operations() as $path => $operation) {
 
 $plugin['menu']['items']['access'] = array('path' => 'list/%ctools_export_ui/access');
 $plugin['allowed operations']['access'] = array('title' => t('Access'));
-

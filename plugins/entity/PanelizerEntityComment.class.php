@@ -17,6 +17,7 @@ class PanelizerEntityComment extends PanelizerEntityDefault {
     if ($op == 'edit') {
       return comment_access($op, $entity);
     }
+
     // The view operation is not implemented by core.
     if ($op == 'view') {
       return TRUE;
