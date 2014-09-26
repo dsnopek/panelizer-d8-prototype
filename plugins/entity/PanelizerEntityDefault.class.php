@@ -488,7 +488,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       // Also make clones of all the export UI menu items. Again there is some
       // duplicated code here because of subtle differences.
-      // Load the $plugin information
+      // Load the $plugin information.
       $plugin = ctools_get_export_ui('panelizer_defaults');
 
       $ui_items = $plugin['menu']['items'];
@@ -498,15 +498,14 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $ui_items['list']['weight'] = -6;
       $ui_items['list']['title'] = 'List';
 
-      // menu local actions are weird.
+      // Menu local actions are weird.
       $ui_items['add']['path'] = 'list/add';
       $ui_items['import']['path'] = 'list/import';
 
-      // Edit is being handled elsewhere:
+      // Edit is being handled elsewhere.
       unset($ui_items['edit callback']);
       unset($ui_items['access']);
       unset($ui_items['list callback']);
-      // Edit is being handled elsewhere:
       foreach (panelizer_operations() as $path => $operation) {
         $location = isset($operation['ui path']) ? $operation['ui path'] : $path;
         if (isset($ui_items[$location])) {
@@ -514,7 +513,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
       }
 
-      // Change the callbacks for everything:
+      // Change the callbacks for everything.
       foreach ($ui_items as $key => $item) {
         // originally admin/config/content/panelizer/%panelizer_handler
         $ui_items[$key]['access callback'] = 'panelizer_has_choice_callback_view_mode';
@@ -525,6 +524,15 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         array_unshift($ui_items[$key]['page arguments'], $bundle);
         array_unshift($ui_items[$key]['page arguments'], $this->entity_type);
         $ui_items[$key]['path'] = str_replace('list/', '', $ui_items[$key]['path']);
+
+        // Some of the page arguments attempt to pass the eight argument (item
+        // #7, starting at 0) to the callback in order to work on the display
+        // object. However, for some entities this will end up being the $op
+        // instead of the object name, e.g. 'clone' instead of
+        // 'taxonomy_term:tags:default'.
+        if (!empty($ui_items[$key]['page arguments'][5]) && $ui_items[$key]['page arguments'][5] == 7 && is_numeric($bundle)) {
+          $ui_items[$key]['page arguments'][5] = $bundle + 3;
+        }
       }
 
       foreach ($ui_items as $item) {

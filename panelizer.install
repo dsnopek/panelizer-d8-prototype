@@ -520,3 +520,10 @@ function panelizer_update_7113() {
     array('primary key' => array('entity_type', 'entity_id', 'revision_id', 'view_mode'))
   );
 }
+
+/**
+ * Clear the menu cache to fix the display actions page arguments.
+ */
+function panelizer_update_7114() {
+  variable_set('menu_rebuild_needed', TRUE);
+}
