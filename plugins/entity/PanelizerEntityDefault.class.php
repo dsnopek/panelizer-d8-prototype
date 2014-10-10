@@ -623,6 +623,20 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         ),
         '#description' => t('Allow entities of this type to have this view mode controlled by Panelizer.'),
       );
+      // Additional note necessary for the 'page_manager' view mode as that
+      // handler must be enabled in Page Manager.
+      if ($view_mode == 'page_manager') {
+        // The Page Manager handler is not enabled.
+        if (variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
+          $form['panelizer']['view modes'][$view_mode]['status']['#description'] .= '<br />'
+            . t('In <a href="@panels">Panels</a> / <a href="@pm">Page Manager</a> the "@handler" display must be enabled in order for this view mode to work.', array('@panels' => url('admin/structure/panels'), '@pm' => url('admin/structure/pages'), '@handler' => $this->entity_type . '_view'));
+        }
+        else {
+          $form['panelizer']['view modes'][$view_mode]['status']['#description'] .= '<br />'
+            . t('This view mode has been enabled in <a href="@panels">Panels</a> / <a href="@pm">Page Manager</a>.', array('@panels' => url('admin/structure/panels'), '@pm' => url('admin/structure/pages')));
+        }
+      }
+
       $form['panelizer']['view modes'][$view_mode]['default'] = array(
         '#title' => t('Provide initial display'),
         '#type' => 'checkbox',
