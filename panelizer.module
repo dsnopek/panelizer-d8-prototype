@@ -1146,6 +1146,8 @@ function panelizer_context_cache_clear($entity_type, $key) {
 // Panels edit cache contexts.
 
 /**
+ * Implements hook_panels_cache_get().
+ *
  * Get display edit cache for a panel being edited.
  *
  * The key is the second half of the key in this form:
@@ -1228,6 +1230,8 @@ function panelizer_panels_cache_get($argument) {
 }
 
 /**
+ * Implements hook_panels_cache_set().
+ *
  * Store a display edit in progress in the page cache.
  */
 function panelizer_panels_cache_set($argument, $cache) {
@@ -1237,6 +1241,8 @@ function panelizer_panels_cache_set($argument, $cache) {
 }
 
 /**
+ * Implements hook_panels_cache_clear().
+ *
  * Save all changes made to a display using the Page Manager page cache.
  */
 function panelizer_panels_cache_clear($argument, $cache) {
@@ -1246,6 +1252,8 @@ function panelizer_panels_cache_clear($argument, $cache) {
 }
 
 /**
+ * Implements hook_panels_cache_save().
+ *
  * Save all changes made to a display using the Page Manager page cache.
  */
 function panelizer_panels_cache_save($argument, $cache) {
