@@ -1248,19 +1248,31 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $panelizer->revision_id = $revision_id;
       }
 
+      // This entity supports revisions.
       if ($this->supports_revisions) {
+        // If no revision value is assigned, or a new revision is being created,
+        // create a new {panelizer_entity} record.
         if (empty($panelizer->revision_id) || $panelizer->revision_id != $revision_id) {
           $panelizer->revision_id = $revision_id;
           $update = array();
+          // If this has a custom display, flag the system that the display
+          // needs to be saved as a new record.
+          if (!empty($panelizer->did)) {
+            $panelizer->display_is_modified = TRUE;
+          }
         }
+        // This record is being updated.
         else {
           $update = array('entity_type', 'entity_id', 'revision_id', 'view_mode');
         }
       }
+      // This entity does not support revisions.
       else {
+        // There is no entity_id set yet, the record was never saved before.
         if (empty($panelizer->entity_id)) {
           $update = array();
         }
+        // This record is being updated.
         else {
           $update = array('entity_type', 'entity_id', 'view_mode');
         }

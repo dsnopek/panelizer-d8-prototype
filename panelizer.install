@@ -527,3 +527,68 @@ function panelizer_update_7113() {
 function panelizer_update_7114() {
   variable_set('menu_rebuild_needed', TRUE);
 }
+
+/**
+ * Ensure there's one display for each revision.
+ */
+function panelizer_update_7115() {
+  // Load any 'did' values that are used in more than one revision.
+  $dids = db_query("SELECT did
+    FROM {panelizer_entity}
+    WHERE revision_id > 0 AND did <> 0 AND did IS NOT NULL
+    GROUP BY did
+    HAVING count(revision_id) > 1")->fetchCol();
+
+  // If there are no records, there's nothing to do.
+  if (empty($dids)) {
+    drupal_set_message(t('No Panelizer display records need fixing.'));
+  }
+
+  // When saving an entity record, these fields are primary keys.
+  $update = array('entity_type', 'entity_id', 'revision_id', 'view_mode');
+
+  // Track the number of records fixed.
+  $fixed = 0;
+
+  // Track the entities that need to be reset.
+  $cache_clear = array();
+
+  // Load all of the requested displays.
+  foreach (panels_load_displays($dids) as $display) {
+    // Load each panelizer_entity record for this display.
+    $panelizers = db_query("SELECT * FROM {panelizer_entity} WHERE did=:did", array(':did' => $display->did));
+    $ctr = 0;
+    foreach ($panelizers as $panelizer) {
+      // Skip the first record.
+      if ($ctr === 0) {
+        $ctr++;
+        continue;
+      }
+      $ctr++;
+
+      // Reset the 'did' value, so it will then be saved as a new display.
+      $display->did = NULL;
+
+      // Save the display, thus creating a new 'did' value.
+      panels_save_display($display);
+
+      // Assign the new display to this Panelizer record.
+      $panelizer->did = $display->did;
+
+      // Update the Panelizer record.
+      drupal_write_record('panelizer_entity', $panelizer, $update);
+
+      // Clear this entity's cache.
+      $cache_clear[$panelizer->entity_type][] = $panelizer->entity_id;
+
+      $fixed++;
+    }
+  }
+
+  // Clear the caches for any entities that are updated.
+  foreach ($cache_clear as $entity_type => $entity_ids) {
+    entity_get_controller($entity_type)->resetCache($entity_ids);
+  }
+
+  drupal_set_message(t('Fixed @fixed Panelizer record(s) that were using the same display.', array('@fixed' => $fixed)));
+}

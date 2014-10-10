@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2354437 by DamienMcKenna: Always save a new display record when a new revision
+  is being saved.
 #2215521 by DamienMcKenna: Warn when entity page_manager is not enabled but the
   'full page override' view mode is.
 #2289537 by ndewhurst: hook_panelizer_overview_links_alter() had incorrect args.
