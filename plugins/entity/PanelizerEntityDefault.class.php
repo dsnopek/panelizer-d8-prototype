@@ -1764,7 +1764,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     // These fake tabs are pretty despicable, but they'll do.
-    $links = '<div class="tabs clearfix">' . theme('links', array(
+    $links = '<div class="clearfix">' . theme('links', array(
       'links' => $links_array,
       'attributes' => array('class' => array('tabs', 'secondary')),
     )) . '</div>';

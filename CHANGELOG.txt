@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2247605 by IRuslan: Fix display of fake tabs.
 #2354437 by DamienMcKenna: Always save a new display record when a new revision
   is being saved.
 #2215521 by DamienMcKenna: Warn when entity page_manager is not enabled but the
