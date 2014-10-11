@@ -2749,11 +2749,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     $info['classes_array'] = array();
 
     if (!empty($panelizer->css_class)) {
-      ctools_include('cleanstring');
       foreach (explode(' ', $panelizer->css_class) as $class) {
         $class = ctools_context_keyword_substitute($class, array(), $display->context);
         if ($class) {
-          $info['classes_array'][] = ctools_cleanstring($class);
+          $info['classes_array'][] = drupal_html_class($class);
         }
       }
     }

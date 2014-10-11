@@ -1,5 +1,8 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2287353 by tom friedhof, DamienMcKenna, mglaman: Use drupal_html_class() to
+  convert the body class string, not ctools_cleanstring() as it causes problems
+  with CSS coding standards such as SMACSS.
 #2247605 by IRuslan: Fix display of fake tabs.
 #2354437 by DamienMcKenna: Always save a new display record when a new revision
   is being saved.
