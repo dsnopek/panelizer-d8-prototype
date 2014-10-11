@@ -2684,6 +2684,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    * @param string $address
    *   An optional address to send to the renderer to use for addressable
    *   content.
+   * @param array $extra_contexts
+   *   An optional array of extra context objects that will be added to the
+   *   display.
    *
    * @return array
    *   If the entity isn't panelized, this returns NULL. Otherwise, it returns an
@@ -2692,7 +2695,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    *   - 'no_blocks': Boolean defining if the panels display wants to hide core
    *      blocks or not when being rendered.
    */
-  function render_entity($entity, $view_mode, $langcode = NULL, $args = array(), $address = NULL) {
+  function render_entity($entity, $view_mode, $langcode = NULL, $args = array(), $address = NULL, $extra_contexts = array()) {
     if (empty($entity->panelizer[$view_mode]) || empty($entity->panelizer[$view_mode]->display)) {
       return FALSE;
     }
@@ -2701,7 +2704,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     $panelizer = $entity->panelizer[$view_mode];
     $display = $panelizer->display;
 
-    $display->context = $this->get_contexts($panelizer, $entity);
+    $display->context = $this->get_contexts($panelizer, $entity) + $extra_contexts;
     $display->args = $args;
     $display->css_id = $panelizer->css_id;
 

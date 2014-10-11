@@ -185,8 +185,8 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     }
   }
 
-  function render_entity($entity, $view_mode, $langcode = NULL, $args = array(), $address = NULL) {
-    $info = parent::render_entity($entity, $view_mode, $langcode, $args, $address);
+  function render_entity($entity, $view_mode, $langcode = NULL, $args = array(), $address = NULL,  $extra_contexts = array()) {
+    $info = parent::render_entity($entity, $view_mode, $langcode, $args, $address, $extra_contexts);
     if (!empty($entity->promote)) {
       $info['classes_array'][] = 'node-promoted';
     }

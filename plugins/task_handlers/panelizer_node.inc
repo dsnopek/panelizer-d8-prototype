@@ -82,6 +82,8 @@ $plugin = array(
  * Figure out the correct context to use for this panelizer.
  */
 function _panelizer_panelizer_task_get_context($handler, $contexts) {
+  $contexts = ctools_context_handler_get_handler_contexts($contexts, $handler);
+
   if (isset($handler->conf['context']) && !empty($contexts[$handler->conf['context']])) {
     return $contexts[$handler->conf['context']];
   }
@@ -93,7 +95,33 @@ function _panelizer_panelizer_task_get_context($handler, $contexts) {
   }
 
   // Fail!
-  return stdClass();
+  return new stdClass();
+}
+
+/**
+ * Get extra contexts to pass from page manager to panelizer.
+ *
+ * @param $handler
+ *   The handler object.
+ * @param $base_contexts
+ *   The base contexts from page manager.
+ *
+ * @return array
+ *   All contexts defined in page manager other than the panelized entity
+ *   context.
+ */
+function _panelizer_panelizer_task_get_extra_contexts($handler, $base_contexts) {
+  $extra_contexts = ctools_context_handler_get_handler_contexts($base_contexts, $handler);
+
+  // Remove the panelized context to prevent duplication in the extra contexts.
+  if (isset($handler->conf['context']) && !empty($extra_contexts[$handler->conf['context']])) {
+    unset($extra_contexts[$handler->conf['context']]);
+  }
+  elseif (!empty($extra_contexts)) {
+    array_shift($extra_contexts);
+  }
+
+  return $extra_contexts;
 }
 
 /**
@@ -240,7 +268,8 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
   $address = implode('::', array('page_manager', $handler->task, $handler->subtask, $handler->name, implode('..', $args)));
 
   if ($entity_handler = panelizer_entity_plugin_get_handler($entity_type)) {
-    $info = $entity_handler->render_entity($context->data, 'page_manager', NULL, $args, $address);
+    $extra_contexts = _panelizer_panelizer_task_get_extra_contexts($handler, $base_contexts);
+    $info = $entity_handler->render_entity($context->data, 'page_manager', NULL, $args, $address, $extra_contexts);
 
     // Add body element classes, appending to the existing value.
     $panel_body_css = &drupal_static('panel_body_css', array());
@@ -260,9 +289,7 @@ function panelizer_panelizer_task_render($handler, $base_contexts, $args, $test 
  * a display.
  */
 function panelizer_panelizer_task_test($handler, $base_contexts) {
-  if (empty($base_contexts)) {
-    return;
-  }
+  ctools_include('context');
 
   if (!ctools_context_handler_select($handler, $base_contexts)) {
     return;
