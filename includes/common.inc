@@ -323,7 +323,8 @@ function panelizer_reset_entity_form($form, &$form_state) {
   $entity_info = entity_get_info($entity_type);
   $form = array();
 
-  return confirm_form(
+  // Build the confirmation form.
+  $form = confirm_form(
     $form,
     t('Are you sure you want to reset the panelizer status for this %entity?', array('%entity' => $entity_info['label'])),
     dirname(dirname($_GET['q'])),
@@ -331,6 +332,11 @@ function panelizer_reset_entity_form($form, &$form_state) {
     t('Reset'),
     t('Cancel'),
     'panelizer_reset_entity_confirm');
+
+  // Append the revision form.
+  panelizer_add_revision_info_form($form, $form_state);
+
+  return $form;
 }
 
 /**
