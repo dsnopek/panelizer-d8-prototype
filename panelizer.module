@@ -216,12 +216,13 @@ function panelizer_panels_default_settings_submit($form, &$form_state) {
 }
 
 /**
- * Implements hook_page_alter().
+ * Implements hook_process_page().
  */
-function panelizer_page_alter(&$page) {
+function panelizer_process_page(&$variables) {
   // Delegate.
+  // We target the theme layer to ensure we can manipulate the overview table.
   foreach (panelizer_get_plugins_with_hook('page_alter') as $handler) {
-    $handler->hook_page_alter($page);
+    $handler->hook_page_alter($variables['page']);
   }
 }
 
