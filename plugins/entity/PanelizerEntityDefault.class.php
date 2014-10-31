@@ -567,6 +567,18 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     $settings = !empty($this->plugin['bundles'][$bundle]) ? $this->plugin['bundles'][$bundle] : array('status' => FALSE, 'choice' => FALSE);
     $entity_info = entity_get_info($this->entity_type);
     $perms_url = url('admin/people/permissions');
+    $manage_display = t('Manage Display');
+    $bundle_info = array();
+    if (isset($entity_info['bundles'][$bundle])) {
+      $bundle_info = $entity_info['bundles'][$bundle];
+      if (!empty($bundle_info['admin']['real path'])) {
+        $manage_display = l($manage_display, $bundle_info['admin']['real path'] . '/display');
+      }
+    }
+    $view_mode_settings = array();
+    if (!empty($bundle)) {
+      $view_mode_settings = field_view_mode_settings($this->entity_type, $bundle);
+    }
 
     $form['panelizer'] = array(
       '#type' => 'fieldset',
@@ -586,21 +598,39 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       ),
     );
 
+    // The master checkbox.
     $form['panelizer']['status'] = array(
       '#title' => t('Panelize'),
       '#type' => 'checkbox',
       '#default_value' => !empty($settings['status']),
       '#id' => 'panelizer-status',
-      '#description' => t('Allow content of this type to have its display controlled by Panelizer. Once enabled, each individual view mode will have further options.<br />Enabling a view mode adds adds <a href="!perm_url">several new permissions</a> for it.', array('!perm_url' => $perms_url)),
+      '#description' => t('Allow content of this type to have its display controlled by Panelizer. Once enabled, each individual view mode will have further options and will add <a href="!perm_url">several new permissions</a>.', array('!perm_url' => $perms_url))
+        . '<br />'
+        . t('Other than "Full page override" and "Default", only view modes enabled through the Custom Display Settings section of the !manage_display tab will be available for use.', array('!manage_display' => $manage_display)),
     );
 
     foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
-      if (isset($this->plugin['view mode status'][$bundle][$view_mode]) && empty($this->plugin['view mode status'][$bundle][$view_mode])) {
-        continue;
+      // Automatically allow view modes that are part of Panels.
+      if (isset($entity_info['view modes'][$view_mode])) {
+        // Skip this view mode if it isn't enabled for this bundle.
+        if (!empty($bundle)) {
+          if (empty($view_mode_settings[$view_mode]['custom_settings'])) {
+            continue;
+          }
+        }
+        // When configuring a new bundle for an entity, the view modes that are by
+        // default set to now have custom settings will be hidden, to avoid
+        // confusion.
+        else {
+          if (isset($entity_info['view modes'][$view_mode]['custom settings']) && empty($entity_info['view modes'][$view_mode]['custom settings'])) {
+            continue;
+          }
+        }
       }
+
       $form['panelizer']['view modes'][$view_mode] = array(
         '#type' => 'item',
-        '#title' => $view_mode_info['label'],
+        // '#title' => '<hr />' . $view_mode_info['label'],
         '#states' => array(
           'visible' => array(
             '#panelizer-status' => array('checked' => TRUE),
@@ -608,11 +638,39 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         ),
       );
 
+      // Show the optional view mode description.
+      $pm_links = array(
+        '!pm' => l('Page Manager', 'admin/structure/pages'),
+        '!panels' => l('Panels', 'admin/structure/panels'),
+      );
+
+      $description = '';
+      if ($view_mode == 'default') {
+        $description = t('If a requested view mode for an entity was not enabled in the !manage_display tab page, this view mode will be used as a failover. For example, if "Teaser" was being used but it was not enabled.', array('!manage_display' => $manage_display));
+      }
+      elseif ($view_mode == 'page_manager') {
+        $description = t("A custom view mode only used when !pm/!panels is used to control this entity's full page display, i.e. the '!entity_type_view' display is enabled. Unlike the \"!full\" view mode, this one allows customization of the page title.",
+          $pm_links + array(
+            '!entity_type' => $this->entity_type,
+            '!full' => !empty($entity_info['view modes']['full']['label']) ? $entity_info['view modes']['full']['label'] : 'Full',
+          ));
+      }
+      elseif ($view_mode == 'full') {
+        $description = t('Used when viewing !entity_type entities on their standalone page, does not allow customization of the page title.', array('!entity_type' => $this->entity_type));
+      }
+      elseif ($view_mode == 'teaser') {
+        $description = t('Used in content lists by default, e.g. on the default homepage and on taxonomy term pages.');
+      }
+      elseif ($view_mode == 'rss') {
+        $description = t('Used by the default RSS content lists.');
+      }
       $form['panelizer']['view modes'][$view_mode]['status'] = array(
-        '#title' => t('Panelize'),
+        '#title' => $view_mode_info['label'],
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['status']),
         '#id' => 'panelizer-' . $view_mode . '-status',
+        '#prefix' => '<hr />',
+        '#description' => $description,
         '#attributes' => array(
           'title' => $view_mode_info['label'],
         ),
@@ -621,24 +679,22 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('Allow entities of this type to have this view mode controlled by Panelizer.'),
       );
-      // Additional note necessary for the 'page_manager' view mode as that
-      // handler must be enabled in Page Manager.
       if ($view_mode == 'page_manager') {
-        // The Page Manager handler is not enabled.
-        if (variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
-          $form['panelizer']['view modes'][$view_mode]['status']['#description'] .= '<br />'
-            . t('In <a href="@panels">Panels</a> / <a href="@pm">Page Manager</a> the "@handler" display must be enabled in order for this view mode to work.', array('@panels' => url('admin/structure/panels'), '@pm' => url('admin/structure/pages'), '@handler' => $this->entity_type . '_view'));
+        if (!variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
+          $form['panelizer']['view modes'][$view_mode]['status']['#title'] .= ' (<em>'
+            . t('!pm is enabled correctly', $pm_links)
+            . '</em>)';
         }
         else {
-          $form['panelizer']['view modes'][$view_mode]['status']['#description'] .= '<br />'
-            . t('This view mode has been enabled in <a href="@panels">Panels</a> / <a href="@pm">Page Manager</a>.', array('@panels' => url('admin/structure/panels'), '@pm' => url('admin/structure/pages')));
+          $form['panelizer']['view modes'][$view_mode]['status']['#title'] .= ' (<em>'
+            . t('"!entity_type_view" must be enabled in !pm', $pm_links + array('!entity_type' => $this->entity_type))
+            . '</em>)';
         }
       }
 
       $form['panelizer']['view modes'][$view_mode]['default'] = array(
-        '#title' => t('Provide initial display'),
+        '#title' => t('Provide an initial display named "Default"'),
         '#type' => 'checkbox',
         '#default_value' => !empty($settings['view modes'][$view_mode]['status']) && !empty($settings['view modes'][$view_mode]['default']),
         '#id' => 'panelizer-' . $view_mode . '-initial',
@@ -648,7 +704,6 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('If checked, a panel will be provided named "Default", which will be used as the default display, unless another one is created & selected below.'),
       );
 
       // Obtain a list of all available panels for this view mode / bundle.
@@ -683,46 +738,36 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $options[$default_value] .= ' (' . t('default') . ')';
       }
 
-      $form['panelizer']['view modes'][$view_mode]['selection'] = array(
-        '#title' => t('Default panel'),
-        '#type' => 'select',
-        '#options' => $options,
-        '#default_value' => $default_value,
-        '#id' => 'panelizer-' . $view_mode . '-default',
-        '#states' => array(
-          'visible' => array(
-            '#panelizer-status' => array('checked' => TRUE),
-            '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
+      if (!empty($bundle_info) && count($options) > 0) {
+        $form['panelizer']['view modes'][$view_mode]['selection'] = array(
+          '#title' => t('Default panel'),
+          '#type' => 'select',
+          '#options' => $options,
+          '#default_value' => $default_value,
+          '#id' => 'panelizer-' . $view_mode . '-default',
+          '#states' => array(
+            'visible' => array(
+              '#panelizer-status' => array('checked' => TRUE),
+              '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
+            ),
           ),
-        ),
-        '#required' => count($options),
-        '#disabled' => count($options) == 0,
-        '#description' => t('The default panel to be used for new %bundle records. If "Allow panel choice" is not enabled, the item selected will be used for any new %bundle record. All existing %bundle records will have to be manually updated to the new selection.', array('%bundle' => $bundle)),
-      );
-      $form['panelizer']['view modes'][$view_mode]['default revert'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('Update existing entities to use this display'),
-        '#states' => array(
-          'visible' => array(
-            '#panelizer-status' => array('checked' => TRUE),
-            '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
-          ),
-        ),
-        '#description' => t('Will update all %bundle records to use the newly selected display, unless they have been customized. Note: only takes effect when the display is changed, and will not work if the default was not assigned previously.', array('%bundle' => $bundle)),
-        '#field_prefix' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
-      );
-
-      // First time this is displayed there won't be any defaults assigned, so
-      // show a placeholder indicating the page needs to be saved before they
-      // will show.
-      if (count($options) == 0) {
-        $form['panelizer']['view modes'][$view_mode]['selection']['#options'] = array(
-          '' => '* ' . t('No displays available yet') . ' *'
+          '#required' => count($options),
+          '#disabled' => count($options) == 0,
+          '#description' => t('The default panel to be used for new %bundle records. If "Allow panel choice" is not enabled, the item selected will be used for any new %bundle record. All existing %bundle records will have to be manually updated to the new selection.', array('%bundle' => $bundle)),
         );
-        $form['panelizer']['view modes'][$view_mode]['selection']['#description'] .= '<br />'
-          . '<em>'
-          . t('No displays have been created yet, the default may not be assigned.')
-          . '</em>';
+
+        $form['panelizer']['view modes'][$view_mode]['default revert'] = array(
+          '#type' => 'checkbox',
+          '#title' => t('Update existing entities to use this display'),
+          '#states' => array(
+            'visible' => array(
+              '#panelizer-status' => array('checked' => TRUE),
+              '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
+            ),
+          ),
+          '#description' => t('Will update all %bundle records to use the newly selected display, unless they have been customized. Note: only takes effect when the display is changed, and will not work if the default was not assigned previously.', array('%bundle' => $bundle)),
+          '#field_prefix' => '&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;',
+        );
       }
 
       // Control whether the default can be selected.
@@ -737,7 +782,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             '#panelizer-' . $view_mode . '-status' => array('checked' => TRUE),
           ),
         ),
-        '#description' => t('Allows multiple panels to be created for this view mode. Once created, a selector will be provided on the @bundle edit form allowing the display of this view mode to be chosen. Additionally, any customizations made will be based upon the selected display. Note: the selector will not be shown if there is only one display, instead the default will be automatically selected.', array('@bundle' => $bundle)),
+        '#description' => t("Allows multiple panels to be created for this view mode. Once created, a selector will be provided on the %bundle record's edit form allowing the display of this view mode to be chosen. Additionally, any customizations made will be based upon the selected display. Note: the selector will not be shown if there is only one display, instead the default will be automatically selected.", array('%bundle' => $bundle)),
       );
       if (!empty($bundle)) {
         $form['panelizer']['view modes'][$view_mode]['choice']['#description'] .= '<br />'
@@ -2345,12 +2390,15 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     );
 
     $entity_info = entity_get_info($this->entity_type);
-
     $bundles = $entity_info['bundles'];
 
     drupal_alter('panelizer_default_types', $bundles, $this->entity_type);
 
     foreach ($bundles as $bundle => $bundle_info) {
+      $view_mode_settings = array();
+      if (!empty($bundle)) {
+        $view_mode_settings = field_view_mode_settings($this->entity_type, $bundle);
+      }
       $base_url = 'admin/config/content/panelizer/' . $this->entity_type . '/' . $bundle;
       $bundle_id = str_replace(array('][', '_', ' '), '-', '#edit-entities-' . $this->entity_type . '-' . $bundle . '-0');
 
@@ -2366,11 +2414,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       // Set proper allowed content link for entire bundle based on status
       if (!empty($this->plugin['bundles'][$bundle]['status'])) {
-        $links_array = array(
-          'settings' => array(
-            'title' => t('allowed content'),
-            'href' => $base_url . '/allowed',
-          ),
+        $links_array = array();
+        if (!empty($bundle_info['admin']['real path'])) {
+          $links_array['displays'] = array(
+            'title' => t('manage display'),
+            'href' => $bundle_info['admin']['real path'] . '/display',
+          );
+        }
+        $links_array['settings'] = array(
+          'title' => t('allowed content'),
+          'href' => $base_url . '/allowed',
         );
         $links = theme('links', array(
           'links' => $links_array,
@@ -2392,8 +2445,25 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       );
 
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
+        // Automatically allow view modes that are part of Panels.
+        if (isset($entity_info['view modes'][$view_mode])) {
+          // Skip this view mode if it isn't enabled for this bundle.
+          if (!empty($bundle)) {
+            if (empty($view_mode_settings[$view_mode]['custom_settings'])) {
+              continue;
+            }
+          }
+          // When configuring a new bundle for an entity, the view modes that are by
+          // default set to now have custom settings will be hidden, to avoid
+          // confusion.
+          else {
+            if (isset($entity_info['view modes'][$view_mode]['custom settings']) && empty($entity_info['view modes'][$view_mode]['custom settings'])) {
+              continue;
+            }
+          }
+        }
         if (isset($this->plugin['view mode status'][$bundle][$view_mode]) && empty($this->plugin['view mode status'][$bundle][$view_mode])) {
-          continue;
+          // continue;
         }
 
         $base_id = str_replace(array('][', '_', ' '), '-', '#edit-entities-' . $this->entity_type . '-' . $bundle . '-' . $view_mode);

@@ -12,6 +12,15 @@ define('PANELIZER_VERSION', '3.0');
 // Drupal core hooks
 
 /**
+ * Implements hook_help().
+ */
+function panelizer_help($path, $arg) {
+  if ($path == 'admin/config/content/panelizer') {
+    return '<p>' . t('Other than "Full page override" or "Default" (when applicable), only view modes enabled through the Custom Display Settings section of the <em>Manage Display</em> settings for that entity or bundle will be available for use.') . '</p>';
+  }
+}
+
+/**
  * Implements hook_hook_info().
  */
 function panelizer_hook_info() {
