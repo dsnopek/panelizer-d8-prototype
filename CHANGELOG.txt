@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2229033 by uzlov: Fixed problem with CTools API change that caused initial
+  display creation to fail.
 #2147795 by DamienMcKenna, jamestamr: UI improvements to make it more clear what
   different view modes are for, especially 'Full page override' and 'Default'.
 #2212873 by mglaman: Panelizer links were not always added to entity settings

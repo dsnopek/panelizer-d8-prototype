@@ -479,6 +479,9 @@ function panelizer_default_content_page($handler, $bundle, $name, $view_mode) {
     panels_edit_cache_clear($form_state['display cache']);
     drupal_goto($_GET['q']);
   }
+  elseif ($form_state['display cache']->display->did === 'new') {
+    panels_edit_cache_set($form_state['display cache']);
+  }
 
   ctools_set_no_blocks(FALSE);
 
