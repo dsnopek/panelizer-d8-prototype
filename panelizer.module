@@ -1245,9 +1245,8 @@ function panelizer_panels_cache_get($argument) {
  * Store a display edit in progress in the page cache.
  */
 function panelizer_panels_cache_set($argument, $cache) {
-  list($type, $key) = explode(':', $argument, 2);
   ctools_include('object-cache');
-  ctools_object_cache_set('panelizer_display_cache', $type . ':' . $key, $cache);
+  ctools_object_cache_set('panelizer_display_cache', $argument, $cache);
 }
 
 /**
@@ -1256,9 +1255,8 @@ function panelizer_panels_cache_set($argument, $cache) {
  * Save all changes made to a display using the Page Manager page cache.
  */
 function panelizer_panels_cache_clear($argument, $cache) {
-  list($type, $key) = explode(':', $argument, 2);
   ctools_include('object-cache');
-  ctools_object_cache_clear('panelizer_display_cache', $type . ':' . $key);
+  ctools_object_cache_clear('panelizer_display_cache', $argument);
 }
 
 /**
