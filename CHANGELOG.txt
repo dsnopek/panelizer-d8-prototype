@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2370457 by AndreyMaximov: Removed excessive array exploding/concatenation in
+  the cache functions.
 #2229033 by uzlov: Fixed problem due to CTools API change which caused initial
   display creation to fail.
 #2147795 by DamienMcKenna, jamestamr: UI improvements to make it more clear what
