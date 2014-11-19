@@ -118,8 +118,8 @@ Future functionality
 
 Troubleshooting / Known Issues
 ------------------------------------------------------------------------------
-* Saving an entity's overriden Panelizer display (i.e. nodes, etc) can cause the
-  entity's path alias to be reset. This is an outstanding bug in Pathauto
+* Saving an entity's overridden Panelizer display (i.e. nodes, etc) can cause
+  the entity's path alias to be reset. This is an outstanding bug in Pathauto
   v7.x-1.2 and can be resolved by either installing Pathauto Persistent State
   (https://www.drupal.org/project/pathauto_persist) or applying the latest
   patch from https://www.drupal.org/node/936222.
