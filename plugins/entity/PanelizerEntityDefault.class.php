@@ -322,6 +322,31 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'weight' => -10,
       ) + $base;
 
+      if ($this->supports_revisions) {
+        $rev_base = $base;
+        $rev_base['load arguments'] = array($position + 2);
+        $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer'] = array(
+          'title' => 'Panelizer',
+          // Make sure this is accessible to panelize entities with no defaults.
+          'page arguments' => array($this->entity_type, 'overview', $position),
+          'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+          'type' => MENU_LOCAL_TASK,
+          'weight' => 11,
+        ) + $rev_base;
+
+        // Integration with Workbench Moderation.
+        if (module_exists('workbench_moderation') && $this->entity_type == 'node') {
+          $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer']['type'] = MENU_CALLBACK;
+        }
+
+        $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/overview'] = array(
+          'title' => 'Overview',
+          'page arguments' => array($this->entity_type, 'overview', $position),
+          'type' => MENU_DEFAULT_LOCAL_TASK,
+          'weight' => -100,
+        ) + $rev_base;
+      }
+
       // Put in all of our view mode based paths.
       $weight = 0;
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
@@ -331,6 +356,15 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'settings', $view_mode),
           'weight' => $weight++,
         ) + $base;
+
+        if ($this->supports_revisions) {
+          $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/' . $view_mode] = array(
+            'title' => $view_mode_info['label'],
+            'page arguments' => array($this->entity_type, 'content', $position, $view_mode),
+            'access arguments' => array($this->entity_type, 'access', 'admin', $position, 'content', $view_mode),
+            'weight' => $weight++,
+          ) + $base;
+        }
 
         foreach (panelizer_operations() as $path => $operation) {
           $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/' . $path] = array(
@@ -346,12 +380,29 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/' . $path]['file path'] = $operation['file path'];
           }
         }
+
         // Add our special reset item:
         $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/reset'] = array(
           'title' => t('Reset to Defaults'),
           'page arguments' => array($this->entity_type, 'reset', $position, $view_mode),
           'type' => MENU_CALLBACK,
         ) + $base;
+
+        if ($this->supports_revisions) {
+          $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/' . $view_mode . '/' . $path] = array(
+            'title' => $operation['menu title'],
+            'page arguments' => array($this->entity_type, $path, $position, $view_mode),
+            'access arguments' => array($this->entity_type, 'access', 'admin', $position, $path, $view_mode),
+            'weight' => $weight++,
+          ) + $rev_base;
+
+          if (isset($operation['file'])) {
+            $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/' . $view_mode . '/' . $path]['file'] = $operation['file'];
+          }
+          if (isset($operation['file path'])) {
+            $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/' . $view_mode . '/' . $path]['file path'] = $operation['file path'];
+          }
+        }
       }
     }
 
@@ -1105,8 +1156,14 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $dids[$entity->panelizer[$view_mode]->did] = $entity->panelizer[$view_mode]->did;
           }
         }
+
+        $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
+        if ($this->supports_revisions) {
+          $items[$this->plugin['entity path'] . '/revisions/%/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
+        }
       }
     }
+    ksort($items);
 
     // Load any defaults we collected.
     if ($defaults) {
@@ -1297,7 +1354,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       if ($this->supports_revisions) {
         // If no revision value is assigned, or a new revision is being created,
         // create a new {panelizer_entity} record.
-        if (empty($panelizer->revision_id) || $panelizer->revision_id != $revision_id) {
+        if (!empty($panelizer->entity_id) && empty($panelizer->revision_id) || $panelizer->revision_id != $revision_id) {
           $panelizer->revision_id = $revision_id;
           $update = array();
           // If this has a custom display, flag the system that the display
@@ -1740,10 +1797,22 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
   function entity_base_url($entity, $view_mode = NULL) {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
-    $bits = explode('/', $this->plugin['entity path']);
+    $path_elements[] = $entity_id;
+
+    $path = $this->plugin['entity path'];
+    if ($this->supports_revisions) {
+      $current_entities = entity_load($this->entity_type, array($entity_id));
+      $current_entity = array_pop($current_entities);
+      if ($revision_id !== $current_entity->vid) {
+        $path_elements[] = $revision_id;
+        $path .= '/revisions/%';
+      }
+    }
+
+    $bits = explode('/', $path);
     foreach ($bits as $count => $bit) {
       if (strpos($bit, '%') === 0) {
-        $bits[$count] = $entity_id;
+        $bits[$count] = array_shift($path_elements);
       }
     }
 
@@ -1790,6 +1859,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    * Create some fake tabs that are attached to a page output.
    */
   function make_fake_tabs($base_url, $bundle, $view_mode, $output) {
+    // Integration with Workbench Moderation: these local tabs will be
+    // automatically added via the menu system.
+    if (module_exists('workbench_moderation') && isset($bundle->workbench_moderation) && $bundle->workbench_moderation['my_revision']->vid == $bundle->workbench_moderation['current']->vid) {
+      return $output;
+    }
+
     $links_array = array();
     foreach (panelizer_operations() as $path => $operation) {
       if ($this->panelizer_access($path, $bundle, $view_mode)) {
@@ -1995,7 +2070,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     $form_state = array(
       'entity' => $entity,
       'revision info' => $this->entity_allows_revisions($entity),
-      'display cache' => panels_edit_cache_get(implode(':', array('panelizer', $this->entity_type, $entity_id, $view_mode))),
+      'display cache' => panels_edit_cache_get(implode(':', array('panelizer', $this->entity_type, $entity_id, $view_mode, $revision_id))),
       'no_redirect' => TRUE,
     );
 

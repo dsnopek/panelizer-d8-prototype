@@ -678,13 +678,15 @@ function panelizer_get_plugins_with_hook($hook) {
  */
 function panelizer_entity_plugin_switcher_page($entity_type, $op) {
   $args = func_get_args();
-  $js = !empty($_REQUEST['js']);
 
   // Load the $plugin information
   if ($handler = panelizer_entity_plugin_get_handler($entity_type)) {
     // replace the first two arguments:
-    $args[0] = $js;
+    $args[0] = !empty($_REQUEST['js']);
     $args[1] = $_POST;
+    if (empty($args[3])) {
+      $args[3] = 'page_manager';
+    }
     $method = 'page_' . $op;
     if (method_exists($handler, $method)) {
       return call_user_func_array(array($handler, $method), $args);
@@ -1181,6 +1183,13 @@ function panelizer_panels_cache_get($argument) {
     return;
   }
 
+  if ($handler->supports_revisions) {
+    list($entity_id, $view_mode, $vid) = explode(':', $key);
+  }
+  else {
+    list($entity_id, $view_mode) = explode(':', $key);
+  }
+
   // If it's already cached, we still need to restore our contexts.
   if (!empty($cache)) {
     $cache->cached = TRUE;
@@ -1189,8 +1198,8 @@ function panelizer_panels_cache_get($argument) {
       $cache->display->context = $handler->get_contexts($panelizer);
     }
     else {
-      list($entity_id, $view_mode) = explode(':', $key);
-      $entities = entity_load($entity_type, array($entity_id));
+      $conditions = (isset($vid) ? array('vid' => $vid) : array());
+      $entities = entity_load($entity_type, array($entity_id), $conditions);
       if (!empty($entities[$entity_id]) && !empty($entities[$entity_id]->panelizer[$view_mode])) {
         $panelizer = $entities[$entity_id]->panelizer[$view_mode];
         $cache->display->context = $handler->get_contexts($panelizer, $entities[$entity_id]);
@@ -1209,8 +1218,8 @@ function panelizer_panels_cache_get($argument) {
     $cache->display->context = $handler->get_contexts($panelizer);
   }
   else {
-    list($entity_id, $view_mode) = explode(':', $key);
-    $entities = entity_load($entity_type, array($entity_id));
+    $conditions = (isset($vid) ? array('vid' => $vid) : array());
+    $entities = entity_load($entity_type, array($entity_id), $conditions);
     if (empty($entities[$entity_id]) || empty($entities[$entity_id]->panelizer[$view_mode])) {
       return $cache;
     }
@@ -1223,7 +1232,7 @@ function panelizer_panels_cache_get($argument) {
 
   ctools_include('common', 'panels');
   ctools_include('plugins', 'panels');
-  $cache->display->cache_key = "panelizer:$type:$key";
+  $cache->display->cache_key = "panelizer:$type:$key" . (!empty($vid) && is_numeric($vid) && substr($key, strlen($vid) * -1) != $vid ? ":$vid" : '');
 
   // Set the allowed content types
   if (variable_get('panelizer_' . $type . ':' . $bundle . '_allowed_types_default', FALSE)) {
@@ -1293,7 +1302,8 @@ function panelizer_panels_cache_save($argument, $cache) {
   }
   else {
     list($entity_id, $view_mode) = explode(':', $key);
-    $entities = entity_load($entity_type, array($entity_id));
+    $conditions = (isset($vid) ? array('vid' => $vid) : array());
+    $entities = entity_load($entity_type, array($entity_id), $conditions);
     if ($entities[$entity_id] && $entities[$entity_id]->panelizer[$view_mode]) {
       $entities[$entity_id]->panelizer[$view_mode]->display = $cache->display;
       $entities[$entity_id]->panelizer[$view_mode]->display_is_modified = TRUE;
@@ -1475,7 +1485,6 @@ function panelizer_set_status_action_form($context, &$form_state) {
     $panelizers = array(
       'not' => t('Not panelized'),
     ) + $options[$view_mode];
-
 
     $form['panelizer'][$view_mode] = array(
       '#type' => 'select',
@@ -1722,4 +1731,49 @@ function panelizer_panelizer_pre_render_alter(&$panelizer, &$display, &$entity) 
       break;
     }
   }
+}
+
+/**
+ * Implements hook_workbench_moderation_node_history_view_alter().
+ *
+ * This is a little kludgy as the data in the row is stored as final HTML for
+ * display.
+ */
+function panelizer_workbench_moderation_node_history_view_alter(&$rows) {
+  // Load the node.
+  $node = node_load(arg(1));
+
+  // Verify the user has access to the Panelizer configuration.
+  if (panelizer_is_panelized('node', $node->type)) {
+    // Loop over each table row.
+    foreach ($rows as $key => &$row) {
+      // Published.
+      $path = 'node/' . $node->nid . '/panelizer';
+
+      // Not published.
+      if (!in_array('published-revision', $row['class'])) {
+        $path = 'node/' . $node->nid . '/revisions/' . $row['data']['vid'] . '/panelizer';
+      }
+
+      // Add a link to the Panelizer page.
+      $row['data']['revision'] .= ' | ' . l('Panelizer', $path);
+    }
+  }
+}
+
+/**
+ * Menu callback load method to either return the requested revision ID or FALSE
+ * to prevent the tab from being processed.
+ *
+ * @param string $vid
+ *   An entity's revision ID.
+ *
+ * @return mixed
+ *   Either the revision_id or FALSE if the
+ */
+function panelizer_node_revision_load($revision_id = NULL) {
+  if (!empty($revision_id)) {
+    return $revision_id;
+  }
+  return FALSE;
 }

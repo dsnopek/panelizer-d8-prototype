@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#1798294 by DamienMcKenna, michielnugter, azinck, recidive, partdigital,
+  frakke: Couldn't edit non-current node revisions.
 #2370457 by AndreyMaximov: Removed excessive array exploding/concatenation in
   the cache functions.
 #2229033 by uzlov: Fixed problem due to CTools API change which caused initial
