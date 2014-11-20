@@ -1630,6 +1630,22 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
 
   $panelizer = $entities[$entity_id]->panelizer[$view_mode];
 
+  module_load_include('inc', 'panelizer', 'includes/common');
+  $revision_info = $handler->entity_allows_revisions($entity);
+
+  // If this entity has revisions enabled we can assume that they have
+  // permissions to add revisions via IPE.
+  if (!empty($revision_info)) {
+    $form_state['entity'] = $entity;
+    $form_state['revision info'] = $revision_info;
+    panelizer_add_revision_info_form($form, $form_state);
+    // Tweak the log message field to make it fit better.
+    if (isset($form['revision_information'])) {
+      $form['revision_information']['log']['#type'] = 'textfield';
+      $form['revision_information']['log']['#description'] = '';
+    }
+  }
+
   // If the entity already has customized panelizer data, add the revert button.
   if (!empty($panelizer->did)) {
     if ($handler->has_default_panel($bundle . '.' . $view_mode)) {
@@ -1676,6 +1692,48 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
     '#id' => 'panelizer-save-default',
     '#access' => $handler->panelizer_access('defaults', $entity, $panelizer->view_mode),
   );
+}
+
+/**
+ * Implement template_preprocess_panels_ipe_toolbar().
+ *
+ * Add some extra CSS for the Panelizer additional requirements for IPE.
+ */
+function panelizer_preprocess_panels_ipe_toolbar(&$variables) {
+  // Some custom CSS to improve the UX.
+  // $variables['#attached'] = array(
+  //   'css' => array(
+  //     drupal_get_path('module', 'panelizer') . '/css/panelizer.ipe.css',
+  //   ),
+  // );
+  // dpm($variables);
+}
+
+/**
+ * Implements hook_panels_ipe_ajax_save_commands_alter().
+ *
+ * If Workbench Moderation is enabled, and this is for the form submission on a
+ * Panelized node, redirect to the latest revision upon save.
+ */
+function panelizer_panels_ipe_ajax_save_commands_alter(&$ipe, $form_state) {
+  // This requires Workbench Moderation.
+  if (module_exists('workbench_moderation')) {
+    // The form was actually saved.
+    if (!empty($form_state['submitted']) && !empty($ipe->meta_location)) {
+      // This is for a revisions-enabled Panelizer entity.
+      if (!empty($form_state['panelizer entity']) && !empty($form_state['panelizer handler']) && !empty($form_state['use revisions'])) {
+        // Extract the Panelizer details.
+        $entity = $form_state['panelizer entity'];
+        $handler = $form_state['panelizer handler'];
+        // Only support nodes.
+        if ($handler->entity_type == 'node') {
+          // Change the first AJAX command to a redirection to the latest draft
+          // for this node.
+          $ipe->commands[0] = ctools_ajax_command_redirect('node/' . $entity->nid . '/current-revision');
+        }
+      }
+    }
+  }
 }
 
 /**

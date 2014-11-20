@@ -2903,8 +2903,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     if (!empty($parents['panels_renderer_editor'])) {
+      $path = drupal_get_path('module', 'panelizer');
       ctools_add_js('panelizer-ipe', 'panelizer');
-      drupal_add_js(drupal_get_path('module', 'panelizer') . "/js/panelizer-ipe.js", array('group' => JS_LIBRARY));
+      drupal_add_js($path . "/js/panelizer-ipe.js", array('group' => JS_LIBRARY));
+      drupal_add_css($path . "/css/panelizer-ipe.css");
     }
 
     $info['title'] = $panelizer->display->get_title();
