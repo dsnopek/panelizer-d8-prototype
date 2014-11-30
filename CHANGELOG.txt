@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#1798294 by DamienMcKenna, michielnugter: Follow-up to resolve issues creating
+  new revisions.
 #2362651 by DamienMcKenna, drupalninja99: Add revision support to IPE
   integration.
 #1798294 by DamienMcKenna, michielnugter, azinck, recidive, partdigital,
