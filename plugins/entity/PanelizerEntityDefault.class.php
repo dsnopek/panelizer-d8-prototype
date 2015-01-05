@@ -308,7 +308,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       );
 
       $items[$this->plugin['entity path'] . '/panelizer'] = array(
-        'title' => 'Panelizer',
+        'title' => 'Customize display',
         // make sure this is accessible to panelize entities with no defaults.
         'page arguments' => array($this->entity_type, 'overview', $position),
         'weight' => 11,
@@ -326,7 +326,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $rev_base = $base;
         $rev_base['load arguments'] = array($position + 2);
         $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer'] = array(
-          'title' => 'Panelizer',
+          'title' => 'Customize display',
           // Make sure this is accessible to panelize entities with no defaults.
           'page arguments' => array($this->entity_type, 'overview', $position),
           'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
@@ -1571,7 +1571,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $form['panelizer'] = array(
         '#type' => 'fieldset',
         '#access' => $this->panelizer_access('choice', $entity, $view_mode),
-        '#title' => t('Panelizer'),
+        '#title' => t('Customize display'),
         '#collapsible' => TRUE,
         '#collapsed' => TRUE,
         '#group' => 'additional_settings',
@@ -1790,8 +1790,14 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $rows[] = $row;
     }
 
-    $output = theme('table', array('header' => $header, 'rows' => $rows));
-    return $output;
+    return array(
+      '#theme' => 'table',
+      '#header' => $header,
+      '#rows' => $rows,
+      '#prefix' => '<p>'
+        . t('Changes made here will override the default (Panelizer) displays and will only affect this @entity.', array('@entity' => $this->entity_type))
+        . "</p>\n",
+    );
   }
 
   /**
