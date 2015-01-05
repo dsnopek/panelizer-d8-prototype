@@ -592,3 +592,10 @@ function panelizer_update_7115() {
 
   drupal_set_message(t('Fixed @fixed Panelizer record(s) that were using the same display.', array('@fixed' => $fixed)));
 }
+
+/**
+ * Ensure there's one display for each revision.
+ */
+function panelizer_update_7116() {
+  drupal_set_message(t('Note: the "Panelizer" tabs on content, user, term pages, etc have been renamed to "Customize display".'));
+}

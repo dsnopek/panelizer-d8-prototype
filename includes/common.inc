@@ -29,7 +29,7 @@ function panelizer_settings_form($form, &$form_state) {
       '#type' => 'checkbox',
       '#default_value' => $panelizer->no_blocks,
       '#title' => t('Disable Drupal blocks/regions'),
-      '#description' => t('Check this to have the panel disable sidebars displayed in the theme. Note that some themes support this setting better than others. If in doubt, try with stock themes to see.'),
+      '#description' => t("Check this to have the display not show the theme's sidebars. Note that some themes support this setting better than others. If in doubt, try with stock themes to see."),
     );
   }
 
@@ -80,7 +80,7 @@ function panelizer_settings_form($form, &$form_state) {
       '#size' => 35,
       '#default_value' => $panelizer->css_class,
       '#title' => t('CSS class'),
-      '#description' => t('The CSS class to apply to this panel. You may use context substitions here.'),
+      '#description' => t('The CSS class to apply to this display. You may use context substitions here.'),
     );
   }
   else {
@@ -98,13 +98,13 @@ function panelizer_settings_form($form, &$form_state) {
     '#size' => 35,
     '#default_value' => $panelizer->css_id,
     '#title' => t('CSS ID'),
-    '#description' => t('The CSS ID to apply to this panel.'),
+    '#description' => t('The CSS ID to apply to this display.'),
   );
 
   $form['css'] = array(
     '#type' => 'textarea',
     '#title' => t('CSS code'),
-    '#description' => t('Enter well-formed CSS code here; this code will be embedded into the panel, and should only be used for minor adjustments; it is usually better to try to put CSS for the panel into the theme if possible. This CSS will be filtered for safety so some CSS may not work.'),
+    '#description' => t('Enter well-formed CSS code here; this code will be embedded into the display and should only be used for minor adjustments; it is usually better to try to put CSS for this display into the theme if possible. This CSS will be filtered for safety so some CSS may not work.'),
     '#default_value' => $panelizer->css,
   );
 
@@ -226,7 +226,7 @@ function panelizer_add_revision_info_form_submit(&$form, &$form_state) {
 }
 
 /**
- * Form to edit contexts that go with a panelizer panel.
+ * Form to edit contexts that go with a Panelizer display.
  */
 function panelizer_default_context_form($form, &$form_state) {
   ctools_include('context-admin');
@@ -296,7 +296,7 @@ function panelizer_default_context_form($form, &$form_state) {
 
 /**
  * Form used when an entity bundle is panelized but there is no default
- * panel. Entities are then individually panelized.
+ * display. Entities are then individually panelized.
  */
 function panelizer_panelize_entity_form($form, &$form_state) {
   $entity_type = $form_state['panelizer']->panelizer_type;

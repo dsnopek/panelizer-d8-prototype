@@ -401,7 +401,7 @@ function panelizer_panelizer_task_edit_settings_submit($form, &$form_state) {
 }
 
 /**
- * Set up a title for the panel based upon the selection rules.
+ * Set up a title for the display based upon the selection rules.
  */
 function panelizer_panelizer_task_title($handler, $task, $subtask) {
   if (isset($handler->conf['title'])) {

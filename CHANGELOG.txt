@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2157701 by DamienMcKenna: UX: Use of word 'panel' is confusing when referring
+  to each Panelizer display.
 #1812658 by DamienMcKenna: Renamed 'Panelizer' tab to 'Customize display'.
 #1798294 by DamienMcKenna, michielnugter: Follow-up to resolve issues creating
   new revisions.

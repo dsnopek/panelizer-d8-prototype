@@ -1160,7 +1160,7 @@ function panelizer_context_cache_clear($entity_type, $key) {
 /**
  * Implements hook_panels_cache_get().
  *
- * Get display edit cache for a panel being edited.
+ * Get display edit cache for a display being edited.
  *
  * The key is the second half of the key in this form:
  * panelizer:TYPE:KEY;
@@ -1814,7 +1814,7 @@ function panelizer_workbench_moderation_node_history_view_alter(&$rows) {
       }
 
       // Add a link to the Panelizer page.
-      $row['data']['revision'] .= ' | ' . l('Panelizer', $path);
+      $row['data']['revision'] .= ' | ' . l('Customize display', $path);
     }
   }
 }

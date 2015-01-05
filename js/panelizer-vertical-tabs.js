@@ -14,7 +14,7 @@ Drupal.behaviors.panelizerFieldsetSummary = {
       if (val === 0) {
         return Drupal.t('Not panelized');
       }
-      return Drupal.t('Use panel @name',
+      return Drupal.t('Use display @name',
         { '@name' : $('option[value="' + $('select', context).val() + '"]', context).html() });
     });
   }
