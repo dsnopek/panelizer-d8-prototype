@@ -1469,7 +1469,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
     // Locate and delete all displays associated with the entity.
-    $revisions = db_query("SELECT revision_id, did FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id = :id", array(':id' => $entity_id))->fetchAllAssoc('revision_id');
+    $revisions = db_query("SELECT revision_id, did FROM {panelizer_entity} WHERE entity_type = :type AND entity_id = :id", array(':type' => (string) $this->entity_type, ':id' => $entity_id))->fetchAllAssoc('revision_id');
 
     // It is possible to have the same did on multiple revisions, if none of
     // those revisions modified the display. Be careful NOT to delete a display
@@ -2122,10 +2122,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     // Locate and delete all displays associated with the entity.
     if (empty($view_mode)) {
-      $dids = db_query("SELECT did FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id = :id", array(':id' => $entity_id))->fetchCol();
+      $dids = db_query("SELECT did FROM {panelizer_entity} WHERE entity_type = :type AND entity_id = :id", array(':type' => (string) $this->entity_type, ':id' => $entity_id))->fetchCol();
     }
     else {
-      $dids = db_query("SELECT did FROM {panelizer_entity} WHERE entity_type = '$this->entity_type' AND entity_id = :id AND view_mode = :view_mode", array(':id' => $entity_id, ':view_mode' => $view_mode))->fetchCol();
+      $dids = db_query("SELECT did FROM {panelizer_entity} WHERE entity_type = :type AND entity_id = :id AND view_mode = :view_mode", array(':type' => (string) $this->entity_type, ':id' => $entity_id, ':view_mode' => $view_mode))->fetchCol();
     }
 
     foreach (array_unique(array_filter($dids)) as $did) {

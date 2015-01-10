@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2337767 by devendra.yadav, mglaman: Fixed some db_queries that didn't use
+  arguments correctly.
 #2157701 by DamienMcKenna: UX: Use of word 'panel' is confusing when referring
   to each Panelizer display.
 #1812658 by DamienMcKenna: Renamed 'Panelizer' tab to 'Customize display'.
