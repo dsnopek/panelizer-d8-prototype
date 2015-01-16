@@ -1,5 +1,8 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2408691 by DamienMcKenna: Don't assume that a revision ID is submitted to the
+  panelizer_panels_cache_get function, when viewing a published node it will
+  only contain the entity ID.
 #2408301 by DamienMcKenna: Displays not saving for entities without an existing
   {panelizer_entity} record.
 #2246175 by das-peter, DamienMcKenna: Add contextual links to node templates.
