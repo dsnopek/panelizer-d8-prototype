@@ -1356,9 +1356,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       // This entity supports revisions.
       if ($this->supports_revisions) {
-        // If no revision value is assigned, or a new revision is being created,
-        // create a new {panelizer_entity} record.
-        if (!empty($panelizer->entity_id) && (empty($panelizer->revision_id) || $panelizer->revision_id != $revision_id)) {
+        // If no revision value is assigned, indicating that no record was
+        // previously saved for this entity/view_mode combination, or a new
+        // revision is being created, create a new {panelizer_entity} record.
+        if (empty($panelizer->revision_id) || $panelizer->revision_id != $revision_id) {
           $panelizer->revision_id = $revision_id;
           // If this has a custom display, flag the system that the display
           // needs to be saved as a new record.
@@ -1366,7 +1367,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $panelizer->display_is_modified = TRUE;
           }
         }
-        // This record is being updated.
+        // This entity is being updated.
         else {
           $update = array('entity_type', 'entity_id', 'revision_id', 'view_mode');
         }

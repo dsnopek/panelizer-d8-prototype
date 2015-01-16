@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2408301 by DamienMcKenna: Displays not saving for entities without an existing
+  {panelizer_entity} record.
 #2246175 by das-peter, DamienMcKenna: Add contextual links to node templates.
 #2337767 by devendra.yadav, mglaman: Fixed some db_queries that didn't use
   arguments correctly.
