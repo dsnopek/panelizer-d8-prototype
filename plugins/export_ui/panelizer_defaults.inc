@@ -5,7 +5,7 @@ $plugin = array(
   'access' => 'administer panelizer',
 
   'menu' => array(
-    'menu prefix' => 'admin/config/content/panelizer/%panelizer_handler',
+    'menu prefix' => 'admin/structure/panelizer/%panelizer_handler',
     'menu item' => '%',
     'menu title' => 'Panelizer',
     'menu description' => 'Add, edit or delete custom content layouts.',

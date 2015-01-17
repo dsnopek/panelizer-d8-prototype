@@ -42,10 +42,10 @@ class panelizer_defaults_ui extends ctools_export_ui {
       }
 
       $this->plugin['menu']['items'][$key]['access callback'] = 'panelizer_has_choice_callback';
-      $this->plugin['menu']['items'][$key]['access arguments'] = array(4, 5, '');
+      $this->plugin['menu']['items'][$key]['access arguments'] = array(3, 4, '');
       $this->plugin['menu']['items'][$key]['page callback'] = 'panelizer_export_ui_switcher_page';
-      array_unshift($this->plugin['menu']['items'][$key]['page arguments'], 5);
       array_unshift($this->plugin['menu']['items'][$key]['page arguments'], 4);
+      array_unshift($this->plugin['menu']['items'][$key]['page arguments'], 3);
     }
 
     parent::hook_menu($items);

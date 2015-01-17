@@ -185,7 +185,7 @@ function panelizer_panelizer_task_contextual_link($handler, $plugin, $contexts, 
       );
     }
 
-    $template_base_path = 'admin/config/content/panelizer/node/' . $bundle . '.' . $panelizer->view_mode;
+    $template_base_path = 'admin/structure/panelizer/node/' . $bundle . '.' . $panelizer->view_mode;
     if ($entity_handler->panelizer_access('settings', $entity, 'page_manager')) {
       $links['default_settings'] = array(
         'title' => t('Edit default display settings'),

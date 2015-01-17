@@ -599,3 +599,11 @@ function panelizer_update_7115() {
 function panelizer_update_7116() {
   drupal_set_message(t('Note: the "Panelizer" tabs on content, user, term pages, etc have been renamed to "Customize display".'));
 }
+
+/**
+ * Clear the menu cache to pull in the new menu paths.
+ */
+function panelizer_update_7117() {
+  variable_set('menu_rebuild_needed', TRUE);
+  drupal_set_message(t('Note: the main Panelizer configuration page has moved to the "Structure" menu instead of the "Config" menu.'));
+}

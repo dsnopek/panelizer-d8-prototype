@@ -5,7 +5,7 @@ dependencies[] = panels
 dependencies[] = ctools
 dependencies[] = page_manager
 core = 7.x
-configure = admin/config/content/panelizer
+configure = admin/structure/panelizer
 
 files[] = plugins/views/panelizer_handler_field_link.inc
 files[] = plugins/views/panelizer_handler_panelizer_status.inc

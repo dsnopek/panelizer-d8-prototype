@@ -15,7 +15,7 @@ define('PANELIZER_VERSION', '3.0');
  * Implements hook_help().
  */
 function panelizer_help($path, $arg) {
-  if ($path == 'admin/config/content/panelizer') {
+  if ($path == 'admin/structure/panelizer') {
     return '<p>' . t('Other than "Full page override" or "Default" (when applicable), only view modes enabled through the Custom Display Settings section of the <em>Manage Display</em> settings for that entity or bundle will be available for use.') . '</p>';
   }
 }
@@ -789,8 +789,8 @@ function panelizer_export_ui_switcher_page($entity_handler, $bundle, $plugin_nam
     $handler->entity_bundle = $bundle;
     $handler->entity_view_mode = $view_mode;
 
-    if (empty($entity_handler->entity_admin_root) || substr($_GET['q'], 30) == 'admin/config/content/panelizer') {
-      $handler->plugin['menu']['menu prefix'] = 'admin/config/content/panelizer/' . $entity_handler->entity_type;
+    if (empty($entity_handler->entity_admin_root) || substr($_GET['q'], 30) == 'admin/structure/panelizer') {
+      $handler->plugin['menu']['menu prefix'] = 'admin/structure/panelizer' . $entity_handler->entity_type;
       $handler->plugin['menu']['menu item'] = $bundle;
     }
     else {
@@ -877,7 +877,7 @@ function panelizer_has_choice_callback($handler, $bundle, $name = NULL) {
     $handler = panelizer_entity_plugin_get_handler($handler);
   }
 
-  if (!$handler) {
+  if (empty($handler)) {
     return FALSE;
   }
 
@@ -886,7 +886,7 @@ function panelizer_has_choice_callback($handler, $bundle, $name = NULL) {
   }
 
   // Check to see if $name is valid
-  if ($name && !$handler->get_default_panelizer_object($bundle, $name)) {
+  if (!empty($name) && !$handler->get_default_panelizer_object($bundle, $name)) {
     return FALSE;
   }
 
@@ -910,11 +910,11 @@ function panelizer_has_no_choice_callback($handler, $bundle, $view_mode = NULL) 
     $handler = panelizer_entity_plugin_get_handler($handler);
   }
 
-  if (!$handler) {
+  if (empty($handler)) {
     return FALSE;
   }
 
-  if ($view_mode) {
+  if (!empty($view_mode)) {
     $bundle .= '.' . $view_mode;
   }
 

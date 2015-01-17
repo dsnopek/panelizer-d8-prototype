@@ -2484,7 +2484,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       if (!empty($bundle)) {
         $view_mode_settings = field_view_mode_settings($this->entity_type, $bundle);
       }
-      $base_url = 'admin/config/content/panelizer/' . $this->entity_type . '/' . $bundle;
+      $base_url = 'admin/structure/panelizer/' . $this->entity_type . '/' . $bundle;
       $bundle_id = str_replace(array('][', '_', ' '), '-', '#edit-entities-' . $this->entity_type . '-' . $bundle . '-0');
 
       // Add the widgets that apply only to the bundle.
@@ -2552,7 +2552,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
 
         $base_id = str_replace(array('][', '_', ' '), '-', '#edit-entities-' . $this->entity_type . '-' . $bundle . '-' . $view_mode);
-        $base_url = 'admin/config/content/panelizer/' . $this->entity_type . '/' . $bundle . '.' . $view_mode;
+        $base_url = 'admin/structure/panelizer/' . $this->entity_type . '/' . $bundle . '.' . $view_mode;
 
         if (!empty($this->plugin['bundles'][$bundle]['view modes'][$view_mode]) && is_array($this->plugin['bundles'][$bundle]['view modes'][$view_mode])) {
           $settings = $this->plugin['bundles'][$bundle]['view modes'][$view_mode];

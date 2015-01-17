@@ -17,9 +17,9 @@ It requires Panels and Page Manager.
 
 INITIAL CONFIGURATION
 
-Visit Configuration >> Panelizer to enable the module for the entities you
-need. You may need to visit Site Building >> Pages and enable the appropriate
-pages for supported entities.
+Visit Structure >> Panelizer to enable the module for the entities you need.
+You may need to visit Site Building >> Pages and enable the appropriate pages
+for supported entities.
 
 Note that in all cases, modifying Panelizer settings for an entity requires
 update privileges for that entity.
