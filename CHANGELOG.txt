@@ -1,6 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
-#1493296 by DamienMcKenna: Moved the main configuration page.
+#1493296 by DamienMcKenna, mglaman, lpalgarvio: Moved the main config page.
 #2408691 by DamienMcKenna: Don't assume that a revision ID is submitted to the
   panelizer_panels_cache_get function, when viewing a published node it will
   only contain the entity ID.
