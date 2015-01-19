@@ -1049,6 +1049,10 @@ function panelizer_export_delete_callback($object) {
     panels_delete_display($object->did);
   }
 
+  // Allow modules to react on a default Panelizer object before deletion.
+  // Triggers hook_panelizer_delete_default().
+  module_invoke_all('panelizer_delete_default', $object);
+
   db_delete('panelizer_defaults')
     ->condition('name', $object->name)
     ->execute();

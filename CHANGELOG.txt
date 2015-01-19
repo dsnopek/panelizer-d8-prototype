@@ -1,5 +1,8 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#1929000 by arnested, mglaman, DamienMcKenna: Added a new hook that is
+  triggered before a default Panelizer object is removed:
+  hook_panelizer_delete_default()
 #1493296 by DamienMcKenna, mglaman, lpalgarvio: Moved the main config page.
 #2408691 by DamienMcKenna: Don't assume that a revision ID is submitted to the
   panelizer_panels_cache_get function, when viewing a published node it will

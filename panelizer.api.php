@@ -60,3 +60,15 @@ function hook_panelizer_entity_plugin_process_alter(&$plugin, $info) {
  */
 function hook_panelizer_overview_links_alter(&$links_array, $entity_type, $context) {
 }
+
+/**
+ * Act on default objects just before they're deleted.
+ *
+ * @param object $panelizer
+ *   The panelizer default object.
+ */
+function hook_panelizer_delete_default($panelizer) {
+  db_delete('example_somthing')
+    ->condition('name', $panelizer->name)
+    ->execute();
+}

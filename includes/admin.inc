@@ -270,6 +270,10 @@ function panelizer_default_settings_page($handler, $bundle, $name, $view_mode) {
  * Delete a panelizer node panel from the database.
  */
 function panelizer_delete_panelizer_defaults($panelizer) {
+  // Allow modules to react on a default Panelizer object before deletion.
+  // Triggers hook_panelizer_delete_default().
+  module_invoke_all('panelizer_delete_default', $panelizer);
+
   if (!empty($panelizer->pnid)) {
     if (!empty($panelizer->did)) {
       panels_delete_display($panelizer->did);
