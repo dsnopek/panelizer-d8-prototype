@@ -272,12 +272,27 @@ function panelizer_install() {
  * Implements hook_uninstall().
  */
 function panelizer_uninstall() {
-  db_delete('variable')
-    ->condition('name', 'panelizer_defaults_%', 'LIKE')
-    ->execute();
-  db_delete('variable')
-    ->condition('name', 'panelizer_node:%', 'LIKE')
-    ->execute();
+  foreach (entity_get_info() as $entity_type => $entity_info) {
+    if (isset($entity_info['bundles'])) {
+      foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+        // View mode variables.
+        if (!empty($entity_info['view modes'])) {
+          foreach ($entity_info['view modes'] as $view_mode => $view_info) {
+            variable_del('panelizer_' . $entity_type . ':' . $bundle_name . ':' . $view_mode . '_selection');
+          }
+        }
+        variable_del('panelizer_' . $entity_type . ':' . $bundle_name . ':default_selection');
+        variable_del('panelizer_' . $entity_type . ':' . $bundle_name . ':page_manager_selection');
+
+        // Other variables.
+        variable_del('panelizer_defaults_' . $entity_type . '_' . $bundle_name);
+        variable_del('panelizer_' . $entity_type . ':' . $bundle_name . '_allowed_layouts');
+        variable_del('panelizer_' . $entity_type . ':' . $bundle_name . '_allowed_layouts_default');
+        variable_del('panelizer_' . $entity_type . ':' . $bundle_name . '_allowed_types');
+        variable_del('panelizer_' . $entity_type . ':' . $bundle_name . '_default');
+      }
+    }
+  }
 }
 
 /**

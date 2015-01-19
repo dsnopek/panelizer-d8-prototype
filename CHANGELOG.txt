@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2190839 by DamienMcKenna, annya: Improved panelizer_uninstall() to remove all
+  variables.
 #1929000 by arnested, mglaman, DamienMcKenna: Added a new hook that is
   triggered before a default Panelizer object is removed:
   hook_panelizer_delete_default()
