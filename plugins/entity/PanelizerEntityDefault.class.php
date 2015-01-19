@@ -741,6 +741,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           $form['panelizer']['view modes'][$view_mode]['status']['#title'] .= ' (<em>'
             . t('"!entity_type_view" must be enabled in !pm', $pm_links + array('!entity_type' => $this->entity_type))
             . '</em>)';
+          drupal_set_message(t('Note: "!entity_type_view" display must be enabled in !pm in order for the full page ("Full page override") display to work correctly.', $pm_links + array('!entity_type' => $this->entity_type)), 'warning');
         }
       }
 

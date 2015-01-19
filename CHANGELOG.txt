@@ -1,5 +1,7 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2408811 by DamienMcKenna: Improved warning when Page Manager is disabled for an
+  entity view mode but is required in order for the view mode to work correctly.
 #2190839 by DamienMcKenna, annya: Improved panelizer_uninstall() to remove all
   variables.
 #1929000 by arnested, mglaman, DamienMcKenna: Added a new hook that is
