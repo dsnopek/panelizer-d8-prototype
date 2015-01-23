@@ -412,6 +412,22 @@ function panelizer_panelizer_task_edit_settings($form, &$form_state) {
     '#title' => t('Administrative title'),
     '#description' => t('Administrative title of this variant.'),
   );
+  $name = isset($conf['name']) ? $conf['name'] : FALSE;
+  $form['name'] = array(
+    '#type' => 'machine_name',
+    '#title' => t('Machine name'),
+    '#required' => FALSE,
+    '#default_value' => $name,
+    '#description' => t("A unique machine-readable name for this variant. It must only contain lowercase letters, numbers, and underscores. This name will be used when exporting the variant. If left empty the variant's name will be used instead."),
+    '#size' => 32,
+    '#maxlength' => 32,
+    '#machine_name' => array(
+      'exists' => 'page_manager_handler_check_machine_name',
+      'source' => array('title'),
+    ),
+    '#field_prefix' => '<span dir="ltr">' . $form_state['task_name'] . '__',
+    '#field_suffix' => '</span>&lrm;',
+  );
 
   $contexts = ctools_context_handler_get_all_contexts($form_state['task'], $form_state['subtask'], $form_state['handler']);
 
@@ -422,7 +438,19 @@ function panelizer_panelizer_task_edit_settings($form, &$form_state) {
 }
 
 function panelizer_panelizer_task_edit_settings_submit($form, &$form_state) {
+  $machine_name = $form_state['handler']->name;
+  $name = $form_state['task_id'] . '__' . $form_state['values']['name'];
+
+  // If new name doesn't equal machine name, we need to update and redirect.
+  if ($machine_name !== $name) {
+    $form_state['new trail'] = $form_state['trail'];
+    $delta = array_search($machine_name, $form_state['new trail']);
+    $form_state['new trail'][$delta] = $name;
+    $form_state['handler']->name = $name;
+  }
+
   $form_state['handler']->conf['title'] = $form_state['values']['title'];
+  $form_state['handler']->conf['name'] = $form_state['values']['name'];
   $form_state['handler']->conf['context'] = $form_state['values']['context'];
 }
 
