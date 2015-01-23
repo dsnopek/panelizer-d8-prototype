@@ -1237,7 +1237,16 @@ function panelizer_panels_cache_get($argument) {
 
   ctools_include('common', 'panels');
   ctools_include('plugins', 'panels');
-  $cache->display->cache_key = "panelizer:$type:$key" . (!empty($vid) && is_numeric($vid) && substr($key, strlen($vid) * -1) != $vid ? ":$vid" : '');
+
+  $cache_keys = array(
+    'panelizer',
+    $type,
+    $key,
+  );
+  if (isset($vid) && is_numeric($vid) && substr($key, strlen($vid) * -1) != $vid) {
+    $cache_keys[] = $vid;
+  }
+  $cache->display->cache_key = implode(':', $cache_keys);
 
   // Set the allowed content types
   if (variable_get('panelizer_' . $type . ':' . $bundle . '_allowed_types_default', FALSE)) {
@@ -1638,6 +1647,13 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
   module_load_include('inc', 'panelizer', 'includes/common');
   $revision_info = $handler->entity_allows_revisions($entity);
 
+  // Set panelizer info regardless of revision or panelizer layout default
+  // status.
+  $form_state['panelizer entity'] = $entity;
+  $form_state['panelizer bundle'] = $bundle;
+  $form_state['panelizer handler'] = $handler;
+  $form_state['panelizer view_mode'] = $view_mode;
+
   // If this entity has revisions enabled we can assume that they have
   // permissions to add revisions via IPE.
   if (!empty($revision_info)) {
@@ -1662,10 +1678,6 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
         '#id' => 'panelizer-ipe-revert',
 //        '#attributes' => array('onclick' => ''),
       );
-      $form_state['panelizer entity'] = $entity;
-      $form_state['panelizer bundle'] = $bundle;
-      $form_state['panelizer handler'] = $handler;
-      $form_state['panelizer view_mode'] = $view_mode;
     }
     return;
   }
@@ -1726,16 +1738,9 @@ function panelizer_panels_ipe_ajax_save_commands_alter(&$ipe, $form_state) {
     // The form was actually saved.
     if (!empty($form_state['submitted']) && !empty($ipe->meta_location)) {
       // This is for a revisions-enabled Panelizer entity.
-      if (!empty($form_state['panelizer entity']) && !empty($form_state['panelizer handler']) && !empty($form_state['use revisions'])) {
-        // Extract the Panelizer details.
-        $entity = $form_state['panelizer entity'];
-        $handler = $form_state['panelizer handler'];
-        // Only support nodes.
-        if ($handler->entity_type == 'node') {
-          // Change the first AJAX command to a redirection to the latest draft
-          // for this node.
-          $ipe->commands[0] = ctools_ajax_command_redirect('node/' . $entity->nid . '/current-revision');
-        }
+      if (!empty($form_state['use revisions'])) {
+        $entity = $form_state['entity'];
+        $ipe->commands[0] = ctools_ajax_command_redirect('node/' . $entity->nid . '/current-revision');
       }
     }
   }

@@ -296,7 +296,7 @@ function panelizer_default_context_page($handler, $bundle, $name, $view_mode) {
     $bundle .= '.' . $view_mode;
   }
 
-  $cache_key = $handler->entity_type . ':' . $bundle . ':' . $name;
+  $cache_key = implode(':', array($handler->entity_type, $bundle, $name));
   $panelizer = panelizer_context_cache_get('default', $cache_key);
   if (empty($panelizer)) {
     return MENU_NOT_FOUND;
@@ -461,7 +461,7 @@ function panelizer_default_content_page($handler, $bundle, $name, $view_mode) {
     return MENU_NOT_FOUND;
   }
 
-  $cache_key = 'panelizer:default:' . $handler->entity_type . ':' . $bundle . ':' . $name;
+  $cache_key = implode(':', array('panelizer', 'default', $handler->entity_type, $bundle, $name));
 
   $form_state = array(
     'display cache' => panels_edit_cache_get($cache_key),
