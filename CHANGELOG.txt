@@ -1,5 +1,6 @@
 Panelizer 7.x-3.x-dev, xxxx-xx-xx
 ---------------------------------
+#2203629 by DamienMcKenna: Require the latest releases of CTools and Panels.
 #2408903 by Andrew M Riley: IPE not saving correctly.
 #2410363 by mrjmd: Add ability to edit machine names.
 #2408811 by DamienMcKenna: Improved warning when Page Manager is disabled for an
