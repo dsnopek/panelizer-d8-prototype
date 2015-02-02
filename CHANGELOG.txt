@@ -1,5 +1,5 @@
-Panelizer 7.x-3.x-dev, xxxx-xx-xx
----------------------------------
+Panelizer 7.x-3.2-beta1, 2015-02-02
+-----------------------------------
 #2203629 by DamienMcKenna: Require the latest releases of CTools and Panels.
 #2408903 by Andrew M Riley: IPE not saving correctly.
 #2410363 by mrjmd: Add ability to edit machine names.
