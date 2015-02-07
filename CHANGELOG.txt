@@ -1,3 +1,7 @@
+Panelizer 7.x-3.x-dev, xxxx-xx-xx
+---------------------------------
+
+
 Panelizer 7.x-3.2-beta1, 2015-02-02
 -----------------------------------
 #2203629 by DamienMcKenna: Require the latest releases of CTools and Panels.
