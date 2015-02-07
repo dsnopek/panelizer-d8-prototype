@@ -559,9 +559,6 @@ function panelizer_update_7115() {
     drupal_set_message(t('No Panelizer display records need fixing.'));
   }
 
-  // When saving an entity record, these fields are primary keys.
-  $update = array('entity_type', 'entity_id', 'revision_id', 'view_mode');
-
   // Track the number of records fixed.
   $fixed = 0;
 
@@ -590,8 +587,14 @@ function panelizer_update_7115() {
       // Assign the new display to this Panelizer record.
       $panelizer->did = $display->did;
 
-      // Update the Panelizer record.
-      drupal_write_record('panelizer_entity', $panelizer, $update);
+      // Update the {panelizer} record.
+      db_update('panelizer_entity')
+        ->fields((array) $panelizer)
+        ->condition('entity_type', $panelizer->entity_type)
+        ->condition('entity_id', $panelizer->entity_id)
+        ->condition('revision_id', $panelizer->revision_id)
+        ->condition('view_mode', $panelizer->view_mode)
+        ->execute();
 
       // Clear this entity's cache.
       $cache_clear[$panelizer->entity_type][] = $panelizer->entity_id;
