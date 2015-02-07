@@ -9,6 +9,11 @@
 
 Drupal.behaviors.PanelizerIPE = {
   attach: function (context) {
+    if ($(context).is('form#panels-ipe-edit-control-form.panels-ipe-edit-control-form')) {
+      // Disable the Leave Page dialog warning
+      window.onbeforeunload = null;
+      window.onunload = null;
+    }
     $('input#panelizer-save-default', context).bind('mouseup', function (e) {
       if (!confirm(Drupal.t("This will save this configuration as the new default for all entities of this type. This action cannot be undone. Are you sure?"))) {
         this.ipeCancelThis = true;
