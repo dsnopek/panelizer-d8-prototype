@@ -1850,3 +1850,42 @@ function panelizer_node_revision_load($revision_id = NULL) {
   }
   return FALSE;
 }
+
+/**
+ * Implements hook_clone_node_alter().
+ *
+ * Custom integration for Node Clone to handle objects that might be embedded
+ * in a custom Panelizer display. Currently supports Fieldable Panels Panes.
+ */
+function panelizer_clone_node_alter(&$node, $context) {
+  if (!empty($node->panelizer)) {
+    foreach ($node->panelizer as $view_mode => &$panelizer) {
+      // Only deal with custom displays, ignore default displays which would
+      // be selected in $panelizer->name.
+      if (!empty($panelizer->did) && !empty($panelizer->display)) {
+        // Loop over each pane.
+        foreach ($panelizer->display->content as &$pane) {
+          // Clone each FPP and then assign the new fpid.
+          if ($pane->type == 'fieldable_panels_pane') {
+            list($subtype, $fpid) = explode(':', $pane->subtype);
+            if ($subtype == 'fpid') {
+              // Clone the FPP object.
+              $fpp = fieldable_panels_panes_load($fpid);
+
+              // Clean the some basic settings.
+              $fpp->fpid = NULL;
+              $fpp->created = NULL;
+              $fpp->timestamp = NULL;
+
+              // Save the cloned FPP.
+              $newfpp = fieldable_panels_panes_save($fpp);
+
+              // Update the FPP reference.
+              $pane->subtype = 'fpid:' . $newfpp->fpid;
+            }
+          }
+        }
+      }
+    }
+  }
+}
