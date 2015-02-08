@@ -52,6 +52,12 @@ class panelizer_defaults_ui extends ctools_export_ui {
   }
 
   function list_page($js, $input) {
+    if ($substitute = $this->entity_handler->get_substitute($this->entity_view_mode, $this->entity_bundle)) {
+      $url = $this->plugin['menu']['menu prefix'] . '/' . $substitute;
+      drupal_set_message(t('This display is managed by the !view_mode display.', array('!view_mode' => l($substitute, $url))), 'status', FALSE);
+      return '';
+    }
+
     drupal_set_title($this->entity_handler->get_bundle_title($this->entity_bundle));
     return parent::list_page($js, $input);
   }

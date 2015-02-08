@@ -319,14 +319,10 @@ function panelizer_entity_view_alter(&$build, $entity_type) {
 
   list($entity_id, $revision_id, $bundle) = entity_extract_ids($entity_type, $entity);
 
-  // If the requested view mode does not exist, rendering will fall back
-  // to 'default' and we should check that one instead.
-  $view_mode = $build['#view_mode'];
-
-  // Test to see if this view mode is actually panelizable at all.
-  if (!isset($handler->plugin['view modes'][$view_mode]) || (empty($handler->plugin['view modes'][$view_mode]['custom settings']) && empty($handler->plugin['view mode status'][$bundle][$view_mode]))) {
-    $view_mode = 'default';
-  }
+  // If the requested view mode does not exist, check if a substitute is
+  // assigned, otherwise rendering will fall back to 'default' and we should
+  // check that one instead.
+  $view_mode = $handler->get_view_mode($build['#view_mode'], $bundle);
 
   // Make sure the bundle + view mode is actually panelized!
   if (!$handler->is_panelized($bundle . '.' . $view_mode)) {
@@ -356,7 +352,6 @@ function panelizer_entity_view_alter(&$build, $entity_type) {
     $build['#panelizer_entity_id'] = $entity_id;
   }
   $recursion_prevention[$entity_type][$entity_id][$view_mode] = FALSE;
-
 }
 
 // -----------------------------------------------------------------------
