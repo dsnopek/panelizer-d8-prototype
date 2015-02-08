@@ -15,6 +15,7 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
   trying to save a default for a node type.
 #2192863 by niko-, mrjmd, mglaman, DamienMcKenna: Don't load displays for
   disabled view modes.
+#2416405 by cmonnow, DamienMcKenna: Improved logic in hook_entity_insert().
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

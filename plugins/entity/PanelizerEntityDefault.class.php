@@ -1456,32 +1456,27 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
         // Make sure we have the new did.
         $panelizer->did = $panelizer->display->did;
-
-        // Make sure there is a view mode.
-        if (empty($panelizer->view_mode)) {
-          $panelizer->view_mode = $view_mode;
-        }
-
-        // And write the new record.
-        drupal_write_record('panelizer_entity', $panelizer);
       }
+
+      // To prevent overwriting a cloned entity's $panelizer object, clone it.
       else {
-        // We write the panelizer record to record which name is being used.
-        // And ensure the did is NULL:
-        $panelizer->did = NULL;
-        $panelizer->entity_type = $this->entity_type;
-        $panelizer->entity_id = $entity_id;
-        // The (int) ensures that entities that do not support revisions work
-        // since the revision_id cannot be NULL.
-        $panelizer->revision_id = (int) $revision_id;
+        // Store $panelizer->name as  it is removed by clone_panelizer().
+        $stored_name = $panelizer->name;
 
-        // Make sure there is a view mode.
-        if (empty($panelizer->view_mode)) {
-          $panelizer->view_mode = $view_mode;
-        }
+        // Clone the $panelizer object.
+        $panelizer = $this->clone_panelizer($panelizer, $entity);
 
-        drupal_write_record('panelizer_entity', $panelizer);
+        // Restore the original $panelizer->name.
+        $panelizer->name = $stored_name;
       }
+
+      // Make sure there is a view mode.
+      if (empty($panelizer->view_mode)) {
+        $panelizer->view_mode = $view_mode;
+      }
+
+      // And write the new record.
+      drupal_write_record('panelizer_entity', $panelizer);
     }
   }
 
