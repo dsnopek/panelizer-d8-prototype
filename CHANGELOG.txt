@@ -3,6 +3,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2416977 by Andrew M Riley: Confirm Navigation: Leave this Page (IPE w/
   Revisions).
 #2419311 by naxoc: Update 7115 caused double-serialized values to saved.
+#2311453 by DamienMcKenna, drupalninja: Redirect IPE to normal 'revert' page to
+  revert the display.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

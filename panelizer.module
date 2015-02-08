@@ -1670,6 +1670,16 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
   // If the entity already has customized panelizer data, add the revert button.
   if (!empty($panelizer->did)) {
     if ($handler->has_default_panel($bundle . '.' . $view_mode)) {
+      $uri = entity_uri($handler->entity_type, $entity);
+      $url = $uri['path'];
+      // Support for Workbench Moderation to redirect to the newest revision for
+      // this node.
+      if ($handler->entity_type == 'node' && module_exists('workbench_moderation')) {
+        $url = 'node/' . $entity->nid . '/current-revision';
+      }
+      $redirect_url = url($uri['path'] . '/panelizer/' . $view_mode . '/reset', array('query' => array('destination' => $url)));
+      drupal_add_js(array('panelizer' => array('revert_default_url' => $redirect_url)), 'setting');
+
       $form['buttons']['revert_default'] = array(
         '#type' => 'submit',
         '#value' => t('Revert to @bundle_name default', array('@bundle_name' => $entity_info['bundles'][$bundle]['label'])),
