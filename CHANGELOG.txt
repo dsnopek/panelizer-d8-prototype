@@ -9,7 +9,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
    display.
 #2375563 by DamienMcKenna: Clone attached FPPs when a node is cloned.
 #2361425 by hctom: Support for taxonomy revisions.
-
+#2416505 by dsnopek: Allow indexing content from 'Full page override' with
+  Search API.
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
 -----------------------------------

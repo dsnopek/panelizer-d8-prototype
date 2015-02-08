@@ -7,8 +7,14 @@ dependencies[] = page_manager
 core = 7.x
 configure = admin/structure/panelizer
 
+; Master class for handling entities.
+files[] = plugins/entity/PanelizerEntityDefault.class.php
+
+; SearchAPI integration.
+files[] = plugins/search_api/PanelizerSearchApiAlterCallback.class.php
+
+; Views integration.
 files[] = plugins/views/panelizer_handler_field_link.inc
 files[] = plugins/views/panelizer_handler_panelizer_status.inc
 files[] = plugins/views/panelizer_handler_filter_panelizer_status.inc
 files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc
-files[] = plugins/entity/PanelizerEntityDefault.class.php
