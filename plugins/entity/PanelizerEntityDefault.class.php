@@ -1295,6 +1295,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       // Check for each view mode.
       foreach ($this->plugin['view modes'] as $view_mode => $view_mode_info) {
+        // Skip disabled view modes.
+        $check_needed = array_key_exists($view_mode, $this->plugin['bundles'][$bundles[$entity_id]]['view modes']);
+        $view_mode_disabled = empty($this->plugin['bundles'][$bundles[$entity_id]]['view modes'][$view_mode]['status']);
+        if ($check_needed === FALSE || $view_mode_disabled) {
+          continue;
+        }
+
         // Load the default display for this entity bundle / view_mode.
         $name = $this->get_default_display_name($bundles[$entity_id], $view_mode);
 
