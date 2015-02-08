@@ -8,6 +8,7 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2366209 by DamienMcKenna: Option for one view mode to use another view mode's
    display.
 #2375563 by DamienMcKenna: Clone attached FPPs when a node is cloned.
+#2361425 by hctom: Support for taxonomy revisions.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

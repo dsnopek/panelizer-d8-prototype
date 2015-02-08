@@ -15,6 +15,13 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
   public $views_table = 'taxonomy_term_data';
   public $uses_page_manager = TRUE;
 
+  public function init($plugin) {
+    if (module_exists('taxonomy_revision')) {
+      $this->supports_revisions = TRUE;
+    }
+    parent::init($plugin);
+  }
+
   public function entity_access($op, $entity) {
     // This must be implemented by the extending class.
     if ($op == 'update' || $op == 'delete') {
