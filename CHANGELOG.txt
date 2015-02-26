@@ -17,7 +17,6 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
   disabled view modes.
 #2416405 by cmonnow, DamienMcKenna: Improved logic in hook_entity_insert().
 #1719090 by DamienMcKenna: Cache entity plugins to reduce file scans.
-#2387885 by das-peter: Cache exported defaults.
 #2266393 by DamienMcKenna: Give a warning message if update 7106 fails due to
   multiple records for the same entity view mode.
 
