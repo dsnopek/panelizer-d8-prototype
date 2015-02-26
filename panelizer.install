@@ -421,16 +421,21 @@ function panelizer_update_7105() {
 }
 
 /**
- * Add the view mode to the primary key for the panelizer_entity table.
+ * Add the view_mode to the primary key for the {panelizer_entity} table.
  */
 function panelizer_update_7106() {
   // Remove the primary key.
   db_drop_primary_key('panelizer_entity');
 
-  // Add the new index
-  db_add_primary_key('panelizer_entity', array('entity_type', 'entity_id', 'revision_id', 'view_mode'));
+  // Add the new index.
+  $success = db_add_primary_key('panelizer_entity', array('entity_type', 'entity_id', 'revision_id', 'view_mode'));
 
-  return t('Added revision support.');
+  if (!$success) {
+    throw new DrupalUpdateException(t("There's a record in the panelizer_entity table which caused an update to fail. Please see <a href=\"https://www.drupal.org/node/2410251\">https://www.drupal.org/node/2410251</a> for details on fixing the problem."));
+  }
+  else {
+    return t('The Panelizer database schema has bee updated.');
+  }
 }
 
 /**
