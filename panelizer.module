@@ -362,7 +362,7 @@ function panelizer_entity_view_alter(&$build, $entity_type) {
  */
 function panelizer_ctools_plugin_type() {
   $items['entity'] = array(
-    'cache' => TRUE,
+    'cache' => FALSE,
     'process' => array(
       'function' => 'panelizer_entity_plugin_process',
     ),
