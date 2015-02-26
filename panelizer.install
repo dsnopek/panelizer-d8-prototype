@@ -110,6 +110,7 @@ function panelizer_schema_1() {
       'admin_title' => 'title',
       'identifier' => 'panelizer',
       'default hook' => 'panelizer_defaults',
+      'cache defaults' => TRUE,
       'api' => array(
         'owner' => 'panelizer',
         'api' => 'panelizer',
