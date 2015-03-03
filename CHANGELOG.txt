@@ -18,6 +18,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2416405 by cmonnow, DamienMcKenna: Improved logic in hook_entity_insert().
 #2266393 by DamienMcKenna: Give a warning message if update 7106 fails due to
   multiple records for the same entity view mode.
+#2435003 by EclipseGc, DamienMcKenna: Add hook_panelizer_access() to allow each
+  operation's permissions to be extended.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

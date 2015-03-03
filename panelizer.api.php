@@ -68,7 +68,27 @@ function hook_panelizer_overview_links_alter(&$links_array, $entity_type, $conte
  *   The panelizer default object.
  */
 function hook_panelizer_delete_default($panelizer) {
-  db_delete('example_somthing')
+  db_delete('example_something')
     ->condition('name', $panelizer->name)
     ->execute();
+}
+
+/**
+ * Adjust access to the Panelizer administrative interface beyond the standard
+ * permissions options.
+ *
+ * @param string $op
+ *   The operation currently being performed.
+ * @param string $entity_type
+ *   The type of entity to which the operation is related.
+ * @param string|object $bundle
+ *   Either the entity's bundle name or the entity object itself, will vary
+ *   depending upon how it is called.
+ * @param string $view_mode
+ *   The view mode of the entity related to this operation.
+ *
+ * @return bool
+ *   Whether or not the user has permission to perform this $op.
+ */
+function hook_panelizer_access($op, $entity_type, $bundle, $view_mode) {
 }

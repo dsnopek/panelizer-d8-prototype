@@ -1861,6 +1861,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
       // Additional support for Organic Groups.
+      // @todo move to og_panelizer_access();
       if (module_exists('og')) { 
         if (og_is_group($this->entity_type, $entity)) {
           $og_access = og_user_access($this->entity_type, $entity_id, "administer panelizer og_group $op");
@@ -1885,7 +1886,17 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
     }
 
-    return user_access('administer panelizer') || user_access("administer panelizer $this->entity_type $bundle $op") || $og_access;
+    // Invoke hook_panelizer_access().
+    $panelizer_access = module_invoke_all('panelizer_access', $op, $this->entity_type, $bundle, $view_mode);
+    array_unshift($panelizer_access, user_access('administer panelizer'), user_access("administer panelizer $this->entity_type $bundle $op"));
+    $panelizer_access[] = $og_access;
+
+    foreach ($panelizer_access as $access) {
+      if ($access) {
+        return $access;
+      }
+    }
+    return FALSE;
   }
 
 
