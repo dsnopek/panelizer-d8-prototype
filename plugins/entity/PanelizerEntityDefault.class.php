@@ -1888,7 +1888,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     // Invoke hook_panelizer_access().
     $panelizer_access = module_invoke_all('panelizer_access', $op, $this->entity_type, $bundle, $view_mode);
-    array_unshift($panelizer_access, user_access('administer panelizer'), user_access("administer panelizer $this->entity_type $bundle $op"));
+    array_unshift($panelizer_access, user_access('administer panelizer'), user_access("administer panelizer {$this->entity_type} {$bundle} {$op}"));
     $panelizer_access[] = $og_access;
 
     foreach ($panelizer_access as $access) {

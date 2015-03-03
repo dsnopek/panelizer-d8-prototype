@@ -20,6 +20,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
   multiple records for the same entity view mode.
 #2435003 by EclipseGc, DamienMcKenna: Add hook_panelizer_access() to allow each
   operation's permissions to be extended.
+#2283769 by frankcarey, guillaumev, DamienMcKenna: Use standard permissions to
+  control IPE access.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

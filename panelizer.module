@@ -1693,7 +1693,7 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
         '#submit' => array('panels_ipe_revert_to_default'),
         '#attributes' => array('class' => array('panels-ipe-cancel')),
         '#id' => 'panelizer-ipe-revert',
-//        '#attributes' => array('onclick' => ''),
+        '#access' => $handler->panelizer_access('defaults', $entity, $panelizer->view_mode),
       );
     }
     return;
