@@ -640,7 +640,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         // object. However, for some entities this will end up being the $op
         // instead of the object name, e.g. 'clone' instead of
         // 'taxonomy_term:tags:default'.
-        if (!empty($ui_items[$key]['page arguments'][5]) && $ui_items[$key]['page arguments'][5] == 7 && is_numeric($bundle)) {
+        if (!empty($ui_items[$key]['page arguments'][5]) && is_numeric($bundle)) {
           $ui_items[$key]['page arguments'][5] = $bundle + 3;
         }
       }
