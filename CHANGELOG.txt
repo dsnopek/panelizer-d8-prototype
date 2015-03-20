@@ -23,6 +23,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2283769 by frankcarey, guillaumev, DamienMcKenna: Use standard permissions to
   control IPE access.
 #2445769 by DamienMcKenna: Unable to clone displays.
+#2451643 by DamienMcKenna: Reworked logic controlling when warning messages are
+  displayed about page_manager needing to be enabled.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

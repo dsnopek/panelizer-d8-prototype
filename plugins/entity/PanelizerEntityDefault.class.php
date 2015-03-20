@@ -29,6 +29,15 @@ interface PanelizerEntityInterface {
   public function hook_field_attach_delete_revision($entity);
 
   /**
+   * Check if the necessary Page Manager display is enabled and the appropriate
+   * variant has not been disabled.
+   *
+   * @return boolean
+   *   Whether or not both the Page Manager display and the variant are enabled.
+   */
+  public function check_page_manager_status();
+
+  /**
    * Add entity specific form to the Panelizer settings form.
    *
    * This is primarily to allow bundle selection per entity type.
@@ -160,6 +169,15 @@ interface PanelizerEntityInterface {
    *   The final view mode that will be used.
    */
   public function get_view_mode($view_mode, $bundle);
+
+  /**
+   * Obtain the machine name of the Page Manager task.
+   *
+   * @return string
+   *   The machine name for the Page Manager task; returns FALSE if this
+   *   entity does not support Page Manager.
+   */
+  public function get_page_manager_task_name();
 
   /**
    * Identifies a substitute view mode for a given bundle.
@@ -750,6 +768,22 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
   }
 
   /**
+   * Obtain the machine name of the Page Manager task.
+   *
+   * @return string
+   *   The machine name for the Page Manager task; returns FALSE if this
+   *   entity does not support Page Manager.
+   */
+  public function get_page_manager_task_name() {
+    if (empty($this->plugin['uses page manager'])) {
+      return FALSE;
+    }
+    else {
+      return $this->entity_type . '_view';
+    }
+  }
+
+  /**
    * Identifies a substitute view mode for a given bundle.
    *
    * @param string $view_mode
@@ -770,6 +804,39 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     return $substitute;
+  }
+
+  /**
+   * Check if the necessary Page Manager display is enabled and the appropriate
+   * variant has not been disabled.
+   *
+   * @return boolean
+   *   Whether or not both the Page Manager display and the variant are enabled.
+   */
+  public function check_page_manager_status() {
+    $pm_links = array(
+      '!pm' => l('Page Manager', 'admin/structure/pages'),
+      '!panels' => l('Panels', 'admin/structure/panels'),
+      '!task_name' => $this->get_page_manager_task_name(),
+      '!entity_type' => $this->entity_type,
+    );
+
+    // The display in Page Manager must be enabled.
+    if (variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
+      drupal_set_message(t('Note: "!task_name" display must be enabled in !pm in order for the !entity_type full page display ("Full page override") to work correctly.', $pm_links), 'warning', FALSE);
+      return FALSE;
+    }
+    // The Panelizer variant must also be enabled.
+    else {
+      $task = page_manager_get_task($pm_links['!task_name']);
+      $handler = page_manager_load_task_handler($task, '', 'term_view_panelizer');
+      if (!empty($handler->disabled)) {
+        drupal_set_message(t('The "Panelizer" variant on the "!task_name" display is currently not enabled in !pm. This must be enabled for Panelizer to be able to display !entity_types using the "Full page override" view mode.', $pm_links), 'warning', FALSE);
+        return FALSE;
+      }
+    }
+
+    return TRUE;
   }
 
   /**
@@ -850,6 +917,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       $pm_links = array(
         '!pm' => l('Page Manager', 'admin/structure/pages'),
         '!panels' => l('Panels', 'admin/structure/panels'),
+        '!entity_type' => $this->entity_type,
+        '!task_name' => $this->get_page_manager_task_name(),
       );
 
       $description = '';
@@ -857,9 +926,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $description = t('If a requested view mode for an entity was not enabled in the !manage_display tab page, this view mode will be used as a failover. For example, if "Teaser" was being used but it was not enabled.', array('!manage_display' => $manage_display));
       }
       elseif ($view_mode == 'page_manager') {
-        $description = t("A custom view mode only used when !pm/!panels is used to control this entity's full page display, i.e. the '!entity_type_view' display is enabled. Unlike the \"!full\" view mode, this one allows customization of the page title.",
+        $description = t("A custom view mode only used when !pm/!panels is used to control this entity's full page display, i.e. the '!task_name' display is enabled. Unlike the \"!full\" view mode, this one allows customization of the page title.",
           $pm_links + array(
-            '!entity_type' => $this->entity_type,
             '!full' => !empty($entity_info['view modes']['full']['label']) ? $entity_info['view modes']['full']['label'] : 'Full',
           ));
       }
@@ -896,9 +964,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
         else {
           $form['panelizer']['view modes'][$view_mode]['status']['#title'] .= ' (<em>'
-            . t('"!entity_type_view" must be enabled in !pm', $pm_links + array('!entity_type' => $this->entity_type))
+            . t('"!task_name" must be enabled in !pm', $pm_links)
             . '</em>)';
-          drupal_set_message(t('Note: "!entity_type_view" display must be enabled in !pm in order for the full page ("Full page override") display to work correctly.', $pm_links + array('!entity_type' => $this->entity_type)), 'warning');
+          // Only display this message if the form has not been submitted, the
+          // bundle has been panelized and the view mode is panelized.
+          if (empty($form_state['input']) && !empty($settings['status']) && !empty($settings['view modes'][$view_mode]['status'])) {
+            drupal_set_message(t('Note: "!task_name" display must be enabled in !pm in order for the !entity_type full page display ("Full page override") to work correctly.', $pm_links), 'warning', FALSE);
+          }
         }
       }
 
@@ -1157,6 +1229,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     variable_set('panelizer_defaults_' . $this->entity_type . '_' . $new_bundle, $form_state['values']['panelizer']);
+
+    // Verify the necessary Page Manager prerequisites are ready.
+    if (!empty($form_state['values']['panelizer']['status'])
+      && !empty($form_state['values']['panelizer']['view modes']['page_manager']['status'])
+      && variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
+      $this->check_page_manager_status();
+    }
 
     // Unset this so that the type save forms don't try to save it to variables.
     unset($form_state['values']['panelizer']);
@@ -2944,6 +3023,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             ),
           ),
         );
+
+        // Additional messages if this display is enabled.
+        if (empty($form_state['input']) && $view_mode == 'page_manager' && !empty($settings['status'])) {
+          $this->check_page_manager_status();
+        }
       }
     }
   }

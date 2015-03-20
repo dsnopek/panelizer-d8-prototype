@@ -52,30 +52,6 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     return $retval;
   }
 
-  public function settings_form(&$form, &$form_state) {
-    parent::settings_form($form, $form_state);
-
-    $warn = FALSE;
-    foreach ($this->plugin['bundles'] as $info) {
-      if (!empty($info['status']) && !empty($info['view modes']['page_manager']['status'])) {
-        $warn = TRUE;
-        break;
-      }
-    }
-
-    if ($warn) {
-      $task = page_manager_get_task('node_view');
-      if (!empty($task['disabled'])) {
-        drupal_set_message(t('The node template page is currently not enabled in page manager. This must be enabled for Panelizer to be able to panelize nodes using the "Full page override" view mode.'), 'warning', FALSE);
-      }
-
-      $handler = page_manager_load_task_handler($task, '', 'node_view_panelizer');
-      if (!empty($handler->disabled)) {
-        drupal_set_message(t('The panelizer variant on the node template page is currently not enabled in page manager. This must be enabled for Panelizer to be able to panelize nodes using the "Full page override" view mode.'), 'warning', FALSE);
-      }
-    }
-  }
-
   function get_default_display($bundle, $view_mode) {
     $display = parent::get_default_display($bundle, $view_mode);
     // Add the node title to the display since we can't get that automatically.
