@@ -630,3 +630,10 @@ function panelizer_update_7117() {
   variable_set('menu_rebuild_needed', TRUE);
   drupal_set_message(t('Note: the main Panelizer configuration page has moved to the "Structure" menu instead of the "Config" menu.'));
 }
+
+/**
+ * Reload the menus to fix the 'content' default local tasks.
+ */
+function panelizer_update_7118() {
+  variable_set('menu_rebuild_needed', TRUE);
+}

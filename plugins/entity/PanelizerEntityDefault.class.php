@@ -476,8 +476,15 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/' . $view_mode . '/' . $path]['file path'] = $operation['file path'];
           }
         }
+
+        // Make the 'content' URLs the local default tasks.
+        $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
+        if ($this->supports_revisions) {
+          $items[$this->plugin['entity path'] . '/revisions/%/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
+        }
       }
     }
+    ksort($items);
 
     // Also add administrative links to the bundle.
     if (!empty($this->entity_admin_root)) {
@@ -1340,7 +1347,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
     }
 
-    if (!$ids) {
+    if (empty($ids)) {
       return;
     }
 
@@ -1359,6 +1366,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
     $defaults = array();
     $dids = array();
+
     // Go through our entity list and generate a list of defaults and displays
     foreach ($entities as $entity_id => $entity) {
       // Don't bother if somehow we've already loaded and are asked to
@@ -1421,22 +1429,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
             $dids[$entity->panelizer[$view_mode]->did] = $entity->panelizer[$view_mode]->did;
           }
         }
-
-        $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
-        if ($this->supports_revisions) {
-          $items[$this->plugin['entity path'] . '/revisions/%/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
-        }
       }
     }
-    ksort($items);
 
     // Load any defaults we collected.
-    if ($defaults) {
+    if (!empty($defaults)) {
       $panelizer_defaults = $this->load_default_panelizer_objects($defaults);
     }
 
     // if any panelizers were loaded, get their attached displays.
-    if ($dids) {
+    if (!empty($dids)) {
       $displays = panels_load_displays($dids);
     }
 

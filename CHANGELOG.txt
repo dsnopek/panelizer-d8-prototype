@@ -25,6 +25,7 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2445769 by DamienMcKenna: Unable to clone displays.
 #2451643 by DamienMcKenna: Reworked logic controlling when warning messages are
   displayed about page_manager needing to be enabled.
+#2457711 by DamienMcKenna: 'content' local tasks should have been default.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
