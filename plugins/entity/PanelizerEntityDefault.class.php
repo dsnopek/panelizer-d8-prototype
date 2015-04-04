@@ -1972,6 +1972,17 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     array_unshift($panelizer_access, user_access('administer panelizer'), user_access("administer panelizer {$this->entity_type} {$bundle} {$op}"));
     $panelizer_access[] = $og_access;
 
+    // Trigger hook_panelizer_access_alter().
+    // We can't pass this many parameters to drupal_alter, so stuff them into
+    // an array.
+    $options = array(
+      'op' => $op,
+      'entity_type' => $this->entity_type,
+      'bundle' => $bundle,
+      'view_mode' => $view_mode
+    );
+    drupal_alter('panelizer_access', $panelizer_access, $options);
+
     foreach ($panelizer_access as $access) {
       if ($access) {
         return $access;

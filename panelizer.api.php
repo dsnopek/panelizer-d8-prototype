@@ -92,3 +92,21 @@ function hook_panelizer_delete_default($panelizer) {
  */
 function hook_panelizer_access($op, $entity_type, $bundle, $view_mode) {
 }
+
+/**
+ * Allow modules to alter the defined panelizer access definitions.
+ *
+ * @param array $panelizer_access
+ *   An array of panelizer access options. If any are true, this will return
+ *   true. Set $panelizer_access equal to an empty array to return false.
+ * @param $options
+ *   drupal_alter() can only handle so many parameters. In order to pass the
+ *   same parameters that are passed in hook_panelizer_access, the params are
+ *   placed into an $options array. Expected keys are:
+ *     op
+ *     entity_type
+ *     bundle
+ *     view_mode
+ */
+function hook_panelizer_access_alter(&$panelizer_access, $options) {
+}
