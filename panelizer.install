@@ -296,6 +296,18 @@ function panelizer_uninstall() {
 }
 
 /**
+ * Implements hook_update_dependencies().
+ */
+function panelizer_update_dependencies() {
+  // Update 7115 requires UUID support in CTools and Panels.
+  $dependencies['panelizer'][7115] = array(
+    'panels' => 7302,
+  );
+
+  return $dependencies;
+}
+
+/**
  * Update the panelizer variable to be more feature module friendly.
  */
 function panelizer_update_7100() {
@@ -586,6 +598,62 @@ function panelizer_update_7115() {
       // Reset the 'did' value, so it will then be saved as a new display.
       $display->did = NULL;
 
+      // Reset the 'pid' values of each pane, using a new UUID. Because its
+      // non-numeric, when the display is saved it'll create a new record for
+      // each pane, but still keep all of the internal pointers accurate.
+      $new_panes = array();
+      foreach ($display->panels as $region => $panes) {
+        $new_panes = array();
+        foreach ((array) $panes as $position => $pid) {
+          // Pane not found. Shouldn't happen, but you never know.
+          if (!isset($display->content[$pid])) {
+            continue;
+          }
+
+          // Load the pane.
+          $new_pane = clone $display->content[$pid];
+
+          // Remove the old pane entry from the display's content.
+          unset($display->content[$pid]);
+
+          // Replace the 'pid' with the UUID pefixed with "new-".
+          $new_pane->pid = 'new-' . $new_pane->uuid;
+
+          // Generate a new UUID.
+          $new_pane->uuid = ctools_uuid_generate();
+
+          // Update the pane's did.
+          $new_pane->did = $display->did;
+
+          // Serialize some of the fields prior to saving.
+          foreach (array('access', 'configuration', 'cache', 'style', 'css', 'extras', 'locks') as $val) {
+            $new_pane->$val = serialize($new_pane->$val);
+          }
+
+          // Create the pane record.
+          db_insert('panels_pane')
+            ->fields((array)$new_pane)
+            ->execute();
+
+          // Tell the world.
+          module_invoke_all('panels_pane_insert', $new_pane);
+
+          // Put the pane back so the pids and positions can be used.
+          $display->content[$pane->pid] = $new_pane;
+
+          // Update the optional title pane.
+          if (isset($display->title_pane) && $display->title_pane == $pid) {
+            $display->title_pane = $new_pane->pid;
+          }
+
+          // Update the pane's position.
+          $new_panes[] = $new_pane->pid;
+        }
+
+        // Save the new panes onto the region, replacing the old values.
+        $display->panels[$region] = $new_panes;
+      }
+
       // Save the display, thus creating a new 'did' value.
       panels_save_display($display);
 
@@ -617,7 +685,7 @@ function panelizer_update_7115() {
 }
 
 /**
- * Ensure there's one display for each revision.
+ * Notify the site builder that the "Panelizer" tabs have been renamed.
  */
 function panelizer_update_7116() {
   drupal_set_message(t('Note: the "Panelizer" tabs on content, user, term pages, etc have been renamed to "Customize display".'));
@@ -636,4 +704,233 @@ function panelizer_update_7117() {
  */
 function panelizer_update_7118() {
   variable_set('menu_rebuild_needed', TRUE);
+}
+
+/**
+ * Fix any {panelizer_entity} records that were broken by update 7115. This may
+ * take some time.
+ */
+function panelizer_update_7119(&$sandbox) {
+  // Process records by groups of 10 (arbitrary value).
+  $limit = 10;
+  // When ran through Drush it's Ok to process a larger number of objects at a
+  // time.
+  if (drupal_is_cli()) {
+    $limit = 100;
+  }
+
+  // The update hasn't been ran before.
+  if (!isset($sandbox['progress'])) {
+    // The count of records visited so far.
+    $sandbox['progress'] = 0;
+
+    // Load any 'panelizer_entity' values that are corrupt.
+    $records = db_query("SELECT DISTINCT entity_type, entity_id
+      FROM {panelizer_entity}
+      WHERE contexts LIKE 's:%'
+        OR relationships LIKE 's:%'
+        OR extra LIKE 's:%'");
+
+    // If there are no records, there's nothing to do.
+    if ($records->rowCount() == 0) {
+      return t('No {panelizer_entity} records were corrupted by update 7115.');
+    }
+
+    // Total records that must be processed.
+    $sandbox['max'] = $records->rowCount();
+
+    watchdog('panelizer', 'Need to fix {panelizer_entity} records for @count entities that were damaged by update 7115.', array('@count' => $records->rowCount()));
+  }
+
+  // Get a small batch of records.
+  $records = db_query_range("SELECT DISTINCT entity_type, entity_id
+    FROM {panelizer_entity}
+    WHERE contexts LIKE 's:%'
+      OR relationships LIKE 's:%'
+      OR extra LIKE 's:%'", 0, $limit);
+
+  // Loop over each record.
+  foreach ($records as $record) {
+    // Track whether this entity needs to be fixed.
+    $entity_updated = FALSE;
+
+    // Get each {panelizer_record} for this entity.
+    $entity_records = db_query("SELECT *
+      FROM {panelizer_entity}
+      WHERE entity_type = :entity_type
+        AND entity_id = :entity_id
+      ORDER BY revision_id", (array)$record);
+    foreach ($entity_records as $panelizer) {
+      $last_display = NULL;
+
+      // Unserialize each of the serialized values.
+      foreach (array('contexts', 'relationships', 'extra') as $val) {
+        $panelizer->$val = unserialize($panelizer->$val);
+      }
+
+      // Keep track of whether the record needs to be saved.
+      $panelizer_updated = FALSE;
+
+      // Verify each of the items is an array or if it was double-serialized.
+      foreach (array('contexts', 'relationships', 'extra') as $val) {
+        if (is_string($panelizer->$val)) {
+          $panelizer->$val = unserialize($panelizer->$val);
+          $panelizer_updated = TRUE;
+          $entity_updated = TRUE;
+        }
+      }
+
+      // Update the {panelizer_entity} record.
+      if ($panelizer_updated) {
+        db_update('panelizer_entity')
+          ->fields(array(
+            'contexts' => serialize($panelizer->contexts),
+            'relationships' => serialize($panelizer->relationships),
+            'extra' => serialize($panelizer->extra),
+          ))
+          ->condition('entity_type', $panelizer->entity_type)
+          ->condition('entity_id', $panelizer->entity_id)
+          ->condition('revision_id', $panelizer->revision_id)
+          ->condition('view_mode', $panelizer->view_mode)
+          ->execute();
+      }
+    }
+
+    // The entity was updated so clear its cache.
+    if ($entity_updated) {
+      entity_get_controller($panelizer->entity_type)->resetCache(array($panelizer->entity_id));
+    }
+
+    $sandbox['progress']++;
+  }
+
+  $sandbox['#finished'] = ($sandbox['progress'] >= $sandbox['max']) ? TRUE : ($sandbox['progress'] / $sandbox['max']);
+
+  return t('Fixed {panelizer_entity} records for @count entities out of @total total.', array('@count' => $sandbox['progress'], '@total' => $sandbox['max']));
+}
+
+/**
+ * Update 7115 may have resulted in {panels_pane} records not being created
+ * properly. This will create them, and may take some time.
+ */
+function panelizer_update_7120(&$sandbox) {
+  // Process records by groups of 1 (arbitrary value). Doing this one at a time
+  // because some sites can have a LOT of revisions.
+  $limit = 1;
+
+  // When ran through Drush it's Ok to process a larger number of objects at a
+  // time.
+  if (drupal_is_cli()) {
+    $limit = 10;
+  }
+
+  // The update hasn't been ran before.
+  if (!isset($sandbox['progress'])) {
+    // The count of records visited so far.
+    $sandbox['progress'] = 0;
+
+    // Load any 'panelizer_entity' values that are corrupt.
+    $records = db_query("SELECT DISTINCT entity_type, entity_id
+      FROM {panelizer_entity} pe
+        LEFT OUTER JOIN {panels_pane} pp
+          ON pe.did = pp.did
+      WHERE pe.did > 0
+        AND pp.did IS NULL");
+
+    // If there are no records, there's nothing to do.
+    if ($records->rowCount() == 0) {
+      return t('No panes were lost by update 7115.');
+    }
+
+    // Total records that must be processed.
+    $sandbox['max'] = $records->rowCount();
+
+    watchdog('panelizer', 'Need to fix panes for @count entities that were lost by update 7115.', array('@count' => $records->rowCount()));
+  }
+
+  // Get a small batch of records.
+  $records = db_query_range("SELECT DISTINCT entity_type, entity_id
+    FROM {panelizer_entity} pe
+      LEFT OUTER JOIN {panels_pane} pp
+        ON pe.did = pp.did
+    WHERE pe.did > 0
+      AND pp.did IS NULL", 0, $limit);
+
+  watchdog('panelizer', 'Fixing panes for @count entities that were lost by update 7115.', array('@count' => $records->rowCount()));
+
+  // Loop over each record.
+  foreach ($records as $record) {
+    // Track whether this entity was changed.
+    $entity_updated = FALSE;
+
+    // Keep track of the last display for each entity.
+    $last_display = NULL;
+
+    // Get each {panelizer_record} for this entity. Load these in REVERSE order
+    // because the panes were moved to the last revision.
+    $entity_records = db_query("SELECT *
+      FROM {panelizer_entity}
+      WHERE entity_type = :entity_type
+        AND entity_id = :entity_id
+      ORDER BY revision_id DESC", (array)$record);
+    foreach ($entity_records as $panelizer) {
+      // If this is a custom display, load it.
+      if (!empty($panelizer->did)) {
+        $display = panels_load_display($panelizer->did);
+
+        // Check if the display is bereft of panes.
+        if (empty($display->content)) {
+          // Hopefully the "last display" won't be blank.
+          if (empty($last_display)) {
+            watchdog('panelizer', "Unable to load records for display :did for :entity_type :entity_id. Sorry.", (array)$panelizer);
+          }
+          else {
+            foreach ($last_display->content as $pane) {
+              // Clone the pane to avoid accidental damage.
+              $new_pane = clone $pane;
+
+              // Erase the pid so a new record can be saved.
+              $new_pane->pid = NULL;
+
+              // Tie the pane to this display.
+              $new_pane->did = $display->did;
+
+              // Update the pane's UUID.
+              $new_pane->uuid = ctools_uuid_generate();
+
+              // Serialize some of the fields prior to saving.
+              foreach (array('access', 'configuration', 'cache', 'style', 'css', 'extras', 'locks') as $val) {
+                $new_pane->$val = serialize($new_pane->$val);
+              }
+
+              // Create the pane record.
+              db_insert('panels_pane')
+                ->fields((array)$new_pane)
+                ->execute();
+
+              // Tell the world.
+              module_invoke_all('panels_pane_insert', $new_pane);
+            }
+          }
+        }
+
+        // This display included all of its panes, so skip the fixing and just
+        // use it as the 'last' display for the next loop.
+        else {
+          $last_display = $display;
+        }
+      }
+    }
+
+    // The entity was updated, to clear its cache.
+    if ($entity_updated) {
+      entity_get_controller($panelizer->entity_type)->resetCache(array($panelizer->entity_id));
+    }
+
+    $sandbox['progress']++;
+  }
+
+  $sandbox['#finished'] = ($sandbox['progress'] >= $sandbox['max']) ? TRUE : ($sandbox['progress'] / $sandbox['max']);
+
+  return t('Recovered panes for @count entities out of @total total.', array('@count' => $sandbox['progress'], '@total' => $sandbox['max']));
 }
