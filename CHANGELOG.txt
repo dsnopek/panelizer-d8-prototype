@@ -32,6 +32,7 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2469411 by DamienMcKenna: Added Book Navigation pane if Book module enabled.
 #2421321 by DamienMcKenna: Fixed logic that resulted in access-denied errors
   when loading settings pages.
+#2467725 by DamienMcKenna: Additional fixes to update 7115.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
