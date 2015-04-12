@@ -66,6 +66,18 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     // @todo -- submitted by does not exist as a pane! That's v. sad.
     $display->add_pane($pane, 'center');
 
+    unset($pane);
+
+    // Add a custom pane for the book navigation block for the Page Manager
+    // display.
+    if (module_exists('book')) {
+      if ($view_mode == 'page_manager') {
+        $pane = panels_new_pane('node_book_nav', 'node_book_nav', TRUE);
+        $pane->configuration['context'] = 'panelizer';
+        $display->add_pane($pane, 'center');
+      }
+    }
+
     return $display;
   }
 
