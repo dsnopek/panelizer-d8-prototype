@@ -30,6 +30,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
   hook_panelizer_access().
 #2462315 by DamienMcKenna: Fix update 7115 and regressions caused by it.
 #2469411 by DamienMcKenna: Added Book Navigation pane if Book module enabled.
+#2421321 by DamienMcKenna: Fixed logic that resulted in access-denied errors
+  when loading settings pages.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

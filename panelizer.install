@@ -934,3 +934,25 @@ function panelizer_update_7120(&$sandbox) {
 
   return t('Recovered panes for @count entities out of @total total.', array('@count' => $sandbox['progress'], '@total' => $sandbox['max']));
 }
+
+/**
+ * Fix the 'selection' variables.
+ */
+function panelizer_update_7121() {
+  foreach (entity_get_info() as $entity_type => $entity_info) {
+    if (isset($entity_info['bundles'])) {
+      foreach ($entity_info['bundles'] as $bundle_name => $bundle_info) {
+        // View mode variables.
+        if (!empty($entity_info['view modes'])) {
+          foreach ($entity_info['view modes'] as $view_mode => $view_info) {
+            $var_name = 'panelizer_' . $entity_type . ':' . $bundle_name . ':' . $view_mode . '_selection';
+            $var = variable_get($var_name);
+            if (empty($var)) {
+              variable_del($var_name);
+            }
+          }
+        }
+      }
+    }
+  }
+}

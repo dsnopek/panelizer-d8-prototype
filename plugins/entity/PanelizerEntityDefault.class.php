@@ -1036,7 +1036,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // If this has not been set previously, use the 'default' as the default
       // selection.
       $default_value = variable_get($variable_name, FALSE);
-      if ($default_value === FALSE) {
+      if (empty($default_value)) {
         $default_value = $default_name;
       }
       // Indicate which item is actually the default.
@@ -1275,9 +1275,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
   public function get_default_display_default_name($bundle, $view_mode = 'page_manager') {
     $default_name = implode(':', array($this->entity_type, $bundle, 'default'));
+
     if ($view_mode != 'page_manager') {
       $default_name .= ':' . $view_mode;
     }
+
     return $default_name;
   }
 
@@ -1286,9 +1288,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // If this has not been set previously, use the 'default' as the default
     // selection.
     $default_value = variable_get($variable_name, FALSE);
-    if ($default_value === FALSE) {
+
+    if (empty($default_value)) {
       $default_value = $this->get_default_display_default_name($bundle, $view_mode);
     }
+
     return $default_value;
   }
 
@@ -2924,7 +2928,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         // If this has not been set previously, use the 'default' as the default
         // selection.
         $default_value = variable_get($variable_name, FALSE);
-        if ($default_value === FALSE) {
+        if (empty($default_value)) {
           $default_value = $default_name;
         }
 
@@ -3081,7 +3085,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
             // Save the default display for this bundle to a variable so that it
             // may be controlled separately.
-            if (isset($config['selection'])) {
+            if (!empty($config['selection'])) {
               $variable_name = 'panelizer_' . $this->entity_type . ':' . $bundle . ':' . $view_mode . '_selection';
               $old_value = variable_get($variable_name, NULL);
               $new_value = $config['selection'];
@@ -3110,11 +3114,11 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
                   }
                 }
               }
-
-              // Don't save some settings with the rest of the settings bundle.
-              unset($config['selection']);
-              unset($config['default revert']);
             }
+
+            // Don't save some settings with the rest of the settings bundle.
+            unset($config['selection']);
+            unset($config['default revert']);
 
             $settings['view modes'][$view_mode] = $config;
           }
