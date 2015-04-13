@@ -68,6 +68,20 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
 
     unset($pane);
 
+    // If the content type is enabled for use with Webform, add the custom
+    // submission pane.
+    if (module_exists('webform')) {
+      if ($view_mode == 'page_manager') {
+        if (variable_get('webform_node_' . $bundle)) {
+          $pane = panels_new_pane('entity_field_extra', 'node:webform', TRUE);
+          $pane->configuration['context'] = 'panelizer';
+          $pane->configuration['view_mode'] = 'full';
+          $display->add_pane($pane, 'center');
+          unset($pane);
+        }
+      }
+    }
+
     // Add a custom pane for the book navigation block for the Page Manager
     // display.
     if (module_exists('book')) {
@@ -75,6 +89,7 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
         $pane = panels_new_pane('node_book_nav', 'node_book_nav', TRUE);
         $pane->configuration['context'] = 'panelizer';
         $display->add_pane($pane, 'center');
+        unset($pane);
       }
     }
 
