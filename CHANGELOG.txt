@@ -38,6 +38,7 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
   wrong node.
 #2469593 by DamienMcKenna: Added submission pane to the default display if
   the Webform module is enabled.
+#2422667 by Devin Carlson, DamienMcKenna: Add basic test coverage.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

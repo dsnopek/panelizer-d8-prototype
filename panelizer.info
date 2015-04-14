@@ -1,8 +1,8 @@
 name = Panelizer
 description = Allow any node type to have custom panel displays, similar to the panel node type.
 package = "Panels"
-dependencies[] = panels (>=3.5)
-dependencies[] = ctools (>=1.6)
+dependencies[] = panels (>= 3.5)
+dependencies[] = ctools (>= 1.6)
 dependencies[] = page_manager
 core = 7.x
 configure = admin/structure/panelizer
@@ -18,3 +18,6 @@ files[] = plugins/views/panelizer_handler_field_link.inc
 files[] = plugins/views/panelizer_handler_panelizer_status.inc
 files[] = plugins/views/panelizer_handler_filter_panelizer_status.inc
 files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc
+
+; Simpletests.
+files[] = panelizer.test
