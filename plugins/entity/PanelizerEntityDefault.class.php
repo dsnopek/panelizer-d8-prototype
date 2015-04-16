@@ -479,8 +479,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
         // Make the 'content' URLs the local default tasks.
         $items[$this->plugin['entity path'] . '/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
-        if ($this->supports_revisions) {
-          $items[$this->plugin['entity path'] . '/revisions/%/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
+        if ($this->supports_revisions && isset($items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/' . $view_mode . '/content']['type'])) {
+          $items[$this->plugin['entity path'] . '/revisions/%panelizer_node_revision/panelizer/' . $view_mode . '/content']['type'] = MENU_DEFAULT_LOCAL_TASK;
         }
       }
     }
