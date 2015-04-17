@@ -3015,7 +3015,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           $links_array = array(
             'list' => array(
               'title' => t('list'),
-              'href' => $base_url . '/list',
+              'href' => $base_url,
             ),
           );
 

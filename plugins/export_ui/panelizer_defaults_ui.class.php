@@ -138,7 +138,7 @@ class panelizer_defaults_ui extends ctools_export_ui {
       ctools_export_crud_delete($this->plugin['schema'], $item);
       $export_key = $this->plugin['export']['key'];
       drupal_set_message(t($this->plugin['strings']['confirmation'][$form_state['op']]['success'], array('%title' => $item->title)));
-      drupal_goto(ctools_export_ui_plugin_base_path($this->plugin) . '/list');
+      drupal_goto(ctools_export_ui_plugin_base_path($this->plugin));
     }
 
     return $output;

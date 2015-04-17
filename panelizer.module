@@ -806,10 +806,10 @@ function panelizer_export_ui_switcher_page($entity_handler, $bundle, $plugin_nam
 
     foreach ($handler->plugin['redirect'] as $key => $old_path) {
       if ($key == 'add') {
-        $handler->plugin['redirect'][$key] = $path . '/list/%ctools_export_ui/settings';
+        $handler->plugin['redirect'][$key] = $path . '/%ctools_export_ui/settings';
       }
       else {
-        $handler->plugin['redirect'][$key] = $path . '/list';
+        $handler->plugin['redirect'][$key] = $path;
       }
     }
 
