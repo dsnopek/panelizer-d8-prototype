@@ -284,7 +284,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
   private $displays_loaded = array();
 
   /**
-   * 
+   *
    */
   private $enabled_view_modes = array();
 
@@ -1947,7 +1947,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       // Additional support for Organic Groups.
       // @todo move to og_panelizer_access();
-      if (module_exists('og')) { 
+      if (module_exists('og')) {
         if (og_is_group($this->entity_type, $entity)) {
           $og_access = og_user_access($this->entity_type, $entity_id, "administer panelizer og_group $op");
         }
@@ -3015,7 +3015,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           $links_array = array(
             'list' => array(
               'title' => t('list'),
-              'href' => $base_url,
+              'href' => $base_url . '/list',
             ),
           );
 
