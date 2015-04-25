@@ -906,6 +906,21 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         . t('Once enabled, a new tab named "Customize display" will show on pages for this content.'),
     );
 
+    // Help, I need somebody.
+    $form['panelizer']['help'] = array(
+      '#title' => t('Optional help message to show above the display selector, if applicable'),
+      '#type' => 'textarea',
+      '#rows' => 3,
+      '#default_value' => !empty($settings['help']) ? $settings['help'] : '',
+      '#id' => 'panelizer-help',
+      '#description' => t('Only used if one or more of the view modes has a display that allows multiple values and the "Customize display" tab is to be shown on the entity edit form. Allows HTML.'),
+      '#states' => array(
+        'visible' => array(
+          '#panelizer-status' => array('checked' => TRUE),
+        ),
+      ),
+    );
+
     $view_modes = $this->get_available_view_modes($bundle);
     foreach ($view_modes as $view_mode => $view_mode_label) {
       $view_mode_info = $this->plugin['view modes'][$view_mode];
@@ -1851,6 +1866,12 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#weight' => -10,
         '#tree' => TRUE,
       ) + $widgets;
+
+      // Optional fieldset description.
+      if (!empty($this->plugin['bundles'][$bundle]['help'])) {
+        $form['panelizer']['#description'] = $this->plugin['bundles'][$bundle]['help'];
+      }
+
       // If there are no visible widgets, don't display the fieldset.
       if ($visible_widgets == 0) {
         $form['panelizer']['#access'] = FALSE;
@@ -2794,6 +2815,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#type' => 'checkbox',
         '#default_value' => !empty($this->plugin['bundles'][$bundle]['status']),
       );
+      $form['entities'][$this->entity_type][$bundle][0]['help'] = array(
+        '#type' => 'hidden',
+        '#default_value' => !empty($this->plugin['bundles'][$bundle]['help']) ? $this->plugin['bundles'][$bundle]['help'] : '',
+      );
 
       // Set proper allowed content link for entire bundle based on status
       if (!empty($this->plugin['bundles'][$bundle]['status'])) {
@@ -3072,6 +3097,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         'view modes' => array(),
       );
       if (!empty($values[0]['status'])) {
+        $settings['help'] = $values[0]['help'];
+
         foreach ($values as $view_mode => $config) {
           if (!empty($view_mode) && !empty($config)) {
             // Fix the configuration.

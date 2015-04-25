@@ -44,6 +44,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2470257 by DamienMcKenna: Incorrect destination URLs in some forms resulted in
   "missing" links; removed references to the /list pages.
 #2470257 by gmclelland: Fixed 'list' paths on main Panelizer admin page.
+#2193221 by DamienMcKenna: New 'help' text field for site builders to add
+  editorial guidelines for the display seletor on entity forms.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
