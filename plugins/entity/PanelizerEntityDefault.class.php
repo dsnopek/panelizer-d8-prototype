@@ -245,6 +245,13 @@ interface PanelizerEntityInterface {
    *   The render array that contains the entity.
    */
   public function get_entity_view_entity($build);
+
+  /**
+   * Identify whether page manager is enabled for this entity type.
+   *
+   * @return bool
+   */
+  public function is_page_manager_enabled();
 }
 
 /**
@@ -829,7 +836,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     );
 
     // The display in Page Manager must be enabled.
-    if (variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
+    if ($this->is_page_manager_enabled()) {
       drupal_set_message(t('Note: "!task_name" display must be enabled in !pm in order for the !entity_type full page display ("Full page override") to work correctly.', $pm_links), 'warning', FALSE);
       return FALSE;
     }
@@ -979,7 +986,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         ),
       );
       if ($view_mode == 'page_manager') {
-        if (!variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
+        if (!$this->is_page_manager_enabled()) {
           $form['panelizer']['view modes'][$view_mode]['status']['#title'] .= ' (<em>'
             . t('!pm is enabled correctly', $pm_links)
             . '</em>)';
@@ -1255,7 +1262,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     // Verify the necessary Page Manager prerequisites are ready.
     if (!empty($form_state['values']['panelizer']['status'])
       && !empty($form_state['values']['panelizer']['view modes']['page_manager']['status'])
-      && variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE)) {
+      && $this->is_page_manager_enabled()) {
       $this->check_page_manager_status();
     }
 
@@ -3446,6 +3453,13 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       }
       $vars['entity_url'] = url(implode('/', $bits));
     }
+  }
+
+  /**
+   * Identify whether page manager is enabled for this entity type.
+   */
+  public function is_page_manager_enabled() {
+    return variable_get('page_manager_' . $this->entity_type . '_view_disabled', TRUE);
   }
 }
 

@@ -125,4 +125,14 @@ class PanelizerEntityTaxonomyTerm extends PanelizerEntityDefault {
     }
   }
 
+  /**
+   * Identify whether page manager is enabled for this entity type.
+   *
+   * Need to override this as Page Manager uses a different string for taxonomy
+   * terms than other entities.
+   */
+  public function is_page_manager_enabled() {
+    return variable_get('page_manager_term_view_disabled', TRUE);
+  }
+
 }

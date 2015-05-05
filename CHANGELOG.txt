@@ -46,6 +46,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2470257 by gmclelland: Fixed 'list' paths on main Panelizer admin page.
 #2193221 by DamienMcKenna: New 'help' text field for site builders to add
   editorial guidelines for the display seletor on entity forms.
+#2483133 by DamienMcKenna: Properly identify whether term_view is enabled in
+  Page Manager.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
