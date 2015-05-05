@@ -88,9 +88,8 @@ class panelizer_defaults_ui extends ctools_export_ui {
 
   function edit_execute_form_standard(&$form_state) {
     if ($form_state['form type'] == 'clone') {
-      list($x, $y, $name) = explode(':', $form_state['original name']);
       $form_state['item']->title = t('Clone of') . ' ' . $form_state['item']->title;
-      $form_state['item']->name = 'clone_of_' . $name;
+      $form_state['item']->name = '';
     }
     else if ($form_state['op'] == 'add') {
       $form_state['item']->panelizer_type = $this->entity_handler->entity_type;
