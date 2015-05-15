@@ -45,8 +45,14 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
     list($entity_id, $revision_id, $bundle) = entity_extract_ids($this->entity_type, $entity);
 
     $node_options = variable_get('node_options_' . $bundle, array('status', 'promote'));
+
+    // Whether or not the entity supports revisions.
     $retval[0] = TRUE;
+
+    // Whether or not the user can control if a revision is created.
     $retval[1] = user_access('administer nodes');
+
+    // Whether or not the revision is created by default.
     $retval[2] = in_array('revision', $node_options);
 
     return $retval;

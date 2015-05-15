@@ -51,6 +51,7 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2480999 by drclaw: Machine name didn't autocomplete when cloning a display.
 #2481015 by drclaw: Machine names of new displays must be unique.
 #2408691 by ruloweb: Invalid pane id when revisioning is enabled.
+By DamienMcKenna: Updated comments around entity_allows_revisions().
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
