@@ -1186,7 +1186,7 @@ function panelizer_panels_cache_get($argument) {
   }
 
   // Extract the entity ID and view mode.
-  list($entity_id, $view_mode) = explode(':', $key);
+  list($entity_id, $view_mode) = explode(':', $key, 2);
   // If this entity supports revisions, and a custom revision is being
   // displayed, it's possible for the key to also include the revision ID.
   if ($handler->supports_revisions && strpos($view_mode, ':') !== FALSE) {
