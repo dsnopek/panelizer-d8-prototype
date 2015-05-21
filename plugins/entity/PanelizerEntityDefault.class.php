@@ -2829,6 +2829,8 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
 
       $form['entities'][$this->entity_type][$bundle][0]['status'] = array(
         '#type' => 'checkbox',
+        '#title' => t('Panelize: @label', array('@label' => $bundle_info['label'])),
+        '#title_display' => 'invisible',
         '#default_value' => !empty($this->plugin['bundles'][$bundle]['status']),
       );
       $form['entities'][$this->entity_type][$bundle][0]['help'] = array(
@@ -2862,7 +2864,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         '#type' => 'item',
         '#title' => $links,
         '#states' => array(
-          'visible' => array(
+          'show' => array(
             $bundle_id . '-status' => array('checked' => TRUE),
           ),
         ),
@@ -2900,8 +2902,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $form['entities'][$this->entity_type][$bundle][$view_mode]['status'] = array(
           '#type' => 'checkbox',
           '#default_value' => !empty($settings['status']),
+          '#title' => t(
+            'Panelize: @label, @bundle',
+            array(
+              '@label' => $bundle_info['label'],
+              '@bundle' => $view_mode_label
+            )
+          ),
+          '#title_display' => 'invisible',
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
             ),
           ),
@@ -2913,8 +2923,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           '#type' => 'select',
           '#options' => $options,
           '#default_value' => $this->get_substitute($view_mode, $bundle),
+          '#title' => t(
+            'Substitute view mode: @label, @bundle',
+            array(
+              '@label' => $bundle_info['label'],
+              '@bundle' => $view_mode_label
+            )
+          ),
+          '#title_display' => 'invisible',
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
               $base_id . '-status' => array('checked' => TRUE),
             ),
@@ -2924,8 +2942,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $form['entities'][$this->entity_type][$bundle][$view_mode]['default'] = array(
           '#type' => 'checkbox',
           '#default_value' => !empty($settings['default']),
+          '#title' => t(
+            'Provide initial display: @label, @bundle',
+            array(
+              '@label' => $bundle_info['label'],
+              '@bundle' => $view_mode_label
+            )
+          ),
+          '#title_display' => 'invisible',
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
               $base_id . '-status' => array('checked' => TRUE),
               $base_id . '-substitute' => array('value' => ''),
@@ -2936,8 +2962,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $form['entities'][$this->entity_type][$bundle][$view_mode]['choice'] = array(
           '#type' => 'checkbox',
           '#default_value' => !empty($settings['choice']),
+          '#title' => t(
+            'Allow panel choice: @label, @bundle',
+            array(
+              '@label' => $bundle_info['label'],
+              '@bundle' => $view_mode_label
+            )
+          ),
+          '#title_display' => 'invisible',
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
               $base_id . '-status' => array('checked' => TRUE),
               $base_id . '-substitute' => array('value' => ''),
@@ -2992,8 +3026,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           '#type' => 'select',
           '#options' => $options,
           '#default_value' => $default_value,
+          '#title' => t(
+            'Default panel: @label, @bundle',
+            array(
+              '@label' => $bundle_info['label'],
+              '@bundle' => $view_mode_label
+            )
+          ),
+          '#title_display' => 'invisible',
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
               $base_id . '-status' => array('checked' => TRUE),
               $base_id . '-substitute' => array('value' => ''),
@@ -3004,8 +3046,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         $form['entities'][$this->entity_type][$bundle][$view_mode]['default revert'] = array(
           '#type' => 'checkbox',
           '#default_value' => FALSE,
+          '#title' => t(
+            'Update existing entities to use this display: @label, @bundle',
+            array(
+              '@label' => $bundle_info['label'],
+              '@bundle' => $view_mode_label
+            )
+          ),
+          '#title_display' => 'invisible',
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
               $base_id . '-status' => array('checked' => TRUE),
               $base_id . '-substitute' => array('value' => ''),
@@ -3042,7 +3092,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           '#type' => 'item',
           '#title' => $links,
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
               $base_id . '-status' => array('checked' => TRUE),
               $base_id . '-default' => array('checked' => TRUE),
@@ -3073,7 +3123,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
           '#type' => 'item',
           '#title' => $links,
           '#states' => array(
-            'visible' => array(
+            'show' => array(
               $bundle_id . '-status' => array('checked' => TRUE),
               $base_id . '-status' => array('checked' => TRUE),
               $base_id . '-choice' => array('checked' => TRUE),
@@ -3088,6 +3138,9 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
       }
     }
+    $form['#attached'] = array(
+      'js' => array(ctools_attach_js('states-show')),
+    );
   }
 
   /**

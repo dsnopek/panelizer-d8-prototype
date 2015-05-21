@@ -52,6 +52,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 #2481015 by drclaw: Machine names of new displays must be unique.
 #2408691 by ruloweb: Invalid pane id when revisioning is enabled.
 By DamienMcKenna: Updated comments around entity_allows_revisions().
+#1963124 by micnap, mgifford, DamienMcKenna: Resolve WCAG2 accessibility errors
+  on main settings page.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
