@@ -54,6 +54,8 @@ Panelizer 7.x-3.x-dev, xxxx-xx-xx
 By DamienMcKenna: Updated comments around entity_allows_revisions().
 #1963124 by micnap, mgifford, DamienMcKenna: Resolve WCAG2 accessibility errors
   on main settings page.
+#2237943 by knobo, DamienMcKenna: Entity display as "Panelizer" in Views should
+  allow selectable view mode.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
