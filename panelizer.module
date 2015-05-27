@@ -164,6 +164,24 @@ function panelizer_admin_paths() {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Check whether a given view mode is panelized.
+ * Set an error message if there are un-hidden fields
+ * because they won't be printed anyway.
+ */
+function panelizer_form_field_ui_display_overview_form_alter(&$form, &$form_state, $form_id) {
+
+  if (!empty($form['#entity_type']) && !empty($form['#bundle']) && !empty($form['#view_mode'])) {
+    module_load_install('panelizer');
+    if (panelizer_view_mode_extra_field_displays($form['#entity_type'], $form['#bundle'], $form['#view_mode'])) {
+      $message = t("This view mode is being controlled via Panelizer. For performance reasons, it is recommended to move all fields to 'hidden'. Fields not marked as hidden will be prepared for output but will not actually output, thus needlessly increasing render and page load time.");
+      drupal_set_message($message, 'error', FALSE);
+    }
+  }
+}
+
+/**
  * Implements hook_form_alter().
  */
 function panelizer_form_alter(&$form, &$form_state, $form_id) {

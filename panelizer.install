@@ -308,6 +308,126 @@ function panelizer_update_dependencies() {
 }
 
 /**
+ * Implements hook_requirements().
+ */
+function panelizer_requirements($phase) {
+  $return = array();
+
+  if ($phase === 'runtime') {
+    // Check for fields displaying on view modes through core config.
+    $view_modes_to_report = array();
+
+    foreach (entity_get_info() as $entity_type => $entity_info) {
+      if (isset($entity_info['view modes'])) {
+        $view_modes = array_keys($entity_info['view modes']);
+        // Add default to the list of view modes because that might be panelized
+        // too.
+        $view_modes[] = 'default';
+
+        if (!empty($entity_info['bundles'])) {
+          $bundles = $entity_info['bundles'];
+        }
+        else {
+          $bundles = array($entity_type => $entity_type);
+        }
+
+        foreach ($bundles as $bundle => $bundle_info) {
+          foreach ($view_modes as $view_mode) {
+            if (panelizer_view_mode_extra_field_displays($entity_type, $bundle, $view_mode)) {
+              $view_modes_to_report[] = array(
+                'entity_type' => $entity_type,
+                'bundle' => $bundle,
+                'view_mode' => $view_mode,
+              );
+              // @todo Should the display be updated to hide the fields?
+              // panelizer_hide_fields_on_panelized_view_mode($entity_type, $bundle, $view_mode);
+            }
+          }
+        }
+      }
+    }
+
+    if (!empty($view_modes_to_report)) {
+      $count = count($view_modes_to_report);
+      $return['double_display'] = array(
+        'title' => t('Panelizer'),
+        'value' => t('@number view mode / bundle / entity combination(s) use Panelizer but still have field displays configured.', array('@number' => $count)),
+        'description' => t('Panelizer replaces the normal entity display. Any view mode that use Panelizer should have all fields hidden through the normal display settings in order to avoid the overhead of generating the output twice.'),
+        'severity' => REQUIREMENT_WARNING,
+      );
+      $description_links = array();
+      foreach ($view_modes_to_report as $view_mode_array) {
+        extract($view_mode_array);
+        $handler = panelizer_entity_plugin_get_handler($entity_type);
+        $path = $handler->admin_bundle_display_path($bundle, $view_mode);
+        $description_links[] = array(
+          'href' => $path,
+          'title' => implode(':', $view_mode_array),
+        );
+      }
+
+      $theme_variables = array(
+        'links' => $description_links,
+        'heading' => array(
+          'text' => 'Entity view modes that should have all fields hidden:',
+          'level' => 'h6',
+        ),
+      );
+      $return['double_display']['description'] .= theme('links', $theme_variables);
+    }
+  }
+  return $return;
+}
+
+/**
+ * Check whether a view mode uses core display of fields and panelizer.
+ *
+ * @return bool
+ *   Whether or not a bundle/view_mode is panelized and has fields displaying
+ *   through core settings.
+ */
+function panelizer_view_mode_extra_field_displays($entity_type, $bundle, $view_mode) {
+  $handler = panelizer_entity_plugin_get_handler($entity_type);
+
+  if (panelizer_is_panelized($handler, $bundle, $view_mode)) {
+    $bundle = field_extract_bundle($entity_type, $bundle);
+    $instances = field_info_instances($entity_type, $bundle);
+
+    // @todo, handle extra fields.
+    // field_info_extra_fields($entity_type, $bundle, 'display');
+
+    // Look through all the fields and look for fields that aren't hidden.
+    // As soon as one is found, end this function. Finding any non-hidden
+    // fields is the point of this function.
+    foreach ($instances as $instance) {
+      if (!empty($instance['display'][$view_mode]['type']) && $instance['display'][$view_mode]['type'] !== 'hidden') {
+        return TRUE;
+      }
+    }
+  }
+
+  return FALSE;
+}
+
+/**
+ * Hide all fields on a view mode.
+ *
+ * @todo, connect this function to a form and/or ajax callback.
+ */
+function panelizer_hide_fields_on_panelized_view_mode($entity_type, $bundle, $view_mode) {
+
+  $bundle = field_extract_bundle($entity_type, $bundle);
+  $instances = field_info_instances($entity_type, $bundle);
+
+  foreach ($instances as $instance) {
+    if (!empty($instance['display'][$view_mode]['type'])) {
+      $instance['display'][$view_mode]['type'] = 'hidden';
+      field_update_instance($instance);
+    }
+  }
+}
+
+/**
  * Update the panelizer variable to be more feature module friendly.
  */
 function panelizer_update_7100() {

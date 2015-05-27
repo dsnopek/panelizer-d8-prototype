@@ -193,6 +193,19 @@ interface PanelizerEntityInterface {
   public function get_substitute($view_mode, $bundle);
 
   /**
+   * Obtain the system path to an entity bundle's display settings page for a
+   * specific view mode.
+   *
+   * @param string $bundle
+   * @param string $view_mode
+   *
+   * @return string
+   *   The system path of the display settings page for this bundle/view mode
+   *   combination.
+   */
+  public function admin_bundle_display_path($bundle, $view_mode);
+
+  /**
    * Determine if the current user has $op access on the $entity.
    */
   public function entity_access($op, $entity);
@@ -818,6 +831,33 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
     }
 
     return $substitute;
+  }
+
+  /**
+   * Obtain the system path to an entity bundle's display settings page for a
+   * specific view mode.
+   *
+   * @param string $bundle
+   * @param string $view_mode
+   *
+   * @return string
+   *   The system path of the display settings page for this bundle/view mode
+   *   combination.
+   */
+  public function admin_bundle_display_path($bundle, $view_mode) {
+    $path = $this->entity_admin_root;
+
+    $pos = strpos($path, '%');
+    if ($pos !== FALSE) {
+      $path = substr($path, 0, $pos) . $bundle;
+    }
+
+    $path .= '/display';
+    if ($view_mode != 'default') {
+      $path .= '/' . $view_mode;
+    }
+
+    return $path;
   }
 
   /**
@@ -2549,11 +2589,16 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
    */
   public function is_panelized($bundle) {
     if (strpos($bundle, '.') === FALSE) {
-      return !empty($this->plugin['bundles'][$bundle]) && !empty($this->plugin['bundles'][$bundle]['status']);
+      $has_bundle = !empty($this->plugin['bundles'][$bundle]);
+      $bundle_enabled = !empty($this->plugin['bundles'][$bundle]['status']);
+      return $has_bundle && $bundle_enabled;
     }
     else {
       list($bundle, $view_mode) = explode('.', $bundle);
-      return !empty($this->plugin['bundles'][$bundle]) && !empty($this->plugin['bundles'][$bundle]['status']) && !empty($this->plugin['bundles'][$bundle]['view modes'][$view_mode]['status']);
+      $has_bundle = !empty($this->plugin['bundles'][$bundle]);
+      $bundle_enabled = !empty($this->plugin['bundles'][$bundle]['status']);
+      $view_mode_enabled = !empty($this->plugin['bundles'][$bundle]['view modes'][$view_mode]['status']);
+      return $has_bundle && $bundle_enabled && $view_mode_enabled;
     }
   }
 

@@ -56,6 +56,9 @@ By DamienMcKenna: Updated comments around entity_allows_revisions().
   on main settings page.
 #2237943 by knobo, DamienMcKenna: Entity display as "Panelizer" in Views should
   allow selectable view mode.
+#2429561 by stevector, DamienMcKenna: Indicate on Field UI display settings
+  pages and in hook_requirements when Panelizer is being used and field output
+  is redundant.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
