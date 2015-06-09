@@ -59,6 +59,7 @@ By DamienMcKenna: Updated comments around entity_allows_revisions().
 #2429561 by stevector, DamienMcKenna: Indicate on Field UI display settings
   pages and in hook_requirements when Panelizer is being used and field output
   is redundant.
+By DamienMcKenna: Ensure all ksort() calls only happen on arrays.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

@@ -504,7 +504,10 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
         }
       }
     }
-    ksort($items);
+
+    if (!empty($items)) {
+      ksort($items);
+    }
 
     // Also add administrative links to the bundle.
     if (!empty($this->entity_admin_root)) {
