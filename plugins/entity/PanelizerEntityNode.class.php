@@ -225,6 +225,7 @@ class PanelizerEntityNode extends PanelizerEntityDefault {
       'base' => array('node'),
       'path' => $path,
       'uses options' => TRUE,
+      'module' => 'panelizer',
       'type' => 'normal',
       'register theme' => FALSE,
       'name' => 'panelizer_node_view',

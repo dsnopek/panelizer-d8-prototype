@@ -68,6 +68,8 @@ By DamienMcKenna: Ensure all ksort() calls only happen on arrays.
 #2512342 by sonfordangeles, DamienMcKenna: panelizer_add_revision_info_form()
   was not handling the entity object correctly, so the revision functionality
   was not going to work correctly.
+#2524258 by kovacsaba, DamienMcKenna: hook_views_plugins_alter() needs to know
+  what module the plugin comes from.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
