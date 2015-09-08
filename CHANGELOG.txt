@@ -60,6 +60,7 @@ By DamienMcKenna: Updated comments around entity_allows_revisions().
   pages and in hook_requirements when Panelizer is being used and field output
   is redundant.
 By DamienMcKenna: Ensure all ksort() calls only happen on arrays.
+#1963124 by DamienMcKenna: Require CTools 1.9 so that it has show.js.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02
