@@ -565,7 +565,7 @@ function panelizer_update_7106() {
     throw new DrupalUpdateException(t("There's a record in the panelizer_entity table which caused an update to fail. Please see <a href=\"https://www.drupal.org/node/2410251\">https://www.drupal.org/node/2410251</a> for details on fixing the problem."));
   }
   else {
-    return t('The Panelizer database schema has bee updated.');
+    return t('The Panelizer database schema has been updated.');
   }
 }
 
