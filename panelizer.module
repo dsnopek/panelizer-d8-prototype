@@ -1751,6 +1751,74 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alter the change layout form to support saving as default.
+ */
+function panelizer_form_panels_change_layout_alter(&$form, &$form_state) {
+  // Only alter on initial form build.
+  if (empty($form_state['executed'])) {
+    if (isset($form_state['back'])) {
+      // Do nothing when moving backwards.
+      return;
+    }
+
+    // Extract the display from the form state.
+    $display = $form_state['display'];
+
+    list($module, $type, $key) = explode(':', $display->cache_key, 3);
+
+    // If the display is not owned by Panelizer, or is default handler, exit.
+    if ($module != 'panelizer' || $type == 'default') {
+      return;
+    }
+
+    // Load the $plugin information
+    $handler = panelizer_entity_plugin_get_handler($type);
+    if (!$handler) {
+      return;
+    }
+
+    // Get the entity that's being edited through Panelizer context
+    $entity = $display->context['panelizer']->data;
+
+    // Check if the view mode is configured.
+    list($entity_id, $view_mode) = explode(':', $key);
+    if (empty($entity->panelizer[$view_mode])) {
+      return;
+    }
+
+    list($entity_id, $revision_id, $bundle) = entity_extract_ids($handler->entity_type, $entity);
+    $entity_info = entity_get_info($handler->entity_type);
+
+    $panelizer = $entity->panelizer[$view_mode];
+
+    // Calculate the proper name to add to the cache key, which
+    // has some data stripped off of the true name.
+    $name = 'default';
+    if (!empty($panelizer->name)) {
+      $pieces = explode(':', $panelizer->name);
+      if (isset($pieces[2])) {
+        $name = $pieces[2];
+      }
+    }
+
+    // Change the default button to say "Save as custom".
+    $form['submit']['#value'] = t('Save as custom');
+
+    // Add another button to save as the default instead:
+    $form['save_default'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save as @bundle_name default', array('@bundle_name' => $entity_info['bundles'][$bundle]['label'])),
+      '#submit' => array('panels_ipe_change_to_default', 'panels_change_layout_submit'),
+      '#save-display' => TRUE,
+      '#cache_key' => 'default:' . $handler->entity_type . ':' . $bundle . '.' . $panelizer->view_mode . ':' . $name,
+      '#access' => $handler->panelizer_access('defaults', $entity, $panelizer->view_mode),
+    );
+  }
+}
+
+/**
  * Implement template_preprocess_panels_ipe_toolbar().
  *
  * Add some extra CSS for the Panelizer additional requirements for IPE.
