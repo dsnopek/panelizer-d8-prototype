@@ -70,6 +70,7 @@ By DamienMcKenna: Ensure all ksort() calls only happen on arrays.
   was not going to work correctly.
 #2524258 by kovacsaba, DamienMcKenna: hook_views_plugins_alter() needs to know
   what module the plugin comes from.
+#2565449 by benjy, DamienMcKenna: CTools export-ui library not always loaded.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

@@ -643,6 +643,7 @@ abstract class PanelizerEntityDefault implements PanelizerEntityInterface {
       // Also make clones of all the export UI menu items. Again there is some
       // duplicated code here because of subtle differences.
       // Load the $plugin information.
+      ctools_include('export-ui');
       $plugin = ctools_get_export_ui('panelizer_defaults');
 
       $ui_items = $plugin['menu']['items'];

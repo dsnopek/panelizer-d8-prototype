@@ -789,7 +789,8 @@ function panelizer_export_ui_switcher_page($entity_handler, $bundle, $plugin_nam
     $view_mode = 'page_manager';
   }
 
-  // Load the $plugin information
+  // Load the $plugin information.
+  ctools_include('export-ui');
   $plugin = ctools_get_export_ui($plugin_name);
   $handler = ctools_export_ui_get_handler($plugin);
 
