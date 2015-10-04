@@ -73,6 +73,7 @@ By DamienMcKenna: Ensure all ksort() calls only happen on arrays.
 #2565449 by benjy, DamienMcKenna: CTools export-ui library not always loaded.
 #2382879 by mglaman: Allow layout selection to be assigned as the default via
   the IPE interface.
+#2579983 by DamienMcKenna: Split up the test file into separate pieces.
 
 
 Panelizer 7.x-3.2-beta1, 2015-02-02

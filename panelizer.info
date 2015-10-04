@@ -19,5 +19,10 @@ files[] = plugins/views/panelizer_handler_panelizer_status.inc
 files[] = plugins/views/panelizer_handler_filter_panelizer_status.inc
 files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc
 
-; Simpletests.
-files[] = panelizer.test
+; Tests
+files[] = tests/panelizer.helper.test
+files[] = tests/panelizer.admin_settings.test
+files[] = tests/panelizer.node.test
+
+; Used by the testing system.
+test_dependencies[] = views
