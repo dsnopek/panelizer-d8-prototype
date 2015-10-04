@@ -5,7 +5,7 @@
  */
 
 /**
- * Verifies panelizer configuration options for nodes.
+ * Verifies Panelizer configuration options for nodes.
  */
 class PanelizerNodeTest extends PanelizerTestHelper {
 

@@ -19,7 +19,7 @@ files[] = plugins/views/panelizer_handler_panelizer_status.inc
 files[] = plugins/views/panelizer_handler_filter_panelizer_status.inc
 files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc
 
-; Tests
+; Tests.
 files[] = tests/panelizer.helper.test
 files[] = tests/panelizer.admin_settings.test
 files[] = tests/panelizer.node.test
