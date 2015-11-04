@@ -1690,7 +1690,7 @@ function panelizer_form_panels_ipe_edit_control_form_alter(&$form, &$form_state)
     $form_state['revision info'] = $revision_info;
     panelizer_add_revision_info_form($form, $form_state);
     // Tweak the log message field to make it fit better.
-    if (isset($form['revision_information'])) {
+    if (isset($form['revision_information']['log'])) {
       $form['revision_information']['log']['#type'] = 'textfield';
       $form['revision_information']['log']['#description'] = '';
     }
