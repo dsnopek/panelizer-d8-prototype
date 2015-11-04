@@ -23,6 +23,7 @@ files[] = plugins/views/panelizer_plugin_row_panelizer_node_view.inc
 files[] = tests/panelizer.helper.test
 files[] = tests/panelizer.admin_settings.test
 files[] = tests/panelizer.node.test
+files[] = tests/panelizer.node_revisions.test
 
 ; Used by the testing system.
 test_dependencies[] = views
