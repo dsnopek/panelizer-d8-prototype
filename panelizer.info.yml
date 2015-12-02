@@ -1,8 +1,8 @@
 type: module
 name: Panelizer
-description: 'Allow any node type to have custom panel displays, similar to the panel node type.'
+description: 'Allow any entity bundle to be rendered using a Panels display.'
 package: Layout
 version: VERSION
 core: 8.x
 dependencies:
-  - page_manager
+  - panels
