@@ -1,0 +1,4 @@
+services:
+  plugin.manager.panelizer_entity':
+    class: Drupal\panelizer\Plugin\PanelizerEntityManager
+    parent: default_plugin_manager
