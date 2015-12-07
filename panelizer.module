@@ -14,9 +14,9 @@ function panelizer_entity_type_alter(array &$entity_types) {
   // entity plugin and the entity itself has a view builder.
   $panelizer_manager = \Drupal::service('plugin.manager.panelizer_entity');
   foreach ($panelizer_manager->getDefinitions() as $entity_type_id => $panelizer_info) {
-    if (isset($entity_types[$entity_type_id]) && isset($entity_types[$entity_type_id]['handlers']['view_builder'])) {
-      $entity_types[$entity_type_id]['handlers']['fallback_view_builder'] = $entity_types[$entity_type_id]['handlers']['view_builder'];
-      $entity_types[$entity_type_id]['handlers']['view_builder'] = '\Drupal\panelizer\PanelizerEntityViewBuilder';
+    if (isset($entity_types[$entity_type_id]) && $entity_types[$entity_type_id]->hasHandlerClass('view_builder')) {
+      $entity_types[$entity_type_id]->setHandlerClass('fallback_view_builder', $entity_types[$entity_type_id]->getHandlerClass('view_builder'));
+      $entity_types[$entity_type_id]->setHandlerClass('view_builder', '\Drupal\panelizer\PanelizerEntityViewBuilder');
     }
   }
 }

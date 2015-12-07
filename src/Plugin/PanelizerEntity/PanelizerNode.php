@@ -15,7 +15,7 @@ use Drupal\panels\PanelsDisplay;
  * Panelizer entity plugin for integrating with nodes.
  *
  * @PanelizerEntity(
- *   id = 'node'
+ *   id = "node"
  * )
  */
 class PanelizerNode extends PanelizerEntityBase {

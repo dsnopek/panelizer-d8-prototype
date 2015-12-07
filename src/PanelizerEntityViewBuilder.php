@@ -6,15 +6,21 @@
 namespace Drupal\panelizer;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityViewBuilder;
+use Drupal\Core\Field\FieldItemInterface;
+use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
 use Drupal\panels\PanelsDisplay;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
+/**
+ * Entity view builder for entities that can be panelized.
+ */
 class PanelizerEntityViewBuilder extends EntityViewBuilder {
 
   /**
@@ -98,7 +104,7 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getFallbackViewBuilder() {
-    $this->entityManager->getHandler($this->entityTypeId, 'fallback_view_builder');
+    return $this->entityManager->getHandler($this->entityTypeId, 'fallback_view_builder');
   }
 
   /**
@@ -115,20 +121,9 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
     return new PanelsDisplay();
   }
 
-  /**
-   * Build a Panelized display for the given entity, Panel and view mode.
-   *
-   * @param \Drupal\Core\Entity\EntityInterface $entity
-   * @param \Drupal\panels\PanelsDisplay $panels_display
-   * @param $view_mode
-   *
-   * @return array
-   *   Render array.
+  /*
+   * Methods from EntityViewBuilderInterface.
    */
-  protected function buildPanelizedDisplay(EntityInterface $entity, PanelsDisplay $panels_display, $view_mode) {
-    // @todo: Do the Panels magic!
-    return ['temp' => ['#markup' => 'Panelized!']];
-  }
 
   /**
    * {@inheritdoc}
@@ -136,13 +131,12 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
   public function buildComponents(array &$build, array $entities, array $displays, $view_mode) {
     $fallback_view_builder = $this->getFallbackViewBuilder();
 
-    // Divide the entities into those which are panelized and those not.
     $panelized_entities = [];
     $fallback_entities = [];
     foreach ($entities as $id => $entity) {
-      if ($this->isPanelizerEnabled($displays[$entity->bundle()])) {
-        $panelized_entities_by_bundle[$id] = $entity;
-        $panelized_entities_by_bundle[$entity->bundle()][$id] = $entity;
+      $display = $displays[$entity->bundle()];
+      if ($this->isPanelizerEnabled($display)) {
+        $panelized_entities[$id] = $entity;
       }
       else {
         $fallback_entities[$id] = $entity;
@@ -155,31 +149,116 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
     }
 
     // Handle the panelized entities.
-    $this->moduleHandler()->invokeAll('entity_prepare_view', array($this->entityTypeId, $panelized_entities, $displays, $view_mode));
-    /*
-    foreach ($panelized_entities_by_bundle as $bundle => $panelized_entities) {
-      $panels_display = $this->getPanelsDisplay($displays[$bundle]);
-      foreach ($panelized_entities as $id => $entity) {
-        $build[$id] += $this->buildPanelizedDisplay($entity, $panels_display, $view_mode);
-      }
+    if (!empty($panelized_entities)) {
+      $this->moduleHandler()
+        ->invokeAll('entity_prepare_view', array(
+          $this->entityTypeId,
+          $panelized_entities,
+          $displays,
+          $view_mode
+        ));
     }
-    */
   }
 
-  // @todo: override view()
-  // @todo: override viewMultiple()
-  // @todo: override resetCache()
-  // @todo: override viewField()
-  // @todo: override viewFieldItem()
-  // @todo: override getCacheTags()
+  /**
+   * {@inheritdoc}
+   */
+  public function view(EntityInterface $entity, $view_mode = 'full', $langcode = NULL) {
+    $displays = EntityViewDisplay::collectRenderDisplays([$entity], $view_mode);
+    $display = $displays[$entity->bundle()];
+
+    if (!$this->isPanelizerEnabled($display)) {
+      return $this->getFallbackViewBuilder()->view($entity, $view_mode, $langcode);
+    }
+
+    return parent::view($entity, $view_mode, $langcode);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function viewMultiple(array $entities = array(), $view_mode = 'full', $langcode = NULL) {
+    $displays = EntityViewDisplay::collectRenderDisplays($entities, $view_mode);
+
+    $panelized_entities = [];
+    $fallback_entities = [];
+    foreach ($entities as $id => $entity) {
+      $display = $displays[$entity->bundle()];
+      if ($this->isPanelizerEnabled($display)) {
+        $panelized_entities[$id] = $entity;
+      }
+      else {
+        $fallback_entities[$id] = $entity;
+      }
+    }
+
+    $result = [];
+    if (!empty($fallback_entities)) {
+      $result += $this->getFallbackViewBuilder()->viewMultiple($fallback_entities, $view_mode, $langcode);
+    }
+    if (!empty($panelized_entities)) {
+      $result += parent::viewMultiple($panelized_entities, $view_mode, $langcode);
+    }
+
+    return $result;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function resetCache(array $entities = NULL) {
+    $this->getFallbackViewBuilder()->resetCache($entities);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function viewField(FieldItemListInterface $items, $display_options = array()) {
+    return $this->getFallbackViewBuilder()->viewfield($items, $display_options);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function viewFieldItem(FieldItemInterface $item, $display = array()) {
+    return $this->getFallbackViewBuilder()->viewFieldItem($item, $display);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getCacheTags() {
+    return $this->getFallbackViewBuilder()->getCacheTags();
+  }
+
+  /*
+   * Methods from EntityViewBuilder which we use to render the Panelized entity.
+   */
+
+  /**
+   * {@inheritdoc}
+   */
+  public function build(array $build) {
+    // @todo: render an individual panelized entity.
+    // @todo: We probably want to do this in buildMultiple() and not override this.
+    $build['message'] = ['#markup' => 'this entity is panelized, yo!'];
+    return parent::build($build);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function buildMultiple(array $build_list) {
+    // @todo: render multiple panelized entities.
+    // @todo: Get all the PanelsDisplays for bundle/view mode at once!
+    $build['message'] = ['#markup' => 'these entities are panelized, yo!'];
+    return parent::buildMultiple($build_list);
+  }
 
   /**
    * {@inheritdoc}
    */
   protected function alterBuild(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-    // We don't have to check if Panelizer is enabled here, because we'll never
-    // make it to this point if it isn't.
-
     $panels_display = $this->getPanelsDisplay($display);
     $this->getPanelizerPlugin()->alterBuild($build, $entity, $panels_display, $view_mode);
   }
