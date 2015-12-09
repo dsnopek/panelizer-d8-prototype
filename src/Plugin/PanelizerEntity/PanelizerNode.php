@@ -9,7 +9,7 @@ namespace Drupal\panelizer\Plugin\PanelizerEntity;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityBase;
-use Drupal\panels\PanelsDisplay;
+use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 
 /**
  * Panelizer entity plugin for integrating with nodes.
@@ -41,7 +41,7 @@ class PanelizerNode extends PanelizerEntityBase {
   /**
    * {@inheritdoc}
    */
-  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplay $display, $view_mode) {
+  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $display, $view_mode) {
     /** @var $entity \Drupal\node\Entity\Node */
     parent::alterBuild($build, $entity, $display, $view_mode);
 

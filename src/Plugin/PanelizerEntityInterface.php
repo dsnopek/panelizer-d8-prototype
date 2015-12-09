@@ -10,7 +10,7 @@ namespace Drupal\panelizer\Plugin;
 use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\panels\PanelsDisplay;
+use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 
 /**
  * Defines an interface for Panelizer entity plugins.
@@ -38,7 +38,7 @@ interface PanelizerEntityInterface extends PluginInspectionInterface {
    * @param string $view_mode
    *   The view mode to panelize.
    *
-   * @return \Drupal\panels\PanelsDisplay
+   * @return \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant
    */
   public function getDefaultDisplay(EntityViewDisplayInterface $display, $bundle, $view_mode);
 
@@ -51,11 +51,11 @@ interface PanelizerEntityInterface extends PluginInspectionInterface {
    *   The render array that is being created.
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to be prepared.
-   * @param \Drupal\panels\PanelsDisplay $display
+   * @param \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant $display
    *   The display used to render this entity.
    * @param string $view_mode
    *   The view mode that should be used to prepare the entity.
    */
-  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplay $display, $view_mode);
+  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $display, $view_mode);
 
 }

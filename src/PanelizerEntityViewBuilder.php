@@ -15,7 +15,7 @@ use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
-use Drupal\panels\PanelsDisplay;
+use Drupal\Panels\PanelsDisplayManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -29,6 +29,13 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
    * @var \Drupal\panelizer\Plugin\PanelizerEntityManager
    */
   protected $panelizerManager;
+
+  /**
+   * The Panels display manager.
+   *
+   * @var \Drupal\Panels\PanelsDisplayManagerInterface
+   */
+  protected $panelsManager;
 
   /**
    * The Panelizer entity plugin for this entity type.
@@ -48,10 +55,13 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
    *   The language manager.
    * @param \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager
    *   The Panelizer entity manager.
+   * @param \Drupal\Panels\PanelsDisplayManagerInterface $panels_manager
+   *   The Panels display manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityManagerInterface $entity_manager, LanguageManagerInterface $language_manager, PanelizerEntityManager $panelizer_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityManagerInterface $entity_manager, LanguageManagerInterface $language_manager, PanelizerEntityManager $panelizer_manager, PanelsDisplayManagerInterface $panels_manager) {
     parent::__construct($entity_type, $entity_manager, $language_manager);
     $this->panelizerManager = $panelizer_manager;
+    $this->panelsManager = $panels_manager;
   }
 
   /**
@@ -62,7 +72,8 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
       $entity_type,
       $container->get('entity.manager'),
       $container->get('language_manager'),
-      $container->get('plugin.manager.panelizer_entity')
+      $container->get('plugin.manager.panelizer_entity'),
+      $container->get('panels.display_manager')
     );
   }
 
@@ -110,15 +121,29 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
   /**
    * Get the Panels display out of an the entity view display
    *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
    * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display
    *   The display.
+   * @param $view_mode
+   *   The view mode.
    *
-   * @return \Drupal\panels\PanelsDisplay
+   * @return \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant
    *   The Panels display.
    */
-  protected function getPanelsDisplay(EntityViewDisplayInterface $display) {
-    // @todo: Do some magic to convert into a Panels display!
-    return new PanelsDisplay();
+  protected function getPanelsDisplay(EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
+    // @todo: first check if the $entity has the Panelizer field and use that.
+
+    // Get the correct display off the 3rd party settings.
+    $displays = $display->getThirdPartySetting('panelizer', 'displays', []);
+    if (!empty($displays['default'])) {
+      $displays['default'] = $this->panelsManager->importDisplay($displays['default']);
+    }
+    else {
+      $displays['default'] = $this->getPanelizerPlugin()->getDefaultDisplay($display, $entity->bundle(), $view_mode);
+    }
+
+    return $displays['default'];
   }
 
   /*
@@ -259,7 +284,7 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
    * {@inheritdoc}
    */
   protected function alterBuild(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-    $panels_display = $this->getPanelsDisplay($display);
+    $panels_display = $this->getPanelsDisplay($entity, $display, $view_mode);
     $this->getPanelizerPlugin()->alterBuild($build, $entity, $panels_display, $view_mode);
   }
 
