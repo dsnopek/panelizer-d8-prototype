@@ -6,3 +6,5 @@ version: VERSION
 core: 8.x
 dependencies:
   - panels
+  # @todo: Allow editing of without the IPE
+  - panels_ipe

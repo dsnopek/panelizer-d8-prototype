@@ -43,7 +43,13 @@ abstract class PanelizerEntityBase extends PluginBase implements PanelizerEntity
    */
   public function getDefaultDisplay(EntityViewDisplayInterface $display, $bundle, $view_mode) {
     $panels_display = $this->panelsManager->createDisplay();
+
+    // For now, we always use the IPE.
+    // @todo: We should support editing without the IPE!
+    $panels_display->setBuilder('ipe');
+
     // @todo: we should handle fields here, since that part'll probably be standard.
+
     return $panels_display;
   }
 
