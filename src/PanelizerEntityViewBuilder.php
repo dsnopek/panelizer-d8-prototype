@@ -5,6 +5,7 @@
 
 namespace Drupal\panelizer;
 
+use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\EntityInterface;
@@ -14,8 +15,11 @@ use Drupal\Core\Entity\EntityViewBuilder;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Plugin\Context\Context;
+use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
 use Drupal\Panels\PanelsDisplayManagerInterface;
+use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -158,6 +162,10 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
 
     $panelized_entities = [];
     $fallback_entities = [];
+    /**
+     * @var string $id
+     * @var \Drupal\Core\Entity\EntityInterface $entity
+     */
     foreach ($entities as $id => $entity) {
       $display = $displays[$entity->bundle()];
       if ($this->isPanelizerEnabled($display)) {
@@ -196,7 +204,8 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
       return $this->getFallbackViewBuilder()->view($entity, $view_mode, $langcode);
     }
 
-    return parent::view($entity, $view_mode, $langcode);
+    $build = $this->buildMultiplePanelized([$entity->id() => $entity], $displays, $view_mode, $langcode);
+    return $build[$entity->id()];
   }
 
   /**
@@ -222,7 +231,7 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
       $result += $this->getFallbackViewBuilder()->viewMultiple($fallback_entities, $view_mode, $langcode);
     }
     if (!empty($panelized_entities)) {
-      $result += parent::viewMultiple($panelized_entities, $view_mode, $langcode);
+      $result += $this->buildMultiplePanelized($entities, $displays, $view_mode, $langcode);
     }
 
     return $result;
@@ -257,35 +266,55 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
   }
 
   /*
-   * Methods from EntityViewBuilder which we use to render the Panelized entity.
+   * Methods for actually rendering the Panelized entities.
    */
 
   /**
-   * {@inheritdoc}
+   * Build the render array for a list of panelized entities.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface[] $entities
+   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface[] $displays
+   * @param string $view_mode
+   * @param string|NULL $langcode
+   *
+   * @return array
    */
-  public function build(array $build) {
-    // @todo: render an individual panelized entity.
-    // @todo: We probably want to do this in buildMultiple() and not override this.
-    $build['message'] = ['#markup' => 'this entity is panelized, yo!'];
-    return parent::build($build);
+  protected function buildMultiplePanelized(array $entities, array $displays, $view_mode, $langcode) {
+    $build = [];
+
+    foreach ($entities as $id => $entity) {
+      $panels_display = $this->getPanelsDisplay($entity, $displays[$entity->bundle()], $view_mode);
+      $build[$id] = $this->buildPanelized($entity, $panels_display, $view_mode, $langcode);
+    }
+
+    return $build;
   }
 
   /**
-   * {@inheritdoc}
+   * Build the render array for a single panelized entity.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   * @param \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant $panels_display
+   * @param string $view_mode
+   * @param string $langcode
+   *
+   * @return array
    */
-  public function buildMultiple(array $build_list) {
-    // @todo: render multiple panelized entities.
-    // @todo: Get all the PanelsDisplays for bundle/view mode at once!
-    $build['message'] = ['#markup' => 'these entities are panelized, yo!'];
-    return parent::buildMultiple($build_list);
-  }
+  protected function buildPanelized(EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode, $langcode) {
+    $contexts = $panels_display->getContexts();
+    $entity_context = new Context(new ContextDefinition('entity:' . $this->entityTypeId, NULL, TRUE), $entity);
+    $contexts['@panelizer.entity_context:' . $this->entityTypeId] = $entity_context;
+    $panels_display->setContexts($contexts);
 
-  /**
-   * {@inheritdoc}
-   */
-  protected function alterBuild(array &$build, EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-    $panels_display = $this->getPanelsDisplay($entity, $display, $view_mode);
+    $build = $panels_display->build();
+
+    // @todo: I'm sure more is necessary to get the cache contexts right...
+    CacheableMetadata::createFromObject($entity)
+      ->applyTo($build);
+
     $this->getPanelizerPlugin()->alterBuild($build, $entity, $panels_display, $view_mode);
+
+    return $build;
   }
 
 }
