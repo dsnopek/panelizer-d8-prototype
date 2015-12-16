@@ -8,13 +8,13 @@ namespace Drupal\panelizer;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\Entity\EntityViewDisplay;
+use Drupal\Core\Entity\EntityHandlerInterface;
 use Drupal\Core\Entity\EntityInterface;
-use Drupal\Core\Entity\EntityManagerInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
-use Drupal\Core\Entity\EntityViewBuilder;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\EntityViewBuilderInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
@@ -25,7 +25,28 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 /**
  * Entity view builder for entities that can be panelized.
  */
-class PanelizerEntityViewBuilder extends EntityViewBuilder {
+class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHandlerInterface {
+
+  /**
+   * The type of entities for which this view builder is instantiated.
+   *
+   * @var string
+   */
+  protected $entityTypeId;
+
+  /**
+   * Information about the entity type.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeInterface
+   */
+  protected $entityType;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * The Panelizer entity manager.
@@ -53,17 +74,17 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
    *
    * @param \Drupal\Core\Entity\EntityTypeInterface $entity_type
    *   The entity type definition.
-   * @param \Drupal\Core\Entity\EntityManagerInterface $entity_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity manager service.
-   * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
-   *   The language manager.
    * @param \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager
    *   The Panelizer entity manager.
    * @param \Drupal\Panels\PanelsDisplayManagerInterface $panels_manager
    *   The Panels display manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityManagerInterface $entity_manager, LanguageManagerInterface $language_manager, PanelizerEntityManager $panelizer_manager, PanelsDisplayManagerInterface $panels_manager) {
-    parent::__construct($entity_type, $entity_manager, $language_manager);
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, PanelizerEntityManager $panelizer_manager, PanelsDisplayManagerInterface $panels_manager) {
+    $this->entityTypeId = $entity_type->id();
+    $this->entityType = $entity_type;
+    $this->entityTypeManager = $entity_type_manager;
     $this->panelizerManager = $panelizer_manager;
     $this->panelsManager = $panels_manager;
   }
@@ -74,8 +95,7 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
   public static function createInstance(ContainerInterface $container, EntityTypeInterface $entity_type) {
     return new static(
       $entity_type,
-      $container->get('entity.manager'),
-      $container->get('language_manager'),
+      $container->get('entity_type.manager'),
       $container->get('plugin.manager.panelizer_entity'),
       $container->get('panels.display_manager')
     );
@@ -119,7 +139,7 @@ class PanelizerEntityViewBuilder extends EntityViewBuilder {
    * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
    */
   protected function getFallbackViewBuilder() {
-    return $this->entityManager->getHandler($this->entityTypeId, 'fallback_view_builder');
+    return $this->entityTypeManager->getHandler($this->entityTypeId, 'fallback_view_builder');
   }
 
   /**
