@@ -76,6 +76,9 @@ abstract class PanelizerEntityBase extends PluginBase implements PanelizerEntity
     $entity_type_id = $this->getPluginId();
     foreach ($this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle) as $field_name => $field_definition) {
       if ($component = $display->getComponent($field_name)) {
+        $weight = $component['weight'];
+        unset($component['weight']);
+
         $panels_display->addBlock([
           'id' => 'entity_field:' . $entity_type_id . ':' . $field_name,
           'label' => $field_definition->getLabel(),
@@ -86,6 +89,7 @@ abstract class PanelizerEntityBase extends PluginBase implements PanelizerEntity
             'entity' => '@panelizer.entity_context:' . $entity_type_id,
           ],
           'region' => 'middle',
+          'weight' => $weight,
         ]);
       }
     }
