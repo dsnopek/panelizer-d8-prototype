@@ -39,6 +39,8 @@ function panelizer_form_entity_view_display_edit_form_alter(&$form, FormStateInt
     '#default_value' => $display->getThirdPartySetting('panelizer', 'enable', FALSE),
   ];
 
+  $form['#attached']['library'][] = 'panelizer/panelizer_default_form';
+
   $form['actions']['submit']['#submit'][] = 'panelizer_form_entity_view_display_edit_form_submit';
 }
 
