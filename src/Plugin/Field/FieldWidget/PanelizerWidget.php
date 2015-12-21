@@ -117,12 +117,14 @@ class PanelizerWidget extends WidgetBase {
     foreach ($entity_view_modes as $view_mode => $view_mode_info) {
       if (!isset($values[$view_mode])) {
         $display = EntityViewDisplay::collectRenderDisplay($entity, $view_mode);
-        $panels_display = $panelizer_plugin->getDefaultDisplay($display, $entity->bundle(), $view_mode);
+        if ($display->getThirdPartySetting('panelizer', 'enable', FALSE)) {
+          $panels_display = $panelizer_plugin->getDefaultDisplay($display, $entity->bundle(), $view_mode);
 
-        $values[$view_mode] = [
-          'default' => 'default',
-          'panels_display' => $this->getPanelsManager()->exportDisplay($panels_display),
-        ];
+          $values[$view_mode] = [
+            'default' => 'default',
+            'panels_display' => $this->getPanelsManager()->exportDisplay($panels_display),
+          ];
+        }
       }
     }
 

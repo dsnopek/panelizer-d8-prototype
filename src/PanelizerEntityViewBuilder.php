@@ -156,9 +156,18 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    *   The Panels display.
    */
   protected function getPanelsDisplay(EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-    // @todo: first check if the $entity has the Panelizer field and use that.
+    // First, check if the entity has the panelizer field.
+    if (isset($entity->field_panelizer)) {
+      $values = [];
+      foreach ($entity->field_panelizer as $item) {
+        $values[$item->view_mode] = $item->panels_display;
+      }
+      if (isset($values[$view_mode])) {
+        return $this->panelsManager->importDisplay($values[$view_mode]);
+      }
+    }
 
-    // Get the correct display off the 3rd party settings.
+    // Otherwise, get the correct default off the entity view display.
     $displays = $display->getThirdPartySetting('panelizer', 'displays', []);
     if (!empty($displays['default'])) {
       $displays['default'] = $this->panelsManager->importDisplay($displays['default']);
