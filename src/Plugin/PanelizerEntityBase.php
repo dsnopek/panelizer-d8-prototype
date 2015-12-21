@@ -74,7 +74,16 @@ abstract class PanelizerEntityBase extends PluginBase implements PanelizerEntity
 
     // Add all the visible fields to the Panel.
     $entity_type_id = $this->getPluginId();
+    /**
+     * @var string $field_name
+     * @var \Drupal\Core\Field\FieldDefinitionInterface $field_definition
+     */
     foreach ($this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle) as $field_name => $field_definition) {
+      // Skip the Panelizer field.
+      if ($field_definition->getType() == 'panelizer') {
+        continue;
+      }
+
       if ($component = $display->getComponent($field_name)) {
         $weight = $component['weight'];
         unset($component['weight']);
