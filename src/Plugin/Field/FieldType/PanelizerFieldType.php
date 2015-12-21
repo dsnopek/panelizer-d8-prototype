@@ -32,6 +32,10 @@ class PanelizerFieldType extends FieldItemBase {
    */
   public static function propertyDefinitions(FieldStorageDefinitionInterface $field_definition) {
     // Prevent early t() calls by using the TranslatableMarkup.
+    $properties['view_mode'] = DataDefinition::create('string')
+      ->setLabel(new TranslatableMarkup('View mode'))
+      ->setSetting('case_sensitive', FALSE)
+      ->setRequired(TRUE);
     $properties['default'] = DataDefinition::create('string')
       ->setLabel(new TranslatableMarkup('Default name'))
       ->setSetting('case_sensitive', FALSE)
@@ -56,6 +60,11 @@ class PanelizerFieldType extends FieldItemBase {
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
     $schema = [
       'columns' => [
+        'view_mode' => [
+          'type' => 'varchar',
+          'length' => '255',
+          'binary' => FALSE,
+        ],
         'default' => [
           'type' => 'varchar',
           'length' => '255',

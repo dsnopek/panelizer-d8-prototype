@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Contains \Drupal\panelizer\Plugin\Field\FieldFormatter\PanelizerFormatterType.
+ * Contains \Drupal\panelizer\Plugin\Field\FieldFormatter\PanelizerFormatter.
  */
 
 namespace Drupal\panelizer\Plugin\Field\FieldFormatter;
@@ -24,7 +24,7 @@ use Drupal\Core\Form\FormStateInterface;
  *   }
  * )
  */
-class PanelizerFormatterType extends FormatterBase {
+class PanelizerFormatter extends FormatterBase {
 
   /**
    * {@inheritdoc}
@@ -33,7 +33,11 @@ class PanelizerFormatterType extends FormatterBase {
     $elements = [];
 
     foreach ($items as $delta => $item) {
-      $elements[$delta] = ['#markup' => $this->viewValue($item)];
+      $elements[$delta] = [
+        '#type' => 'item',
+        '#title' => $item->view_mode,
+        '#markup' => $this->viewValue($item),
+      ];
     }
 
     return $elements;
@@ -51,7 +55,7 @@ class PanelizerFormatterType extends FormatterBase {
   protected function viewValue(FieldItemInterface $item) {
     $description = '';
     if (!empty($item->default)) {
-      $description = $this->t('Using default @default', ['@default' => $item->default]);
+      $description = $this->t('Using default called "@default"', ['@default' => $item->default]);
     }
     else {
       $description = $this->t('Custom');
