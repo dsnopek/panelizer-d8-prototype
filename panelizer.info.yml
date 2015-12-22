@@ -1,10 +1,10 @@
 type: module
 name: Panelizer
-description: 'Allow any entity bundle to be rendered using a Panels display.'
+description: 'Allow any entity view mode to be rendered using a Panels display.'
 package: Layout
 version: VERSION
 core: 8.x
 dependencies:
   - panels
-  # @todo: Allow editing of without the IPE
+  # @todo: Allow editing without the IPE
   - panels_ipe
