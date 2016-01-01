@@ -46,7 +46,7 @@ class PanelizerFieldPanelsStorage implements PanelsStorageInterface {
    * @return \Drupal\Core\Entity\EntityInterface|NULL
    */
   protected function loadEntity($id) {
-    list ($entity_type, $id, $revision_id) = explode(':', $id);
+    list ($entity_type, $id, , $revision_id) = explode(':', $id);
 
     $storage = $this->entityTypeManager->getStorage($entity_type);
     if ($revision_id) {
@@ -63,8 +63,10 @@ class PanelizerFieldPanelsStorage implements PanelsStorageInterface {
    * {@inheritdoc}
    */
   public function load($id) {
-    $entity = $this->loadEntity($id);
-    return $this->panelizer->getPanelsDisplay($entity);
+    if ($entity = $this->loadEntity($id)) {
+      list (,,$view_mode) = explode(':', $id);
+      return $this->panelizer->getPanelsDisplay($entity, $view_mode);
+    }
   }
 
   /**

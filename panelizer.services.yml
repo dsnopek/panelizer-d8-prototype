@@ -2,6 +2,9 @@ services:
   plugin.manager.panelizer_entity:
     class: Drupal\panelizer\Plugin\PanelizerEntityManager
     parent: default_plugin_manager
+  panelizer:
+    class: Drupal\panelizer\Panelizer
+    arguments: ['@entity_type.manager', '@plugin.manager.panelizer_entity', '@panels.display_manager']
   panelizer.panels_storage:
     class: Drupal\panelizer\PanelizerDefaultPanelsStorage
     tags:
