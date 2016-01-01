@@ -223,7 +223,7 @@ class Panelizer implements PanelizerInterface {
       $display = $this->getEntityViewDisplay($entity_type_id, $bundle, $view_mode);
     }
 
-    return $this->getEntityPlugin($entity_type_id) && $display->getThirdPartySetting('panelizer', 'enable', FALSE));
+    return $this->getEntityPlugin($entity_type_id) && $display->getThirdPartySetting('panelizer', 'enable', FALSE);
   }
 
 
