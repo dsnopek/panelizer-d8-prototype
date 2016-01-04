@@ -1,5 +1,7 @@
 <?php
+
 /**
+ * @file
  * Contains \Drupal\panelizer\PanelizerEntityViewBuilder.
  */
 
@@ -13,6 +15,8 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityViewBuilderInterface;
+use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Plugin\Context\Context;
@@ -49,6 +53,20 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
   protected $entityTypeManager;
 
   /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
+
+  /**
+   * The panelizer service.
+   *
+   * @var \Drupal\panelizer\PanelizerInterface
+   */
+  protected $panelizer;
+
+  /**
    * The Panelizer entity manager.
    *
    * @var \Drupal\panelizer\Plugin\PanelizerEntityManager
@@ -76,15 +94,19 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    *   The entity type definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity manager service.
+   * @param \Drupal\panelizer\PanelizerInterface $panelizer
+   *   The Panelizer service.
    * @param \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager
    *   The Panelizer entity manager.
    * @param \Drupal\Panels\PanelsDisplayManagerInterface $panels_manager
    *   The Panels display manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, PanelizerEntityManager $panelizer_manager, PanelsDisplayManagerInterface $panels_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, PanelizerInterface $panelizer, PanelizerEntityManager $panelizer_manager, PanelsDisplayManagerInterface $panels_manager) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
     $this->entityTypeManager = $entity_type_manager;
+    $this->moduleHandler = $module_handler;
+    $this->panelizer = $panelizer;
     $this->panelizerManager = $panelizer_manager;
     $this->panelsManager = $panels_manager;
   }
@@ -96,6 +118,8 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
     return new static(
       $entity_type,
       $container->get('entity_type.manager'),
+      $container->get('module_handler'),
+      $container->get('panelizer'),
       $container->get('plugin.manager.panelizer_entity'),
       $container->get('panels.display_manager')
     );
@@ -156,27 +180,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    *   The Panels display.
    */
   protected function getPanelsDisplay(EntityInterface $entity, EntityViewDisplayInterface $display, $view_mode) {
-    // First, check if the entity has the panelizer field.
-    if (isset($entity->field_panelizer)) {
-      $values = [];
-      foreach ($entity->field_panelizer as $item) {
-        $values[$item->view_mode] = $item->panels_display;
-      }
-      if (isset($values[$view_mode])) {
-        return $this->panelsManager->importDisplay($values[$view_mode]);
-      }
-    }
-
-    // Otherwise, get the correct default off the entity view display.
-    $displays = $display->getThirdPartySetting('panelizer', 'displays', []);
-    if (!empty($displays['default'])) {
-      $displays['default'] = $this->panelsManager->importDisplay($displays['default']);
-    }
-    else {
-      $displays['default'] = $this->getPanelizerPlugin()->getDefaultDisplay($display, $entity->bundle(), $view_mode);
-    }
-
-    return $displays['default'];
+    return $this->panelizer->getPanelsDisplay($entity, $view_mode, $display);
   }
 
   /*
@@ -212,7 +216,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
 
     // Handle the panelized entities.
     if (!empty($panelized_entities)) {
-      $this->moduleHandler()
+      $this->moduleHandler
         ->invokeAll('entity_prepare_view', array(
           $this->entityTypeId,
           $panelized_entities,
@@ -312,7 +316,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
     $build = [];
 
     foreach ($entities as $id => $entity) {
-      $panels_display = $this->getPanelsDisplay($entity, $displays[$entity->bundle()], $view_mode);
+      $panels_display = $this->panelizer->getPanelsDisplay($entity, $view_mode, $displays[$entity->bundle()]);
       $build[$id] = $this->buildPanelized($entity, $panels_display, $view_mode, $langcode);
     }
 

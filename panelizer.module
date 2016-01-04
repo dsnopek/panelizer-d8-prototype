@@ -10,9 +10,11 @@ use \Drupal\Core\Form\FormStateInterface;
  * Implements hook_entity_type_alter().
  */
 function panelizer_entity_type_alter(array &$entity_types) {
+  /** @var \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager */
+  $panelizer_manager = \Drupal::service('plugin.manager.panelizer_entity');
+
   // Replace the entity view builder on any entity where we have a Panelizer
   // entity plugin and the entity itself has a view builder.
-  $panelizer_manager = \Drupal::service('plugin.manager.panelizer_entity');
   foreach ($panelizer_manager->getDefinitions() as $entity_type_id => $panelizer_info) {
     if (isset($entity_types[$entity_type_id]) && $entity_types[$entity_type_id]->hasHandlerClass('view_builder')) {
       $entity_types[$entity_type_id]->setHandlerClass('fallback_view_builder', $entity_types[$entity_type_id]->getHandlerClass('view_builder'));
@@ -30,18 +32,24 @@ function panelizer_form_entity_view_display_edit_form_alter(&$form, FormStateInt
   /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display */
   $display = $form_object->getEntity();
 
-  $form['panelizer'] = [
-    '#tree' => TRUE,
-  ];
-  $form['panelizer']['enable'] = [
-    '#type' => 'checkbox',
-    '#title' => t('Panelize this view mode'),
-    '#default_value' => $display->getThirdPartySetting('panelizer', 'enable', FALSE),
-  ];
+  /** @var \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager */
+  $panelizer_manager = \Drupal::service('plugin.manager.panelizer_entity');
 
-  $form['#attached']['library'][] = 'panelizer/panelizer_default_form';
+  if ($panelizer_manager->hasDefinition($display->getTargetEntityTypeId())) {
 
-  $form['actions']['submit']['#submit'][] = 'panelizer_form_entity_view_display_edit_form_submit';
+    $form['panelizer'] = [
+      '#tree' => TRUE,
+    ];
+    $form['panelizer']['enable'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Panelize this view mode'),
+      '#default_value' => $display->getThirdPartySetting('panelizer', 'enable', FALSE),
+    ];
+
+    $form['#attached']['library'][] = 'panelizer/panelizer_default_form';
+
+    $form['actions']['submit']['#submit'][] = 'panelizer_form_entity_view_display_edit_form_submit';
+  }
 }
 
 /**
@@ -53,7 +61,26 @@ function panelizer_form_entity_view_display_edit_form_submit($form, FormStateInt
   /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display */
   $display = $form_object->getEntity();
 
-  $display->setThirdPartySetting('panelizer', 'enable', $form_state->getValue(['panelizer', 'enable']));
+  $panelizer_enabled = $form_state->getValue(['panelizer', 'enable']);
+
+  // Enable it.
+  $display->setThirdPartySetting('panelizer', 'enable', $panelizer_enabled);
+
+  if ($panelizer_enabled) {
+    // Set the default display.
+    $displays = $display->getThirdPartySetting('panelizer', 'displays', []);
+    if (empty($displays['default'])) {
+      /** @var \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager */
+      $panelizer_manager = \Drupal::service('plugin.manager.panelizer_entity');
+      /** @var \Drupal\panels\PanelsDisplayManagerInterface $panels_manager */
+      $panels_manager = \Drupal::service('panels.display_manager');
+      /** @var \Drupal\panelizer\Plugin\PanelizerEntityInterface $panelizer_entity_plugin */
+      $panelizer_entity_plugin = $panelizer_manager->createInstance($display->getTargetEntityTypeId(), []);
+      $displays['default'] = $panels_manager->exportDisplay($panelizer_entity_plugin->getDefaultDisplay($display, $display->getTargetBundle(), $display->getMode()));
+      $display->setThirdPartySetting('panelizer', 'displays', $displays);
+    }
+  }
+
   $display->save();
 }
 
