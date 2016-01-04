@@ -1,5 +1,7 @@
 <?php
+
 /**
+ * @file
  * Contains \Drupal\panelizer\Plugin\PanelizerEntity;
  */
 

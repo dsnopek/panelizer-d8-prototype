@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @file
  * Contains \Drupal\panelizer\PanelizerInterface
@@ -9,6 +10,7 @@ namespace Drupal\panelizer;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 
 /**
  * Interface for the Panelizer service.
@@ -73,6 +75,16 @@ interface PanelizerInterface {
    *   The default Panels display named 'default'.
    */
   public function getDefaultPanelsDisplay($name, $entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL);
+
+  /**
+   * @param $name
+   * @param $entity_type_id
+   * @param $bundle
+   * @param $view_mode
+   * @param \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant $panels_display
+   * @return mixed
+   */
+  public function setDefaultPanelsDisplay($name, $entity_type_id, $bundle, $view_mode, PanelsDisplayVariant $panels_display);
 
   /**
    * Checks if the given entity type, bundle and view mode are panelized.

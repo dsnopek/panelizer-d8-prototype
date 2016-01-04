@@ -13,8 +13,10 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
 use Drupal\panels\PanelsDisplayManagerInterface;
+use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 
 /**
  * The Panelizer service.
@@ -27,6 +29,13 @@ class Panelizer implements PanelizerInterface {
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  protected $moduleHandler;
 
   /**
    * The Panelizer entity manager.
@@ -52,8 +61,9 @@ class Panelizer implements PanelizerInterface {
    * @param \Drupal\panels\PanelsDisplayManagerInterface $panels_manager
    *   The Panels display manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->moduleHandler = $module_handler;
     $this->panelizerEntityManager = $panelizer_entity_manager;
     $this->panelsManager = $panels_manager;
   }
@@ -120,17 +130,13 @@ class Panelizer implements PanelizerInterface {
       ));
     }
 
-    // Let the display know which view mode was originally requested.
-    $display->originalMode = $view_mode;
-
     // Let modules alter the display.
     $display_context = array(
       'entity_type' => $entity_type_id,
       'bundle' => $bundle,
       'view_mode' => $view_mode,
     );
-    // @todo: inject this!
-    \Drupal::moduleHandler()->alter('entity_view_display', $display, $display_context);
+    $this->moduleHandler->alter('entity_view_display', $display, $display_context);
 
     return $display;
   }
@@ -187,7 +193,7 @@ class Panelizer implements PanelizerInterface {
   }
 
   /**
-   * @inheritDoc
+   * {@inheritdoc}
    */
   public function getDefaultPanelsDisplay($name, $entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL) {
     if (!$display) {
@@ -218,13 +224,30 @@ class Panelizer implements PanelizerInterface {
   /**
    * {@inheritdoc}
    */
+  public function setDefaultPanelsDisplay($name, $entity_type_id, $bundle, $view_mode, PanelsDisplayVariant $panels_display) {
+    $display = $this->getEntityViewDisplay($entity_type_id, $bundle, $view_mode);
+
+    // Set this individual Panels display.
+    $panels_displays = $display->getThirdPartySetting('panelizer', 'displays', []);
+    $panels_displays[$name] = $this->panelsManager->exportDisplay($panels_display);
+    $display->setThirdPartySetting('panelizer', 'displays', $panels_displays);
+
+    $display->save();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
   public function isPanelized($entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL) {
+    if (!$this->getEntityPlugin($entity_type_id)) {
+      return FALSE;
+    }
+
     if (!$display) {
       $display = $this->getEntityViewDisplay($entity_type_id, $bundle, $view_mode);
     }
 
-    return $this->getEntityPlugin($entity_type_id) && $display->getThirdPartySetting('panelizer', 'enable', FALSE);
+    return $display->getThirdPartySetting('panelizer', 'enable', FALSE);
   }
-
 
 }
