@@ -152,7 +152,8 @@ class Panelizer implements PanelizerInterface {
         $values[$item->view_mode] = $item->panels_display;
       }
       if (isset($values[$view_mode])) {
-        $panels_display = $this->panelsManager->importDisplay($values[$view_mode]);
+        // @todo: validate schema after https://www.drupal.org/node/2392057 is fixed.
+        $panels_display = $this->panelsManager->importDisplay($values[$view_mode], FALSE);
 
         // @todo: Should be set when written, not here!
         $storage_id_parts = [$entity->getEntityTypeId(), $entity->id(), $view_mode];
@@ -202,7 +203,8 @@ class Panelizer implements PanelizerInterface {
 
     $config = $display->getThirdPartySetting('panelizer', 'displays', []);
     if (!empty($config[$name])) {
-      $panels_display = $this->panelsManager->importDisplay($config[$name]);
+      // @todo: validate schema after https://www.drupal.org/node/2392057 is fixed.
+      $panels_display = $this->panelsManager->importDisplay($config[$name], FALSE);
     }
     else {
       $panels_display = $this->getEntityPlugin($entity_type_id)->getDefaultDisplay($display, $bundle, $view_mode);
