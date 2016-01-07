@@ -9,9 +9,9 @@ services:
     class: Drupal\panelizer\PanelizerDefaultPanelsStorage
     arguments: ['@entity_type.manager', '@panelizer']
     tags:
-      - { name: panels_storage }
+      - { name: panels_storage, storage_type: panelizer_default }
   panelizer_field.panels_storage:
     class: Drupal\panelizer\PanelizerFieldPanelsStorage
     arguments: ['@entity_type.manager', '@panelizer']
     tags:
-      - { name: panels_storage }
+      - { name: panels_storage, storage_type: panelizer_field }
