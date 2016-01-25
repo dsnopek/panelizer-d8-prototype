@@ -7,7 +7,6 @@
 
 namespace Drupal\panelizer\Plugin\PanelizerEntity;
 
-
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityBase;
@@ -16,9 +15,7 @@ use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 /**
  * Panelizer entity plugin for integrating with nodes.
  *
- * @PanelizerEntity(
- *   id = "node"
- * )
+ * @PanelizerEntity("node")
  */
 class PanelizerNode extends PanelizerEntityBase {
 
