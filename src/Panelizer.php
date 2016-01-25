@@ -160,7 +160,7 @@ class Panelizer implements PanelizerInterface {
         if ($entity instanceof RevisionableInterface) {
           $storage_id_parts[] = $entity->getRevisionId();
         }
-        $panels_display->setStorage('panelizer_field.panels_storage', implode(':', $storage_id_parts));
+        $panels_display->setStorage('panelizer_field', implode(':', $storage_id_parts));
 
         return $panels_display;
       }
@@ -218,7 +218,7 @@ class Panelizer implements PanelizerInterface {
       $view_mode,
       $name,
     ];
-    $panels_display->setStorage('panelizer.panels_storage', implode(':', $storage_id_parts));
+    $panels_display->setStorage('panelizer_default', implode(':', $storage_id_parts));
 
     return $panels_display;
   }
