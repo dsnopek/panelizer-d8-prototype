@@ -1,0 +1,7 @@
+panelizer_default_form:
+  version: VERSION
+  js:
+    js/panelizer-default-form.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.once
