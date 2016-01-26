@@ -15,7 +15,7 @@ Features
 
 Requirements
 --------------------------------------------------------------------------------
-CTools v8.x-1.x [2]
+CTools v8.x-3.x [2]
 Panels v8.x-3.x
 
 
@@ -33,6 +33,6 @@ References
 --------------------------------------------------------------------------------
 1: https://www.drupal.org/project/panels
 2: https://www.drupal.org/project/ctools
-3: https://www.drupal.org/project/dsnopek
+3: https://www.drupal.org/u/dsnopek
 4: https://www.drupal.org/u/merlinofchaos
 5: https://www.drupal.org/u/damienmckenna

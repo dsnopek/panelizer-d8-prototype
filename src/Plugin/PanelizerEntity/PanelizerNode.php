@@ -29,7 +29,6 @@ class PanelizerNode extends PanelizerEntityBase {
       // @todo: add block for node links.
     }
 
-    // Add Language field text element to node render array.
     if ($display->getComponent('langcode')) {
       // @todo: add block for node language.
     }
