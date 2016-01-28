@@ -25,6 +25,21 @@ class PanelizerNode extends PanelizerEntityBase {
   public function getDefaultDisplay(EntityViewDisplayInterface $display, $bundle, $view_mode) {
     $panels_display = parent::getDefaultDisplay($display, $bundle, $view_mode);
 
+    // @todo: Add an accessor in Panels for this!
+    $configuration = $panels_display->getConfiguration();
+    $configuration['page_title'] = '[node:title]';
+    $panels_display->setConfiguration($configuration);
+
+    // Remove the 'title' block because it's covered already.
+    foreach ($panels_display->getRegionAssignments() as $region => $blocks) {
+      /** @var \Drupal\Core\Block\BlockPluginInterface[] $blocks */
+      foreach ($blocks as $block_id => $block) {
+        if ($block->getPluginId() == 'entity_field:node:title') {
+          $panels_display->removeBlock($block_id);
+        }
+      }
+    }
+
     if ($display->getComponent('links')) {
       // @todo: add block for node links.
     }
