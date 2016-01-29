@@ -54,15 +54,36 @@ class PanelizerNode extends PanelizerEntityBase {
   /**
    * {@inheritdoc}
    */
-  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $display, $view_mode) {
+  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode) {
     /** @var $entity \Drupal\node\Entity\Node */
-    parent::alterBuild($build, $entity, $display, $view_mode);
+    parent::alterBuild($build, $entity, $panels_display, $view_mode);
 
     if ($entity->id()) {
       $build['#contextual_links']['node'] = array(
         'route_parameters' =>array('node' => $entity->id()),
         'metadata' => array('changed' => $entity->getChangedTime()),
       );
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preprocessViewMode(array &$variables, EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode) {
+    parent::preprocessViewMode($variables, $entity, $panels_display, $view_mode);
+
+    /** @var \Drupal\node\NodeInterface $node */
+    $node = $entity;
+
+    // Add node specific CSS classes.
+    if ($node->isPromoted()) {
+      $variables['attributes']['class'][] = 'node--promoted';
+    }
+    if ($node->isSticky()) {
+      $variables['attributes']['class'][] = 'node--sticky';
+    }
+    if (!$node->isPublished()) {
+      $variables['attributes']['class'][] = 'node--unpublished';
     }
   }
 

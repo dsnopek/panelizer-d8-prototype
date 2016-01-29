@@ -7,6 +7,17 @@
 use \Drupal\Core\Form\FormStateInterface;
 
 /**
+ * Implements hook_theme().
+ */
+function panelizer_theme() {
+  return [
+    'panelizer_view_mode' => [
+      'render element' => 'element',
+    ],
+  ];
+}
+
+/**
  * Implements hook_entity_type_alter().
  */
 function panelizer_entity_type_alter(array &$entity_types) {
@@ -82,5 +93,34 @@ function panelizer_form_entity_view_display_edit_form_submit($form, FormStateInt
   }
 
   $display->save();
+}
+
+/**
+ * Prepares variables for Panelizer view mode templates.
+ *
+ * Default template: panelizer-view-mode.html.twig
+ */
+function template_preprocess_panelizer_view_mode(&$variables) {
+  $element = $variables['element'];
+
+  // Copy values into the variables.
+  /** @var \Drupal\panelizer\Plugin\PanelizerEntityInterface $panelizer_plugin */
+  $panelizer_plugin = $variables['panelizer_plugin'] = $element['#panelizer_plugin'];
+  /** @var \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant $panels_display */
+  $panels_display = $variables['panels_display'] = $element['#panels_display'];
+  /** @var \Drupal\Core\Entity\EntityInterface $entity */
+  $entity = $variables['entity'] = $element['#entity'];
+  $view_mode = $variables['view_mode'] = $element['#view_mode'];
+  $variables['content'] = $element['content'];
+  $variables['title'] = isset($element['#title']) ? $element['#title'] : '';
+
+  // Setup the defaults.
+  $variables['title_element'] = 'h2';
+  $variables['entity_url'] = $entity->toUrl('canonical', [
+    'language' => $entity->language(),
+  ]);
+
+  // Allow the Panelizer entity plugin to do additional preprocessing.
+  $panelizer_plugin->preprocessViewMode($variables, $entity, $panels_display, $view_mode);
 }
 

@@ -109,8 +109,26 @@ abstract class PanelizerEntityBase extends PluginBase implements PanelizerEntity
   /**
    * {@inheritdoc}
    */
-  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $display, $view_mode) {
+  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode) {
     // By default, do nothing!
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function preprocessViewMode(array &$variables, EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode) {
+    $entity_type_id = $this->getPluginId();
+
+    // Add some default classes.
+    $variables['attributes']['class'][] = $entity_type_id;
+    $variables['attributes']['class'][] = $entity_type_id . '--type-' . $entity->bundle();
+    $variables['attributes']['class'][] = $entity_type_id . '--view-mode-' . $view_mode;
+    $variables['attributes']['class'][] = 'clearfix';
+
+    // Don't render the title in the template
+    if ($view_mode == 'full') {
+      $variables['title'] = '';
+    }
   }
 
 }

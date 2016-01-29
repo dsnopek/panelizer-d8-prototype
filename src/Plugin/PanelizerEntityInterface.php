@@ -51,11 +51,25 @@ interface PanelizerEntityInterface extends PluginInspectionInterface {
    *   The render array that is being created.
    * @param \Drupal\Core\Entity\EntityInterface $entity
    *   The entity to be prepared.
-   * @param \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant $display
-   *   The display used to render this entity.
+   * @param \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant $panels_display
+   *   The Panels display used to render this entity.
    * @param string $view_mode
    *   The view mode that should be used to prepare the entity.
    */
-  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $display, $view_mode);
+  public function alterBuild(array &$build, EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode);
+
+  /**
+   * Preprocess the variables for the view mode template.
+   *
+   * @param array $variables
+   *   The variables to pass to the view mode template.
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   * @param \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant $panels_display
+   *   The Panels display used to render this entity.
+   * @param string $view_mode
+   *   The view mode.
+   */
+  public function preprocessViewMode(array &$variables, EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode);
 
 }

@@ -339,7 +339,24 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
     $contexts['@panelizer.entity_context:' . $this->entityTypeId] = $entity_context;
     $panels_display->setContexts($contexts);
 
-    $build = $panels_display->build();
+    $build = [
+      '#theme' => [
+        'panelizer_view_mode',
+        'panelizer_view_mode__' . $this->entityTypeId,
+        'panelizer_view_mode__' . $this->entityTypeId . '__' . $entity->bundle(),
+        'panelizer_view_mode__' . $this->entityTypeId . '__' . $entity->id(),
+      ],
+      '#panelizer_plugin' => $this->getPanelizerPlugin(),
+      '#panels_display' => $panels_display,
+      '#entity' => $entity,
+      '#view_mode' => $view_mode,
+      '#langcode' => $langcode,
+      'content' => $panels_display->build(),
+    ];
+
+    if (isset($build['content']['#title'])) {
+      $build['#title'] = $build['content']['#title'];
+    }
 
     // @todo: I'm sure more is necessary to get the cache contexts right...
     CacheableMetadata::createFromObject($entity)
