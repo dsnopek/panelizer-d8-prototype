@@ -88,8 +88,14 @@ class PanelizerDefaultPanelsStorage extends PanelsStorageBase implements Contain
    * {@inheritdoc}
    */
   public function access($id, $op, AccountInterface $account) {
-    // @todo: Actually check access!
-    return AccessResult::allowed();
+    list ($entity_type_id, $bundle, $view_mode, $name) = explode(':', $id);
+    if ($panels_display = $this->panelizer->getDefaultPanelsDisplay($name, $entity_type_id, $bundle, $view_mode)) {
+      if ($op == 'read' || $account->hasPermission("administer panelizer {$entity_type_id} {$bundle} defaults") || $account->hasPermission("administer panelizer {$entity_type_id} {$bundle} content")) {
+        return AccessResult::allowed();
+      }
+    }
+
+    return AccessResult::forbidden();
   }
 
 }

@@ -8,12 +8,13 @@ namespace Drupal\panelizer;
 
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
-use Drupal\Core\Entity\Entity\EntityViewDisplay;
-use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
 use Drupal\panels\PanelsDisplayManagerInterface;
 use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
@@ -23,12 +24,21 @@ use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
  */
 class Panelizer implements PanelizerInterface {
 
+  use StringTranslationTrait;
+
   /**
    * The entity type manager.
    *
    * @var \Drupal\Core\Entity\EntityTypeManagerInterface
    */
   protected $entityTypeManager;
+
+  /**
+   * The entity type bundle info manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeBundleInfoInterface
+   */
+  protected $entityTypeBundleInfo;
 
   /**
    * The module handler.
@@ -56,16 +66,20 @@ class Panelizer implements PanelizerInterface {
    *
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
+   *   The entity type bundle info manager.
    * @param \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_entity_manager
    *   The Panelizer entity manager.
    * @param \Drupal\panels\PanelsDisplayManagerInterface $panels_manager
    *   The Panels display manager.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager, TranslationInterface $string_translation) {
     $this->entityTypeManager = $entity_type_manager;
+    $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->moduleHandler = $module_handler;
     $this->panelizerEntityManager = $panelizer_entity_manager;
     $this->panelsManager = $panels_manager;
+    $this->stringTranslation = $string_translation;
   }
 
   /**
@@ -250,6 +264,52 @@ class Panelizer implements PanelizerInterface {
     }
 
     return $display->getThirdPartySetting('panelizer', 'enable', FALSE);
+  }
+
+  /**
+   * Get a list of all the Panelizer operations.
+   *
+   * @return array
+   *   Associative array of the human-readable operation names, keyed by the
+   *   path.
+   */
+  protected function getOperations() {
+    return [
+      'content' => $this->t('Content'),
+    ];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPermissions() {
+    $permissions = [];
+
+    $definitions = $this->panelizerEntityManager->getDefinitions();
+    foreach ($definitions as $entity_type_id => $entity_type) {
+      $bundles = $this->entityTypeBundleInfo->getBundleInfo($entity_type_id);
+      foreach ($bundles as $bundle => $bundle_info) {
+        $permissions["administer panelizer $entity_type_id $bundle defaults"] = [
+          'title' => t('%entity_name %bundle_name: Administer Panelizer default panels, allowed content and settings.', array(
+            '%entity_name' => $entity_type['label'],
+            '%bundle_name' => $bundle_info['label'],
+          )),
+          'description' => t('Users with this permission can fully administer panelizer for this entity bundle.'),
+        ];
+
+        foreach ($this->getOperations() as $path => $operation) {
+          $permissions["administer panelizer $entity_type_id $bundle $path"] = [
+            'title' => $this->t('%entity_name %bundle_name: Administer Panelizer @operation', [
+              '%entity_name' => $entity_type['label'],
+              '%bundle_name' => $bundle_info['label'],
+              '@operation' => $operation,
+            ]),
+          ];
+        }
+      }
+    }
+
+    return $permissions;
   }
 
 }

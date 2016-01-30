@@ -7,6 +7,7 @@
 
 namespace Drupal\panelizer\Plugin\PanelsStorage;
 
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -108,7 +109,15 @@ class PanelizerFieldPanelsStorage extends PanelsStorageBase implements Container
    * {@inheritdoc}
    */
   public function access($id, $op, AccountInterface $account) {
-    // TODO: Implement access() method.
+    if ($entity = $this->loadEntity($id)) {
+      if ($entity->access($op, $account)) {
+        if ($op == 'read' || $account->hasPermission("administer panelizer {$entity->getEntityTypeId()} {$entity->bundle()} defaults") || $account->hasPermission("administer panelizer {$entity->getEntityTypeId()} {$entity->bundle()} content")) {
+          return AccessResult::allowed();
+        }
+      }
+    }
+
+    return AccessResult::forbidden();
   }
 
 }

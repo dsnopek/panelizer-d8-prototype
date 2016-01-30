@@ -103,6 +103,16 @@ interface PanelizerInterface {
    * @return bool
    *   TRUE if panelized; otherwise FALSE.
    */
-   public function isPanelized($entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL);
+  public function isPanelized($entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL);
+
+  /**
+   * Get permissions for all panelized entity types and bundles.
+   *
+   * @return array
+   *   Associative array intended to be returned by hook_permission().
+   *
+   * @see hook_permission()
+   */
+  public function getPermissions();
 
 }
