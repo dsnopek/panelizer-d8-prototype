@@ -106,6 +106,46 @@ interface PanelizerInterface {
   public function isPanelized($entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL);
 
   /**
+   * Get the Panelizer settings for an entity type, bundle and view mode.
+   *
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $bundle
+   *   The bundle.
+   * @param string $view_mode
+   *   The view mode.
+   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface|NULL $display
+   *   If the caller already has the correct display, it can optionally be
+   *   passed in here so the Panelizer service doesn't have to look it up;
+   *   otherwise, this argument can bo omitted.
+   *
+   * @return array
+   *   An associative array with the following keys:
+   *   - enable (bool): Whether or not this view mode is panelized.
+   *   - field (bool): Whether or not the field is present.
+   */
+  public function getPanelizerSettings($entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL);
+
+  /**
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $bundle
+   *   The bundle.
+   * @param string $view_mode
+   *   The view mode.
+   * @param array $settings
+   *   An associative array with the same keys as the associative array
+   *   returned by getPanelizerSettings().
+   * @param \Drupal\Core\Entity\Display\EntityViewDisplayInterface|NULL $display
+   *   If the caller already has the correct display, it can optionally be
+   *   passed in here so the Panelizer service doesn't have to look it up;
+   *   otherwise, this argument can bo omitted.
+   *
+   * @see PanelizerInterface::getPanelizerSettings()
+   */
+  public function setPanelizerSettings($entity_type_id, $bundle, $view_mode, array $settings, EntityViewDisplayInterface $display = NULL);
+
+  /**
    * Get permissions for all panelized entity types and bundles.
    *
    * @return array

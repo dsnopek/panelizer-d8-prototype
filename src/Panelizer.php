@@ -8,6 +8,7 @@ namespace Drupal\panelizer;
 
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityFieldManagerInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
@@ -41,6 +42,13 @@ class Panelizer implements PanelizerInterface {
   protected $entityTypeBundleInfo;
 
   /**
+   * The entity field manager.
+   *
+   * @var \Drupal\Core\Entity\EntityFieldManagerInterface
+   */
+  protected $entityFieldManager;
+
+  /**
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -68,14 +76,21 @@ class Panelizer implements PanelizerInterface {
    *   The entity type manager.
    * @param \Drupal\Core\Entity\EntityTypeBundleInfoInterface $entity_type_bundle_info
    *   The entity type bundle info manager.
+   * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
+   *   The entity field manager.
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
+   *   The module handler.
    * @param \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_entity_manager
    *   The Panelizer entity manager.
    * @param \Drupal\panels\PanelsDisplayManagerInterface $panels_manager
    *   The Panels display manager.
+   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
+   *   The string translation service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager, TranslationInterface $string_translation) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityFieldManagerInterface $entity_field_manager, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager, TranslationInterface $string_translation) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
+    $this->entityFieldManager = $entity_field_manager;
     $this->moduleHandler = $module_handler;
     $this->panelizerEntityManager = $panelizer_entity_manager;
     $this->panelsManager = $panels_manager;
@@ -160,9 +175,9 @@ class Panelizer implements PanelizerInterface {
    */
   public function getPanelsDisplay(FieldableEntityInterface $entity, $view_mode, EntityViewDisplayInterface $display = NULL) {
     // First, check if the entity has the panelizer field.
-    if (isset($entity->field_panelizer)) {
+    if (isset($entity->panelizer)) {
       $values = [];
-      foreach ($entity->field_panelizer as $item) {
+      foreach ($entity->panelizer as $item) {
         $values[$item->view_mode] = $item->panels_display;
       }
       if (isset($values[$view_mode])) {
@@ -264,6 +279,86 @@ class Panelizer implements PanelizerInterface {
     }
 
     return $display->getThirdPartySetting('panelizer', 'enable', FALSE);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getPanelizerSettings($entity_type_id, $bundle, $view_mode, EntityViewDisplayInterface $display = NULL) {
+    if (!$display) {
+      $display = $this->getEntityViewDisplay($entity_type_id, $bundle, $view_mode);
+    }
+
+    $settings = [
+      'enable' => $this->isPanelized($entity_type_id, $bundle, $view_mode, $display),
+    ];
+
+    // Get the rest of the settings, only if Panelizer is enabled.
+    if ($settings['enable']) {
+      $fields = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
+      $settings['field'] = isset($fields['panelizer']) && $fields['panelizer']->getType() == 'panelizer';
+    }
+
+    return $settings;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPanelizerSettings($entity_type_id, $bundle, $view_mode, array $settings, EntityViewDisplayInterface $display = NULL) {
+    if (!$display) {
+      $display = $this->getEntityViewDisplay($entity_type_id, $bundle, $view_mode);
+    }
+
+    $display->setThirdPartySetting('panelizer', 'enable', !empty($settings['enable']));
+
+    if (!empty($settings['enable'])) {
+      // Set the default display.
+      $displays = $display->getThirdPartySetting('panelizer', 'displays', []);
+      if (empty($displays['default'])) {
+        /** @var \Drupal\panelizer\Plugin\PanelizerEntityInterface $panelizer_entity_plugin */
+        $panelizer_entity_plugin = $this->panelizerEntityManager->createInstance($display->getTargetEntityTypeId(), []);
+        $displays['default'] = $this->panelsManager->exportDisplay($panelizer_entity_plugin->getDefaultDisplay($display, $display->getTargetBundle(), $display->getMode()));
+        $display->setThirdPartySetting('panelizer', 'displays', $displays);
+      }
+
+      // Make sure the field exists.
+      if (!empty($settings['field'])) {
+        $field_storage = $this->entityTypeManager->getStorage('field_storage_config')->load($entity_type_id . '.panelizer');
+        if (!$field_storage) {
+          $field_storage = $this->entityTypeManager->getStorage('field_storage_config')->create([
+            'entity_type' => $entity_type_id,
+            'field_name' => 'panelizer',
+            'type' => 'panelizer',
+            'cardinality' => -1,
+            'settings' => [],
+            'status' => TRUE,
+          ]);
+          $field_storage->save();
+        }
+
+        $field = $this->entityTypeManager->getStorage('field_config')->load($entity_type_id . '.' . $bundle . '.panelizer');
+        if (!$field) {
+          $field = $this->entityTypeManager->getStorage('field_config')->create([
+            'field_storage' => $field_storage,
+            'bundle' => $bundle,
+            'label' => $this->t('Panelizer'),
+            'settings' => [],
+          ]);
+          $field->save();
+        }
+      }
+    }
+
+    // Delete the field if disabled.
+    if (empty($settings['enable']) || empty($settings['field'])) {
+      $field = $this->entityTypeManager->getStorage('field_config')->load($entity_type_id . '.' . $bundle . '.panelizer');
+      if ($field) {
+        $field->delete();
+      }
+    }
+
+    $display->save();
   }
 
   /**

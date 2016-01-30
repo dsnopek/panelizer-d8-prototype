@@ -45,8 +45,11 @@ function panelizer_form_entity_view_display_edit_form_alter(&$form, FormStateInt
 
   /** @var \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager */
   $panelizer_manager = \Drupal::service('plugin.manager.panelizer_entity');
+  /** @var \Drupal\panelizer\PanelizerInterface $panelizer */
+  $panelizer = \Drupal::service('panelizer');
 
   if ($panelizer_manager->hasDefinition($display->getTargetEntityTypeId())) {
+    $settings = $panelizer->getPanelizerSettings($display->getTargetEntityTypeId(), $display->getTargetBundle(), $display->getMode(), $display);
 
     $form['panelizer'] = [
       '#tree' => TRUE,
@@ -54,7 +57,17 @@ function panelizer_form_entity_view_display_edit_form_alter(&$form, FormStateInt
     $form['panelizer']['enable'] = [
       '#type' => 'checkbox',
       '#title' => t('Panelize this view mode'),
-      '#default_value' => $display->getThirdPartySetting('panelizer', 'enable', FALSE),
+      '#default_value' => !empty($settings['enable']),
+    ];
+    $form['panelizer']['field'] = [
+      '#type' => 'checkbox',
+      '#title' => t('Allow custom overrides of each entity'),
+      '#default_value' => !empty($settings['field']),
+      '#states' => [
+        'visible' => [
+          ':input[name="panelizer[enable]"]' => ['checked' => TRUE],
+        ]
+      ]
     ];
 
     $form['#attached']['library'][] = 'panelizer/panelizer_default_form';
@@ -72,27 +85,14 @@ function panelizer_form_entity_view_display_edit_form_submit($form, FormStateInt
   /** @var \Drupal\Core\Entity\Display\EntityViewDisplayInterface $display */
   $display = $form_object->getEntity();
 
-  $panelizer_enabled = $form_state->getValue(['panelizer', 'enable']);
+  $settings = [
+    'enable' => $form_state->getValue(['panelizer', 'enable']),
+    'field' => $form_state->getValue(['panelizer', 'field']),
+  ];
 
-  // Enable it.
-  $display->setThirdPartySetting('panelizer', 'enable', $panelizer_enabled);
-
-  if ($panelizer_enabled) {
-    // Set the default display.
-    $displays = $display->getThirdPartySetting('panelizer', 'displays', []);
-    if (empty($displays['default'])) {
-      /** @var \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_manager */
-      $panelizer_manager = \Drupal::service('plugin.manager.panelizer_entity');
-      /** @var \Drupal\panels\PanelsDisplayManagerInterface $panels_manager */
-      $panels_manager = \Drupal::service('panels.display_manager');
-      /** @var \Drupal\panelizer\Plugin\PanelizerEntityInterface $panelizer_entity_plugin */
-      $panelizer_entity_plugin = $panelizer_manager->createInstance($display->getTargetEntityTypeId(), []);
-      $displays['default'] = $panels_manager->exportDisplay($panelizer_entity_plugin->getDefaultDisplay($display, $display->getTargetBundle(), $display->getMode()));
-      $display->setThirdPartySetting('panelizer', 'displays', $displays);
-    }
-  }
-
-  $display->save();
+  /** @var \Drupal\panelizer\PanelizerInterface $panelizer */
+  $panelizer = \Drupal::service('panelizer');
+  $panelizer->setPanelizerSettings($display->getTargetEntityTypeId(), $display->getTargetBundle(), $display->getMode(), $settings, $display);
 }
 
 /**
