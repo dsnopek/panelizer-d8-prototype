@@ -14,7 +14,7 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 /**
  * Provides the Panelizer entity plugin manager.
  */
-class PanelizerEntityManager extends DefaultPluginManager {
+class PanelizerEntityManager extends DefaultPluginManager implements PanelizerEntityManagerInterface {
 
   /**
    * Constructor for PanelizerEntityManager objects.

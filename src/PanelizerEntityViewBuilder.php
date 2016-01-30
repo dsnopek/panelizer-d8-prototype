@@ -15,13 +15,12 @@ use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\EntityViewBuilderInterface;
-use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldItemInterface;
 use Drupal\Core\Field\FieldItemListInterface;
 use Drupal\Core\Plugin\Context\Context;
 use Drupal\Core\Plugin\Context\ContextDefinition;
-use Drupal\panelizer\Plugin\PanelizerEntityManager;
+use Drupal\panelizer\Plugin\PanelizerEntityManagerInterface;
 use Drupal\Panels\PanelsDisplayManagerInterface;
 use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -101,7 +100,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    * @param \Drupal\Panels\PanelsDisplayManagerInterface $panels_manager
    *   The Panels display manager.
    */
-  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, PanelizerInterface $panelizer, PanelizerEntityManager $panelizer_manager, PanelsDisplayManagerInterface $panels_manager) {
+  public function __construct(EntityTypeInterface $entity_type, EntityTypeManagerInterface $entity_type_manager, ModuleHandlerInterface $module_handler, PanelizerInterface $panelizer, PanelizerEntityManagerInterface $panelizer_manager, PanelsDisplayManagerInterface $panels_manager) {
     $this->entityTypeId = $entity_type->id();
     $this->entityType = $entity_type;
     $this->entityTypeManager = $entity_type_manager;
@@ -183,6 +182,42 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
     return $this->panelizer->getPanelsDisplay($entity, $view_mode, $display);
   }
 
+  /**
+   * Returns the display objects used to render a set of entities.
+   *
+   * Wraps EntityViewDisplay::collectRenderDisplays() so we can mock it in
+   * tests.
+   *
+   * @param \Drupal\Core\Entity\FieldableEntityInterface[] $entities
+   *   The entities being rendered. They should all be of the same entity type.
+   * @param string $view_mode
+   *   The view mode being rendered.
+   *
+   * @return \Drupal\Core\Entity\Display\EntityViewDisplayInterface[]
+   *   The display objects to use to render the entities, keyed by entity
+   *   bundle.
+   *
+   * @see EntityViewDisplay::collectRenderDisplays()
+   */
+  protected function collectRenderDisplays($entities, $view_mode) {
+    return EntityViewDisplay::collectRenderDisplays($entities, $view_mode);
+  }
+
+  /**
+   * Returns the entity context.
+   *
+   * Wraps creating new Context objects to avoid typed data in tests.
+   *
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   *
+   * @return \Drupal\Core\Plugin\Context\Context
+   *   The context.
+   */
+  protected function getEntityContext(EntityInterface $entity) {
+    return new Context(new ContextDefinition('entity:' . $this->entityTypeId, NULL, TRUE), $entity);
+  }
+
   /*
    * Methods from EntityViewBuilderInterface.
    */
@@ -211,18 +246,18 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
 
     // Handle all the fallback entities first!
     if (!empty($fallback_entities)) {
-      $fallback_view_builder->buildComponents($build, $entities, $displays, $view_mode);
+      $fallback_view_builder->buildComponents($build, $fallback_entities, $displays, $view_mode);
     }
 
     // Handle the panelized entities.
     if (!empty($panelized_entities)) {
       $this->moduleHandler
-        ->invokeAll('entity_prepare_view', array(
+        ->invokeAll('entity_prepare_view', [
           $this->entityTypeId,
           $panelized_entities,
           $displays,
           $view_mode
-        ));
+        ]);
     }
   }
 
@@ -230,7 +265,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    * {@inheritdoc}
    */
   public function view(EntityInterface $entity, $view_mode = 'full', $langcode = NULL) {
-    $displays = EntityViewDisplay::collectRenderDisplays([$entity], $view_mode);
+    $displays = $this->collectRenderDisplays([$entity], $view_mode);
     $display = $displays[$entity->bundle()];
 
     if (!$this->isPanelizerEnabled($display)) {
@@ -245,7 +280,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    * {@inheritdoc}
    */
   public function viewMultiple(array $entities = array(), $view_mode = 'full', $langcode = NULL) {
-    $displays = EntityViewDisplay::collectRenderDisplays($entities, $view_mode);
+    $displays = $this->collectRenderDisplays($entities, $view_mode);
 
     $panelized_entities = [];
     $fallback_entities = [];
@@ -264,7 +299,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
       $result += $this->getFallbackViewBuilder()->viewMultiple($fallback_entities, $view_mode, $langcode);
     }
     if (!empty($panelized_entities)) {
-      $result += $this->buildMultiplePanelized($entities, $displays, $view_mode, $langcode);
+      $result += $this->buildMultiplePanelized($panelized_entities, $displays, $view_mode, $langcode);
     }
 
     return $result;
@@ -335,8 +370,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    */
   protected function buildPanelized(EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode, $langcode) {
     $contexts = $panels_display->getContexts();
-    $entity_context = new Context(new ContextDefinition('entity:' . $this->entityTypeId, NULL, TRUE), $entity);
-    $contexts['@panelizer.entity_context:' . $this->entityTypeId] = $entity_context;
+    $contexts['@panelizer.entity_context:' . $this->entityTypeId] = $this->getEntityContext($entity);
     $panels_display->setContexts($contexts);
 
     $build = [
