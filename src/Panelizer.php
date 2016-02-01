@@ -174,8 +174,10 @@ class Panelizer implements PanelizerInterface {
    * {@inheritdoc}
    */
   public function getPanelsDisplay(FieldableEntityInterface $entity, $view_mode, EntityViewDisplayInterface $display = NULL) {
-    // First, check if the entity has the panelizer field.
-    if (isset($entity->panelizer)) {
+    $settings = $this->getPanelizerSettings($entity->getEntityTypeId(), $entity->bundle(), $view_mode, $display);
+
+    // First, check if custom overrides are enabled and the field is available.
+    if ($settings['custom'] && isset($entity->panelizer)) {
       $values = [];
       foreach ($entity->panelizer as $item) {
         $values[$item->view_mode] = $item->panels_display;
@@ -291,12 +293,13 @@ class Panelizer implements PanelizerInterface {
 
     $settings = [
       'enable' => $this->isPanelized($entity_type_id, $bundle, $view_mode, $display),
+      'custom' => $display->getThirdPartySetting('panelizer', 'custom', FALSE),
     ];
 
-    // Get the rest of the settings, only if Panelizer is enabled.
-    if ($settings['enable']) {
+    // Make sure that the Panelizer field actually exists.
+    if ($settings['custom']) {
       $fields = $this->entityFieldManager->getFieldDefinitions($entity_type_id, $bundle);
-      $settings['field'] = isset($fields['panelizer']) && $fields['panelizer']->getType() == 'panelizer';
+      $settings['custom'] = isset($fields['panelizer']) && $fields['panelizer']->getType() == 'panelizer';
     }
 
     return $settings;
@@ -311,6 +314,7 @@ class Panelizer implements PanelizerInterface {
     }
 
     $display->setThirdPartySetting('panelizer', 'enable', !empty($settings['enable']));
+    $display->setThirdPartySetting('panelizer', 'custom', !empty($settings['enable']) && !empty($settings['custom']));
 
     if (!empty($settings['enable'])) {
       // Set the default display.
@@ -323,7 +327,7 @@ class Panelizer implements PanelizerInterface {
       }
 
       // Make sure the field exists.
-      if (!empty($settings['field'])) {
+      if (!empty($settings['custom'])) {
         $field_storage = $this->entityTypeManager->getStorage('field_storage_config')->load($entity_type_id . '.panelizer');
         if (!$field_storage) {
           $field_storage = $this->entityTypeManager->getStorage('field_storage_config')->create([
@@ -347,14 +351,6 @@ class Panelizer implements PanelizerInterface {
           ]);
           $field->save();
         }
-      }
-    }
-
-    // Delete the field if disabled.
-    if (empty($settings['enable']) || empty($settings['field'])) {
-      $field = $this->entityTypeManager->getStorage('field_config')->load($entity_type_id . '.' . $bundle . '.panelizer');
-      if ($field) {
-        $field->delete();
       }
     }
 

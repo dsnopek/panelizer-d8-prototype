@@ -59,10 +59,10 @@ function panelizer_form_entity_view_display_edit_form_alter(&$form, FormStateInt
       '#title' => t('Panelize this view mode'),
       '#default_value' => !empty($settings['enable']),
     ];
-    $form['panelizer']['field'] = [
+    $form['panelizer']['custom'] = [
       '#type' => 'checkbox',
       '#title' => t('Allow custom overrides of each entity'),
-      '#default_value' => !empty($settings['field']),
+      '#default_value' => !empty($settings['custom']),
       '#states' => [
         'visible' => [
           ':input[name="panelizer[enable]"]' => ['checked' => TRUE],
@@ -87,7 +87,7 @@ function panelizer_form_entity_view_display_edit_form_submit($form, FormStateInt
 
   $settings = [
     'enable' => $form_state->getValue(['panelizer', 'enable']),
-    'field' => $form_state->getValue(['panelizer', 'field']),
+    'custom' => $form_state->getValue(['panelizer', 'custom']),
   ];
 
   /** @var \Drupal\panelizer\PanelizerInterface $panelizer */
