@@ -5,6 +5,7 @@
  */
 
 use \Drupal\Core\Form\FormStateInterface;
+use \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 
 /**
  * Implements hook_theme().
@@ -31,6 +32,19 @@ function panelizer_entity_type_alter(array &$entity_types) {
       $entity_types[$entity_type_id]->setHandlerClass('fallback_view_builder', $entity_types[$entity_type_id]->getHandlerClass('view_builder'));
       $entity_types[$entity_type_id]->setHandlerClass('view_builder', '\Drupal\panelizer\PanelizerEntityViewBuilder');
     }
+  }
+}
+
+/**
+ * Implements hook_panels_build_alter().
+ */
+function panelizer_panels_build_alter(&$build, PanelsDisplayVariant $panels_display) {
+  $builder = $panels_display->getBuilder();
+  $storage_type = $panels_display->getStorageType();
+
+  // Add our Javascript customizations for the IPE.
+  if ($builder->getPluginId() == 'ipe' && in_array($storage_type, ['panelizer_default', 'panelizer_field'])) {
+    $build['#attached']['library'][] = 'panelizer/panels_ipe';
   }
 }
 

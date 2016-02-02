@@ -1,0 +1,9 @@
+/**
+ * @file
+ * Stylesheet for Panelizer IPE customizations.
+ */
+
+.panelizer-ipe-save-button {
+  display: inline-block;
+  margin: 10px;
+}
