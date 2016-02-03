@@ -230,7 +230,7 @@ class PanelizerEntityViewBuilderTest extends UnitTestCase {
       ->willReturn(['other' => $other_context->reveal()]);
     $panels_display->setContexts([
       'other' => $other_context->reveal(),
-      '@panelizer.entity_context:entity_type_id' => $entity_context->reveal(),
+      '@panelizer.entity_context:entity' => $entity_context->reveal(),
     ])->shouldBeCalled();
     $panels_display->build()->willReturn(['#markup' => 'Panelized']);
     $this->panelizer->getPanelsDisplay($entity1->reveal(), 'full', $display1->reveal())

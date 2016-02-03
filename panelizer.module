@@ -4,6 +4,7 @@
  * Hook implementations for the Panelizer module.
  */
 
+use \Drupal\Core\Entity\RevisionableInterface;
 use \Drupal\Core\Form\FormStateInterface;
 use \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 
@@ -45,7 +46,40 @@ function panelizer_panels_build_alter(&$build, PanelsDisplayVariant $panels_disp
   // Add our Javascript customizations for the IPE.
   if ($builder->getPluginId() == 'ipe' && in_array($storage_type, ['panelizer_default', 'panelizer_field'])) {
     $build['#attached']['library'][] = 'panelizer/panels_ipe';
+
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
+    $entity = $panels_display->getContexts()['@panelizer.entity_context:entity']->getContextValue();
+
+    // @todo: Make sure that saving as custom is allowed!
+
+    // Pass in the correct default and custom storage ids.
+    if ($panels_display->getStorageType() == 'panelizer_field') {
+      $custom_storage_id = $panels_display->getStorageId();
+      list (,, $view_mode) = explode(':', $custom_storage_id);
+      $default_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->bundle(), $view_mode, 'default']);
+    }
+    else {
+      $default_storage_id = $panels_display->getStorageId();
+      list (,, $view_mode) = explode(':', $default_storage_id);
+      $custom_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->id(), $view_mode]);
+      if ($entity instanceof RevisionableInterface) {
+        $custom_storage_id .= ':' . $entity->getRevisionId();
+      }
+    }
+    $build['#attached']['drupalSettings']['panelizer']['entity'] = [
+      'default_storage_id' => $default_storage_id,
+      'custom_storage_id' => $custom_storage_id,
+    ];
   }
+}
+
+/**
+ * Implements hook_panels_ipe_panels_display_presave().
+ */
+function panelizer_panels_ipe_panels_display_presave(PanelsDisplayVariant $panels_display, array $layout_model) {
+  // @todo: if we're on a default, and we save custom, we don't need to touch
+  //        the default at all. But if we're on a custom, and we save default,
+  //        then we need to update both! This will need to be implemented here.
 }
 
 /**

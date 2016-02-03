@@ -370,7 +370,7 @@ class PanelizerEntityViewBuilder implements EntityViewBuilderInterface, EntityHa
    */
   protected function buildPanelized(EntityInterface $entity, PanelsDisplayVariant $panels_display, $view_mode, $langcode) {
     $contexts = $panels_display->getContexts();
-    $contexts['@panelizer.entity_context:' . $this->entityTypeId] = $this->getEntityContext($entity);
+    $contexts['@panelizer.entity_context:entity'] = $this->getEntityContext($entity);
     $panels_display->setContexts($contexts);
 
     $build = [

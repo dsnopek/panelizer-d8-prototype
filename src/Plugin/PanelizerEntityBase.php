@@ -95,7 +95,7 @@ abstract class PanelizerEntityBase extends PluginBase implements PanelizerEntity
           'label_display' => '0',
           'formatter' => $component,
           'context_mapping' => [
-            'entity' => '@panelizer.entity_context:' . $entity_type_id,
+            'entity' => '@panelizer.entity_context:entity',
           ],
           'region' => 'middle',
           'weight' => $weight,
