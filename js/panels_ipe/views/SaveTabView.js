@@ -23,6 +23,11 @@
     model: null,
 
     /**
+     * @type {Drupal.panels_ipe.AppView}
+     */
+    view: null,
+
+    /**
      * @type {object}
      */
     events: {
@@ -55,14 +60,13 @@
       layout.set('panelizer_save_as', storage_type);
       layout.set('panelizer_entity', drupalSettings.panelizer.entity);
 
-      // Copied from AppView.clickSaveTab:
       if (this.model.get('saveTab').get('active')) {
         // Save the Layout and disable the tab.
-        this.model.get('saveTab').set({loading: true});
+        this.model.get('saveTab').set({loading: true, active: false});
+        this.view.tabsView.render();
         layout.save().done(function () {
-          self.model.get('saveTab').set({loading: false, active: false});
+          self.model.get('saveTab').set({loading: false});
           self.model.set('unsaved', false);
-          //self.tabsView.render();
 
           // Change the storage type and id for the next save.
           drupalSettings.panels_ipe.panels_display.storage_type = storage_type;
@@ -80,9 +84,12 @@
      *   An object containing the following keys:
      * @param {Drupal.panels_ipe.AppModel} options.model
      *   The app state model.
+     * @param {Drupal.panels_ipe.AppView} options.view
+     *   The app view.
      */
     initialize: function (options) {
       this.model = options.model;
+      this.view = options.view;
     },
 
     /**
