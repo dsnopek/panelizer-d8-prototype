@@ -22,7 +22,9 @@
     Drupal.panels_ipe.app_view.stopListening(Drupal.panels_ipe.app.get('saveTab'), 'change:active');
 
     // Add a new view for the save button to the TabsView.
-    Drupal.panels_ipe.app_view.tabsView.tabViews['save'] = new Drupal.panelizer.panels_ipe.SaveTabView();
+    Drupal.panels_ipe.app_view.tabsView.tabViews['save'] = new Drupal.panelizer.panels_ipe.SaveTabView({
+      model: Drupal.panels_ipe.app_view.model
+    });
   });
 
 }(jQuery, _, Backbone, Drupal));

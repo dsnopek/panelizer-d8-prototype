@@ -49,26 +49,28 @@ function panelizer_panels_build_alter(&$build, PanelsDisplayVariant $panels_disp
 
     /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $panels_display->getContexts()['@panelizer.entity_context:entity']->getContextValue();
+    $revision_id = ($entity instanceof RevisionableInterface) ? $entity->getRevisionId() : NULL;
 
     // @todo: Make sure that saving as custom is allowed!
 
     // Pass in the correct default and custom storage ids.
     if ($panels_display->getStorageType() == 'panelizer_field') {
-      $custom_storage_id = $panels_display->getStorageId();
-      list (,, $view_mode) = explode(':', $custom_storage_id);
-      $default_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->bundle(), $view_mode, 'default']);
+      $panelizer_field_storage_id = $panels_display->getStorageId();
+      list (,, $view_mode) = explode(':', $panelizer_field_storage_id);
+      $panelizer_default_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->bundle(), $view_mode, 'default']);
     }
     else {
-      $default_storage_id = $panels_display->getStorageId();
-      list (,, $view_mode) = explode(':', $default_storage_id);
-      $custom_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->id(), $view_mode]);
-      if ($entity instanceof RevisionableInterface) {
-        $custom_storage_id .= ':' . $entity->getRevisionId();
-      }
+      $panelizer_default_storage_id = $panels_display->getStorageId();
+      list (,, $view_mode) = explode(':', $panelizer_default_storage_id);
+      $panelizer_field_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->id(), $view_mode, $revision_id]);
     }
     $build['#attached']['drupalSettings']['panelizer']['entity'] = [
-      'default_storage_id' => $default_storage_id,
-      'custom_storage_id' => $custom_storage_id,
+      'entity_type_id' => $entity->getEntityTypeId(),
+      'entity_id' => $entity->id(),
+      'view_mode' => $view_mode,
+      'revision_id' => $revision_id,
+      'panelizer_default_storage_id' => $panelizer_default_storage_id,
+      'panelizer_field_storage_id' => $panelizer_field_storage_id,
     ];
   }
 }
@@ -77,9 +79,39 @@ function panelizer_panels_build_alter(&$build, PanelsDisplayVariant $panels_disp
  * Implements hook_panels_ipe_panels_display_presave().
  */
 function panelizer_panels_ipe_panels_display_presave(PanelsDisplayVariant $panels_display, array $layout_model) {
-  // @todo: if we're on a default, and we save custom, we don't need to touch
-  //        the default at all. But if we're on a custom, and we save default,
-  //        then we need to update both! This will need to be implemented here.
+  // See if the user requested changing the storage type.
+  $current_storage = $panels_display->getStorageType() == 'panelizer_default' ? 'default' : 'custom';
+  $panelizer_save_as = $layout_model['panelizer_save_as'];
+  if ($current_storage !== $panelizer_save_as) {
+    $panelizer_entity = $layout_model['panelizer_entity'];
+
+    // If we were custom and now we want to save to the default, we need to
+    // save specially to the Panelizer field so that we can give it a copy of
+    // the default and let it know that it's a default.
+    if ($panelizer_save_as = 'panelizer_default') {
+      /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
+      $entity_type_manager = \Drupal::service("entity_type.manager");
+      $storage = $entity_type_manager->getStorage($panelizer_entity['entity_type_id']);
+      $entity = $storage->load($panelizer_entity['entity_id']);
+      if (isset($entity->panelizer)) {
+        /** @var \Drupal\panels\PanelsDisplayManagerInterface $panels_display_manager */
+        $panels_display_manager = \Drupal::service('panels.display_manager');
+        /** @var \Drupal\Core\Field\FieldItemInterface $item */
+        foreach ($entity->panelizer as $item) {
+          if ($item->get('view_mode') == $panelizer_entity['view_mode']) {
+            $item->set('panels_display', $panels_display_manager->exportDisplay($panels_display));
+            list (,,, $default_name) = explode(':', $panelizer_entity['default_storage_id']);
+            $item->set('default', $default_name);
+          }
+        }
+        $entity->save();
+      }
+    }
+
+    // Set the new storage information.
+    $panels_display->setStorage($panelizer_save_as, $panelizer_entity[$panelizer_save_as . '_storage_id']);
+  }
+
 }
 
 /**

@@ -14,7 +14,7 @@ use Drupal\Core\Session\AccountInterface;
 use Drupal\panelizer\PanelizerInterface;
 use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 use Drupal\panels\Storage\PanelsStorageBase;
-use Drupal\panels\Storage\PanelsStorageInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Panels storage service that stores Panels displays in the Panelizer field.
@@ -102,7 +102,17 @@ class PanelizerFieldPanelsStorage extends PanelsStorageBase implements Container
    * {@inheritdoc}
    */
   public function save(PanelsDisplayVariant $panels_display) {
-    // TODO: Implement save() method.
+    $id = $panels_display->getStorageId();
+    if ($entity = $this->loadEntity($id)) {
+      list (,, $view_mode) = explode(':', $id);
+      if (isset($entity->panelizer)) {
+        // @todo: find the right field item and update, or create a new one.
+        // @todo: if the revision is the latest revision, create a new one and save.
+      }
+    }
+    else {
+      throw new \Exception("Couldn't find entity to store Panels display on");
+    }
   }
 
   /**
