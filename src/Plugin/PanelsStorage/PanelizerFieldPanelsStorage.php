@@ -9,9 +9,12 @@ namespace Drupal\panelizer\Plugin\PanelsStorage;
 
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Field\FieldTypePluginManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\panelizer\PanelizerInterface;
+use Drupal\panelizer\Plugin\Field\FieldType\PanelizerFieldType;
 use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 use Drupal\panels\Storage\PanelsStorageBase;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -105,9 +108,8 @@ class PanelizerFieldPanelsStorage extends PanelsStorageBase implements Container
     $id = $panels_display->getStorageId();
     if ($entity = $this->loadEntity($id)) {
       list (,, $view_mode) = explode(':', $id);
-      if (isset($entity->panelizer)) {
-        // @todo: find the right field item and update, or create a new one.
-        // @todo: if the revision is the latest revision, create a new one and save.
+      if ($entity instanceof FieldableEntityInterface) {
+        $this->panelizer->setPanelsDisplay($entity, $view_mode, $panels_display);
       }
     }
     else {

@@ -35,6 +35,20 @@ interface PanelizerInterface {
   public function getPanelsDisplay(FieldableEntityInterface $entity, $view_mode, EntityViewDisplayInterface $display = NULL);
 
   /**
+   * Sets the Panels display for a given entity and view mode.
+   *
+   * @param \Drupal\Core\Entity\FieldableEntityInterface $entity
+   *   The entity.
+   * @param string $view_mode
+   *   The entity view mode.
+   * @param \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant|NULL $panels_display
+   *   The Panels display.
+   * @param string|NULL $default
+   *   The name of the default (if this is a default).
+   */
+  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, PanelsDisplayVariant $panels_display, $default = NULL);
+
+  /**
    * Gets the default Panels displays for an entity type, bundle and view mode.
    *
    * @param string $entity_type_id

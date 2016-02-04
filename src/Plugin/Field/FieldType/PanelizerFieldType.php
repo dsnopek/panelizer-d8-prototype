@@ -101,8 +101,9 @@ class PanelizerFieldType extends FieldItemBase {
    * {@inheritdoc}
    */
   public function isEmpty() {
-    $value = $this->get('panels_display')->getValue();
-    return empty($value);
+    $panels_display = $this->get('panels_display')->getValue();
+    $default = $this->get('default')->getValue();
+    return empty($panels_display) && empty($default);
   }
 
 }

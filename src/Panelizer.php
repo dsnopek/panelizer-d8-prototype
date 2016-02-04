@@ -14,6 +14,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Field\FieldTypePluginManagerInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
@@ -49,6 +50,13 @@ class Panelizer implements PanelizerInterface {
   protected $entityFieldManager;
 
   /**
+   * The field type manager.
+   *
+   * @var \Drupal\Core\Field\FieldTypePluginManagerInterface
+   */
+  protected $fieldTypeManager;
+
+  /**
    * The module handler.
    *
    * @var \Drupal\Core\Extension\ModuleHandlerInterface
@@ -78,6 +86,8 @@ class Panelizer implements PanelizerInterface {
    *   The entity type bundle info manager.
    * @param \Drupal\Core\Entity\EntityFieldManagerInterface $entity_field_manager
    *   The entity field manager.
+   * @param \Drupal\Core\Field\FieldTypePluginManagerInterface $field_type_manager
+   *   The field type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
    * @param \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_entity_manager
@@ -87,10 +97,11 @@ class Panelizer implements PanelizerInterface {
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityFieldManagerInterface $entity_field_manager, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager, TranslationInterface $string_translation) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager, TranslationInterface $string_translation) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->entityFieldManager = $entity_field_manager;
+    $this->fieldTypeManager = $field_type_manager;
     $this->moduleHandler = $module_handler;
     $this->panelizerEntityManager = $panelizer_entity_manager;
     $this->panelsManager = $panels_manager;
@@ -178,26 +189,66 @@ class Panelizer implements PanelizerInterface {
 
     // First, check if custom overrides are enabled and the field is available.
     if ($settings['custom'] && isset($entity->panelizer)) {
+      /** @var \Drupal\Core\Field\FieldItemInterface[] $values */
       $values = [];
       foreach ($entity->panelizer as $item) {
-        $values[$item->view_mode] = $item->panels_display;
+        $values[$item->view_mode] = $item;
       }
       if (isset($values[$view_mode])) {
-        // @todo: validate schema after https://www.drupal.org/node/2392057 is fixed.
-        $panels_display = $this->panelsManager->importDisplay($values[$view_mode], FALSE);
+        $panelizer_item = $values[$view_mode];
+        if (!empty($panelizer_item->default)) {
+          return $this->getDefaultPanelsDisplay($panelizer_item->get('default')->getValue(), $entity->getEntityTypeId(), $entity->bundle(), $view_mode, $display);
+        }
 
-        // @todo: Should be set when written, not here!
+        // @todo: validate schema after https://www.drupal.org/node/2392057 is fixed.
+        return $this->panelsManager->importDisplay($panelizer_item->get('panels_display')->getValue(), FALSE);
+      }
+    }
+
+    return $this->getDefaultPanelsDisplay('default', $entity->getEntityTypeId(), $entity->bundle(), $view_mode, $display);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, PanelsDisplayVariant $panels_display, $default = NULL) {
+    if (isset($entity->panelizer)) {
+      $panelizer_item = NULL;
+      /** @var \Drupal\Core\Field\FieldItemInterface $item */
+      foreach ($entity->panelizer as $item) {
+        if ($item->get('view_mode') == $view_mode) {
+          $panelizer_item = $item;
+          break;
+        }
+      }
+      if (!$panelizer_item) {
+        $panelizer_item = $this->fieldTypeManager->createFieldItem($entity->panelizer, count($entity->panelizer));
+        $panelizer_item->get('view_mode')->setValue($view_mode);
+      }
+
+      // Set the storage type and id.
+      if ($panels_display) {
         $storage_id_parts = [$entity->getEntityTypeId(), $entity->id(), $view_mode];
         if ($entity instanceof RevisionableInterface) {
           $storage_id_parts[] = $entity->getRevisionId();
         }
         $panels_display->setStorage('panelizer_field', implode(':', $storage_id_parts));
-
-        return $panels_display;
       }
-    }
 
-    return $this->getDefaultPanelsDisplay('default', $entity->getEntityTypeId(), $entity->bundle(), $view_mode, $display);
+      $panelizer_item->get('panels_display')->setValue($panels_display ? $this->panelsManager->exportDisplay($panels_display) : NULL);
+      $panelizer_item->get('default')->setValue($default);
+
+      // Create a new revision if possible.
+      if ($entity instanceof RevisionableInterface) {
+        if ($entity->isDefaultRevision()) {
+          $entity->setNewRevision(TRUE);
+        }
+      }
+
+      $entity->panelizer[$panelizer_item->getName()] = $panelizer_item;
+
+      $entity->save();
+    }
   }
 
   /**

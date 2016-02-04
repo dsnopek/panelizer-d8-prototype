@@ -4,6 +4,7 @@
  * Hook implementations for the Panelizer module.
  */
 
+use \Drupal\Core\Entity\FieldableEntityInterface;
 use \Drupal\Core\Entity\RevisionableInterface;
 use \Drupal\Core\Form\FormStateInterface;
 use \Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
@@ -80,38 +81,30 @@ function panelizer_panels_build_alter(&$build, PanelsDisplayVariant $panels_disp
  */
 function panelizer_panels_ipe_panels_display_presave(PanelsDisplayVariant $panels_display, array $layout_model) {
   // See if the user requested changing the storage type.
-  $current_storage = $panels_display->getStorageType() == 'panelizer_default' ? 'default' : 'custom';
+  $current_storage = $panels_display->getStorageType();
   $panelizer_save_as = $layout_model['panelizer_save_as'];
   if ($current_storage !== $panelizer_save_as) {
     $panelizer_entity = $layout_model['panelizer_entity'];
 
     // If we were custom and now we want to save to the default, we need to
-    // save specially to the Panelizer field so that we can give it a copy of
-    // the default and let it know that it's a default.
-    if ($panelizer_save_as = 'panelizer_default') {
+    // save specially to the Panelizer field so that we can tell it we're on
+    // a default.
+    if ($panelizer_save_as == 'panelizer_default') {
       /** @var \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager */
       $entity_type_manager = \Drupal::service("entity_type.manager");
       $storage = $entity_type_manager->getStorage($panelizer_entity['entity_type_id']);
       $entity = $storage->load($panelizer_entity['entity_id']);
-      if (isset($entity->panelizer)) {
-        /** @var \Drupal\panels\PanelsDisplayManagerInterface $panels_display_manager */
-        $panels_display_manager = \Drupal::service('panels.display_manager');
-        /** @var \Drupal\Core\Field\FieldItemInterface $item */
-        foreach ($entity->panelizer as $item) {
-          if ($item->get('view_mode') == $panelizer_entity['view_mode']) {
-            $item->set('panels_display', $panels_display_manager->exportDisplay($panels_display));
-            list (,,, $default_name) = explode(':', $panelizer_entity['default_storage_id']);
-            $item->set('default', $default_name);
-          }
-        }
-        $entity->save();
+      if ($entity instanceof FieldableEntityInterface) {
+        /** @var \Drupal\panelizer\PanelizerInterface $panelizer */
+        $panelizer = \Drupal::service('panelizer');
+        list (,,, $default_name) = explode(':', $panelizer_entity['default_storage_id']);
+        $panelizer->setPanelsDisplay($entity, $panelizer_entity['view_mode'], NULL, $default_name);
       }
     }
 
     // Set the new storage information.
     $panels_display->setStorage($panelizer_save_as, $panelizer_entity[$panelizer_save_as . '_storage_id']);
   }
-
 }
 
 /**
