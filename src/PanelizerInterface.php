@@ -46,7 +46,7 @@ interface PanelizerInterface {
    * @param string|NULL $default
    *   The name of the default (if this is a default).
    */
-  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, PanelsDisplayVariant $panels_display, $default = NULL);
+  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, $panels_display, $default = NULL);
 
   /**
    * Gets the default Panels displays for an entity type, bundle and view mode.

@@ -7,6 +7,7 @@
 
 namespace Drupal\panelizer\Plugin\Field\FieldType;
 
+use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
@@ -85,11 +86,17 @@ class PanelizerFieldType extends FieldItemBase {
   }
 
   /**
+   * @return \Drupal\panels\PanelsDisplayManagerInterface
+   */
+  protected static function getPanelsDisplayManager() {
+    return \Drupal::service('panels.display_manager');
+  }
+
+  /**
    * {@inheritdoc}
    */
   public static function generateSampleValue(FieldDefinitionInterface $field_definition) {
-    /** @var \Drupal\panels\PanelsDisplayManagerInterface $panels_manager */
-    $panels_manager = \Drupal::service('panels.display_manager');
+    $panels_manager = static::getPanelsDisplayManager();
     $sample_display = $panels_manager->createDisplay();
 
     $values['default'] = NULL;
@@ -104,6 +111,32 @@ class PanelizerFieldType extends FieldItemBase {
     $panels_display = $this->get('panels_display')->getValue();
     $default = $this->get('default')->getValue();
     return empty($panels_display) && empty($default);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave($update) {
+    $panels_manager = $this->getPanelsDisplayManager();
+    $panels_display_config = $this->get('panels_display')->getValue();
+    if (!empty($panels_display_config)) {
+      $panels_display = $panels_manager->importDisplay($panels_display_config, FALSE);
+
+      // Set the storage id to include the current revision id.
+      $entity = $this->getEntity();
+      $storage_id_parts = [
+        $entity->getEntityTypeId(),
+        $entity->id(),
+        $this->get('view_mode')->getValue()
+      ];
+      if ($entity instanceof RevisionableInterface) {
+        $storage_id_parts[] = $entity->getRevisionId();
+      }
+      $panels_display->setStorage('panelizer_field', implode(':', $storage_id_parts));
+      $this->set('panels_display', $panels_manager->exportDisplay($panels_display));
+
+      return TRUE;
+    }
   }
 
 }

@@ -197,11 +197,11 @@ class Panelizer implements PanelizerInterface {
       if (isset($values[$view_mode])) {
         $panelizer_item = $values[$view_mode];
         if (!empty($panelizer_item->default)) {
-          return $this->getDefaultPanelsDisplay($panelizer_item->get('default')->getValue(), $entity->getEntityTypeId(), $entity->bundle(), $view_mode, $display);
+          return $this->getDefaultPanelsDisplay($panelizer_item->default, $entity->getEntityTypeId(), $entity->bundle(), $view_mode, $display);
         }
 
         // @todo: validate schema after https://www.drupal.org/node/2392057 is fixed.
-        return $this->panelsManager->importDisplay($panelizer_item->get('panels_display')->getValue(), FALSE);
+        return $this->panelsManager->importDisplay($panelizer_item->panels_display, FALSE);
       }
     }
 
@@ -211,19 +211,19 @@ class Panelizer implements PanelizerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, PanelsDisplayVariant $panels_display, $default = NULL) {
+  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, $panels_display, $default = NULL) {
     if (isset($entity->panelizer)) {
       $panelizer_item = NULL;
       /** @var \Drupal\Core\Field\FieldItemInterface $item */
       foreach ($entity->panelizer as $item) {
-        if ($item->get('view_mode') == $view_mode) {
+        if ($item->view_mode == $view_mode) {
           $panelizer_item = $item;
           break;
         }
       }
       if (!$panelizer_item) {
         $panelizer_item = $this->fieldTypeManager->createFieldItem($entity->panelizer, count($entity->panelizer));
-        $panelizer_item->get('view_mode')->setValue($view_mode);
+        $panelizer_item->view_mode = $view_mode;
       }
 
       // Set the storage type and id.
@@ -235,8 +235,8 @@ class Panelizer implements PanelizerInterface {
         $panels_display->setStorage('panelizer_field', implode(':', $storage_id_parts));
       }
 
-      $panelizer_item->get('panels_display')->setValue($panels_display ? $this->panelsManager->exportDisplay($panels_display) : NULL);
-      $panelizer_item->get('default')->setValue($default);
+      $panelizer_item->panels_display = $panels_display ? $this->panelsManager->exportDisplay($panels_display) : [];
+      $panelizer_item->default = $default;
 
       // Create a new revision if possible.
       if ($entity instanceof RevisionableInterface) {
