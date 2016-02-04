@@ -226,14 +226,9 @@ class Panelizer implements PanelizerInterface {
         $panelizer_item->view_mode = $view_mode;
       }
 
-      // Set the storage type and id.
-      if ($panels_display) {
-        $storage_id_parts = [$entity->getEntityTypeId(), $entity->id(), $view_mode];
-        if ($entity instanceof RevisionableInterface) {
-          $storage_id_parts[] = $entity->getRevisionId();
-        }
-        $panels_display->setStorage('panelizer_field', implode(':', $storage_id_parts));
-      }
+      // Note: We don't call $panels_display->setStorage() here because it will
+      // be set internally by PanelizerFieldType::postSave() which will know
+      // the real revision ID of the newly saved entity.
 
       $panelizer_item->panels_display = $panels_display ? $this->panelsManager->exportDisplay($panels_display) : [];
       $panelizer_item->default = $default;
