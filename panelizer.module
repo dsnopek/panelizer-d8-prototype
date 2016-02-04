@@ -115,7 +115,7 @@ function panelizer_panels_ipe_panels_display_presave(PanelsDisplayVariant $panel
         /** @var \Drupal\panelizer\PanelizerInterface $panelizer */
         $panelizer = \Drupal::service('panelizer');
         list (,,, $default_name) = explode(':', $panelizer_entity['panelizer_default_storage_id']);
-        $panelizer->setPanelsDisplay($entity, $panelizer_entity['view_mode'], NULL, $default_name);
+        $panelizer->setPanelsDisplay($entity, $panelizer_entity['view_mode'], $default_name);
       }
     }
 

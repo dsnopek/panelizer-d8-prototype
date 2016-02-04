@@ -109,7 +109,7 @@ class PanelizerFieldPanelsStorage extends PanelsStorageBase implements Container
     if ($entity = $this->loadEntity($id)) {
       list (,, $view_mode) = explode(':', $id);
       if ($entity instanceof FieldableEntityInterface) {
-        $this->panelizer->setPanelsDisplay($entity, $view_mode, $panels_display);
+        $this->panelizer->setPanelsDisplay($entity, $view_mode, NULL, $panels_display);
       }
     }
     else {

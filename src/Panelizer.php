@@ -211,7 +211,7 @@ class Panelizer implements PanelizerInterface {
   /**
    * {@inheritdoc}
    */
-  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, $panels_display, $default = NULL) {
+  public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, $default, PanelsDisplayVariant $panels_display = NULL) {
     if (isset($entity->panelizer)) {
       $panelizer_item = NULL;
       /** @var \Drupal\Core\Field\FieldItemInterface $item */
