@@ -12,3 +12,9 @@
   /* @todo: Make a new icon for revert! */
   content: "\e90a";
 }
+
+/* Show the cancel title so it easier to tell the difference from revert. */
+[data-tab-id="cancel"] .ipe-tab-title {
+  display: inline;
+}
+
