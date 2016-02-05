@@ -122,8 +122,9 @@ class PanelizerFieldPanelsStorage extends PanelsStorageBase implements Container
    */
   public function access($id, $op, AccountInterface $account) {
     if ($entity = $this->loadEntity($id)) {
-      if ($entity->access($op, $account)) {
-        if ($op == 'read' || $account->hasPermission("administer panelizer {$entity->getEntityTypeId()} {$entity->bundle()} defaults") || $account->hasPermission("administer panelizer {$entity->getEntityTypeId()} {$entity->bundle()} content")) {
+      if ($entity->access($op, $account) && $entity instanceof FieldableEntityInterface) {
+        list (,, $view_mode) = explode(':', $id);
+        if ($op == 'read' || $this->panelizer->hasEntityPermission('change content', $entity, $view_mode, $account)) {
           return AccessResult::allowed();
         }
       }
