@@ -530,6 +530,10 @@ class Panelizer implements PanelizerInterface {
       return FALSE;
     }
 
+    if (!$account) {
+      $account = $this->currentUser->getAccount();
+    }
+
     // Check admin permissions.
     if ($account->hasPermission('administer panelizer')) {
       return TRUE;

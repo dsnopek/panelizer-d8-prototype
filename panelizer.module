@@ -56,8 +56,9 @@ function panelizer_panels_build_alter(&$build, PanelsDisplayVariant $panels_disp
     // @todo: Check that saving as custom is even allowed!
 
     // Get the default storage id.
+    $default = 'default';
     if ($panels_display->getStorageType() == 'panelizer_field') {
-      $panelizer_default_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->bundle(), $view_mode, 'default']);
+      $panelizer_default_storage_id = implode(':', [$entity->getEntityTypeId(), $entity->bundle(), $view_mode, $default]);
     }
     else {
       $panelizer_default_storage_id = $panels_display->getStorageId();
@@ -71,13 +72,16 @@ function panelizer_panels_build_alter(&$build, PanelsDisplayVariant $panels_disp
     }
     $panelizer_field_storage_id = implode(':', $panelizer_field_storage_id_parts);
 
+    /** @var \Drupal\panelizer\PanelizerInterface $panelizer */
+    $panelizer = \Drupal::service('panelizer');
+
     $build['#attached']['drupalSettings']['panelizer']['entity'] = [
       'entity_type_id' => $entity->getEntityTypeId(),
       'entity_id' => $entity->id(),
       'view_mode' => $view_mode,
       'revision_id' => $revision_id,
-      'panelizer_default_storage_id' => $panelizer_default_storage_id,
-      'panelizer_field_storage_id' => $panelizer_field_storage_id,
+      'panelizer_default_storage_id' => $panelizer->hasDefaultPermission('change content', $entity->getEntityTypeId(), $entity->bundle(), $view_mode, $default) ? $panelizer_default_storage_id : FALSE,
+      'panelizer_field_storage_id' => $panelizer->hasEntityPermission('change content', $entity, $view_mode) ? $panelizer_field_storage_id : FALSE,
     ];
 
     // If using panelizer_field, we change the storage id to match what we

@@ -43,6 +43,22 @@
     /**
      * @type {function}
      */
+    onClick: function () {
+      var entity = drupalSettings.panelizer.entity;
+      if (this.model.get('saveTab').get('active')) {
+        // If only one option is available, then just do that directly.
+        if (!entity.panelizer_default_storage_id) {
+          this._save('panelizer_field');
+        }
+        else if (!entity.panelizer_field_storage_id) {
+          this._save('panelizer_default');
+        }
+      }
+    },
+
+    /**
+     * @type {function}
+     */
     saveCustom: function () {
       this._save('panelizer_field');
     },
@@ -102,6 +118,8 @@
       this.model = options.model;
       this.tabsView = options.tabsView;
       this.revertTab = options.revertTab;
+
+      this.listenTo(this.model.get('saveTab'), 'change:active', this.onClick);
     },
 
     /**
