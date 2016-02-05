@@ -24,7 +24,7 @@
     // Add a new view for the save button to the TabsView.
     Drupal.panels_ipe.app_view.tabsView.tabViews['save'] = new Drupal.panelizer.panels_ipe.SaveTabView({
       model: Drupal.panels_ipe.app_view.model,
-      view: Drupal.panels_ipe.app_view
+      tabsView: Drupal.panels_ipe.app_view.tabsView
     });
   });
 

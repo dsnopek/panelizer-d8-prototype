@@ -23,9 +23,9 @@
     model: null,
 
     /**
-     * @type {Drupal.panels_ipe.AppView}
+     * @type {Drupal.panels_ipe.TabsView}
      */
-    view: null,
+    tabsView: null,
 
     /**
      * @type {object}
@@ -63,7 +63,7 @@
       if (this.model.get('saveTab').get('active')) {
         // Save the Layout and disable the tab.
         this.model.get('saveTab').set({loading: true, active: false});
-        this.view.tabsView.render();
+        this.tabsView.render();
         layout.save().done(function () {
           self.model.get('saveTab').set({loading: false});
           self.model.set('unsaved', false);
@@ -84,12 +84,12 @@
      *   An object containing the following keys:
      * @param {Drupal.panels_ipe.AppModel} options.model
      *   The app state model.
-     * @param {Drupal.panels_ipe.AppView} options.view
+     * @param {Drupal.panels_ipe.TabsView} options.tabsView
      *   The app view.
      */
     initialize: function (options) {
       this.model = options.model;
-      this.view = options.view;
+      this.tabsView = options.tabsView;
     },
 
     /**
