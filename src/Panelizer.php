@@ -199,8 +199,6 @@ class Panelizer implements PanelizerInterface {
    */
   public function getPanelsDisplay(FieldableEntityInterface $entity, $view_mode, EntityViewDisplayInterface $display = NULL) {
     $settings = $this->getPanelizerSettings($entity->getEntityTypeId(), $entity->bundle(), $view_mode, $display);
-
-    // First, check if custom overrides are enabled and the field is available.
     if ($settings['custom'] && isset($entity->panelizer)) {
       /** @var \Drupal\Core\Field\FieldItemInterface[] $values */
       $values = [];
@@ -225,7 +223,8 @@ class Panelizer implements PanelizerInterface {
    * {@inheritdoc}
    */
   public function setPanelsDisplay(FieldableEntityInterface $entity, $view_mode, $default, PanelsDisplayVariant $panels_display = NULL) {
-    if (isset($entity->panelizer)) {
+    $settings = $this->getPanelizerSettings($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
+    if ($settings['custom'] && isset($entity->panelizer)) {
       $panelizer_item = NULL;
       /** @var \Drupal\Core\Field\FieldItemInterface $item */
       foreach ($entity->panelizer as $item) {
