@@ -481,10 +481,6 @@ class Panelizer implements PanelizerInterface {
    */
   protected function hasOperationPermission($op, $entity_type_id, $bundle, AccountInterface $account) {
     switch ($op) {
-      case 'revert to default':
-        // We already have enough permissions at this point.
-        return TRUE;
-
       case 'change content':
         return $account->hasPermission("administer panelizer $entity_type_id $bundle content");
     }
