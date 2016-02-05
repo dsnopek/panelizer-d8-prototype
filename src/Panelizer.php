@@ -9,12 +9,15 @@ namespace Drupal\panelizer;
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
 use Drupal\Core\Entity\EntityFieldManagerInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Entity\RevisionableInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Field\FieldTypePluginManagerInterface;
+use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Session\AccountProxyInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\panelizer\Plugin\PanelizerEntityManager;
@@ -64,6 +67,13 @@ class Panelizer implements PanelizerInterface {
   protected $moduleHandler;
 
   /**
+   * The current user service.
+   *
+   * @var \Drupal\Core\Session\AccountProxyInterface
+   */
+  protected $currentUser;
+
+  /**
    * The Panelizer entity manager.
    *
    * @var \Drupal\panelizer\Plugin\PanelizerEntityManager
@@ -90,6 +100,8 @@ class Panelizer implements PanelizerInterface {
    *   The field type manager.
    * @param \Drupal\Core\Extension\ModuleHandlerInterface $module_handler
    *   The module handler.
+   * @param \Drupal\Core\Session\AccountProxyInterface $current_user
+   *   The current user service.
    * @param \Drupal\panelizer\Plugin\PanelizerEntityManager $panelizer_entity_manager
    *   The Panelizer entity manager.
    * @param \Drupal\panels\PanelsDisplayManagerInterface $panels_manager
@@ -97,12 +109,13 @@ class Panelizer implements PanelizerInterface {
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation service.
    */
-  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ModuleHandlerInterface $module_handler, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager, TranslationInterface $string_translation) {
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EntityTypeBundleInfoInterface $entity_type_bundle_info, EntityFieldManagerInterface $entity_field_manager, FieldTypePluginManagerInterface $field_type_manager, ModuleHandlerInterface $module_handler, AccountProxyInterface $current_user, PanelizerEntityManager $panelizer_entity_manager, PanelsDisplayManagerInterface $panels_manager, TranslationInterface $string_translation) {
     $this->entityTypeManager = $entity_type_manager;
     $this->entityTypeBundleInfo = $entity_type_bundle_info;
     $this->entityFieldManager = $entity_field_manager;
     $this->fieldTypeManager = $field_type_manager;
     $this->moduleHandler = $module_handler;
+    $this->currentUser = $current_user;
     $this->panelizerEntityManager = $panelizer_entity_manager;
     $this->panelsManager = $panels_manager;
     $this->stringTranslation = $string_translation;
@@ -447,6 +460,90 @@ class Panelizer implements PanelizerInterface {
     }
 
     return $permissions;
+  }
+
+  /**
+   * Check permission for an individual operation only.
+   *
+   * Doesn't check any of the baseline permissions that you need along with
+   * the operation permission.
+   *
+   * @param string $op
+   *   The operation.
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $bundle
+   *   The bundle.
+   * @param \Drupal\Core\Session\AccountInterface $account
+   *   The user account.
+   *
+   * @return bool
+   *   TRUE if the user has permission; FALSE otherwise.
+   */
+  protected function hasOperationPermission($op, $entity_type_id, $bundle, AccountInterface $account) {
+    switch ($op) {
+      case 'revert to default':
+        // We already have enough permissions at this point.
+        return TRUE;
+
+      case 'change content':
+        return $account->hasPermission("administer panelizer $entity_type_id $bundle content");
+    }
+
+    return FALSE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasEntityPermission($op, EntityInterface $entity, $view_mode, AccountInterface $account = NULL) {
+    if (!$account) {
+      $account = $this->currentUser->getAccount();
+    }
+
+    // Must be able to edit the entity.
+    if (!$entity->access('update', $account)) {
+      return FALSE;
+    }
+
+    // Must have overrides enabled.
+    $panelizer_settings = $this->getPanelizerSettings($entity->getEntityTypeId(), $entity->bundle(), $view_mode);
+    if (empty($panelizer_settings['custom'])) {
+      return FALSE;
+    }
+
+    // Check admin permission.
+    if ($account->hasPermission('administer panelizer')) {
+      return TRUE;
+    }
+
+    // @todo: check field access too!
+
+    if ($op == 'revert to default') {
+      // We already have enough permissions at this point.
+      return TRUE;
+    }
+
+    return $this->hasOperationPermission($op, $entity->getEntityTypeId(), $entity->bundle(), $account);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function hasDefaultPermission($op, $entity_type_id, $bundle, $view_mode, $default, AccountInterface $account = NULL) {
+    if (!$this->isPanelized($entity_type_id, $bundle, $view_mode)) {
+      return FALSE;
+    }
+
+    // Check admin permissions.
+    if ($account->hasPermission('administer panelizer')) {
+      return TRUE;
+    }
+    if ($account->hasPermission("administer panelizer $entity_type_id $bundle defaults")) {
+      return TRUE;
+    }
+
+    return $this->hasOperationPermission($op, $entity_type_id, $bundle, $account);
   }
 
 }

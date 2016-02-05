@@ -9,7 +9,9 @@ namespace Drupal\panelizer;
 
 
 use Drupal\Core\Entity\Display\EntityViewDisplayInterface;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\FieldableEntityInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\panels\Plugin\DisplayVariant\PanelsDisplayVariant;
 
 /**
@@ -168,5 +170,46 @@ interface PanelizerInterface {
    * @see hook_permission()
    */
   public function getPermissions();
+
+  /**
+   * Checks if a user has permission to perform an operation on an entity.
+   *
+   * @param string $op
+   *   The operation. Possible values include:
+   *   - "revert to default"
+   *   - "change content"
+   * @param \Drupal\Core\Entity\EntityInterface $entity
+   *   The entity.
+   * @param string $view_mode
+   *   The view mode.
+   * @param \Drupal\Core\Session\AccountInterface|NULL $account
+   *   (optional) The user account to check; or the current user if omitted.
+   *
+   * @return bool
+   *   TRUE if the user has permission; FALSE otherwise.
+   */
+  public function hasEntityPermission($op, EntityInterface $entity, $view_mode, AccountInterface $account = NULL);
+
+  /**
+   * Checks if a user has permission to perform an operation on a default.
+   *
+   * @param string $op
+   *   The operation. Possible values include:
+   *   - "change content"
+   * @param string $entity_type_id
+   *   The entity type id.
+   * @param string $bundle
+   *   The bundle.
+   * @param string $view_mode
+   *   The view mode.
+   * @param string $default
+   *   The name of the default.
+   * @param \Drupal\Core\Session\AccountInterface|NULL $account
+   *   (optional) The user account to check; or the current user if omitted.
+   *
+   * @return bool
+   *   TRUE if the user has permission; FALSE otherwise.
+   */
+  public function hasDefaultPermission($op, $entity_type_id, $bundle, $view_mode, $default, AccountInterface $account = NULL);
 
 }
