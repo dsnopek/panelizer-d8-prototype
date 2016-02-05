@@ -7,3 +7,8 @@
   display: inline-block;
   margin: 10px;
 }
+
+.ipe-icon.ipe-icon-revert:before {
+  /* @todo: Make a new icon for revert! */
+  content: "\e90a";
+}

@@ -28,6 +28,11 @@
     tabsView: null,
 
     /**
+     * @type {Drupal.panels_ipe.TabModel}
+     */
+    revertTab: null,
+
+    /**
      * @type {object}
      */
     events: {
@@ -71,6 +76,10 @@
           // Change the storage type and id for the next save.
           drupalSettings.panels_ipe.panels_display.storage_type = storage_type;
           drupalSettings.panels_ipe.panels_display.storage_id = drupalSettings.panelizer.entity[storage_type + '_storage_id'];
+
+          // Show/hide the revert to default tab.
+          self.revertTab.set({hidden: storage_type === 'panelizer_default'});
+          self.tabsView.render();
         });
       }
     },
@@ -86,10 +95,13 @@
      *   The app state model.
      * @param {Drupal.panels_ipe.TabsView} options.tabsView
      *   The app view.
+     * @param {Drupal.panels_ipe.TabModel} options.revertTab
+     *   The revert tab.
      */
     initialize: function (options) {
       this.model = options.model;
       this.tabsView = options.tabsView;
+      this.revertTab = options.revertTab;
     },
 
     /**

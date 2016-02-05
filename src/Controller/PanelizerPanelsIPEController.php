@@ -8,12 +8,14 @@
 namespace Drupal\panelizer\Controller;
 
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Session\AccountInterface;
 use Drupal\panelizer\PanelizerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -58,14 +60,18 @@ class PanelizerPanelsIPEController extends ControllerBase {
    * @param \Symfony\Component\HttpFoundation\Request $request
    *   The request.
    *
+   * @return \Symfony\Component\HttpFoundation\Response
+   *   An empty response.
+   *
    * @throws \Symfony\Component\HttpKernel\Exception\BadRequestHttpException
    */
   public function revertToDefault(FieldableEntityInterface $entity, $view_mode, Request $request) {
-    $data = Json::decode($request->getContent());
-    if (empty($data['default'])) {
+    $default = $request->get('default');
+    if (empty($default)) {
       throw new BadRequestHttpException("Default name to revert to must be passed!");
     }
-    $this->panelizer->setPanelsDisplay($entity, $view_mode, $data['default']);
+    $this->panelizer->setPanelsDisplay($entity, $view_mode, $default);
+    return new Response();
   }
 
   /**
@@ -78,11 +84,11 @@ class PanelizerPanelsIPEController extends ControllerBase {
    * @param \Drupal\Core\Session\AccountInterface $account
    *   The user account.
    *
-   * @return bool
-   *   TRUE if access is allowed; FALSE otherwise.
+   * @return \Drupal\Core\Access\AccessResultInterface
+   *   The access result.
    */
   public function accessRevertToDefault(FieldableEntityInterface $entity, $view_mode, AccountInterface $account) {
-    return $this->panelizer->hasEntityPermission('revert to default', $entity, $view_mode, $account);
+    return AccessResult::allowedIf($this->panelizer->hasEntityPermission('revert to default', $entity, $view_mode, $account));
   }
 
 }
